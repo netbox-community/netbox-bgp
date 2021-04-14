@@ -14,4 +14,4 @@ class CommunityAdmin(admin.ModelAdmin):
 
 @admin.register(BGPSession)
 class BGPSessionAdmin(admin.ModelAdmin):
-    fields = ('local_address', 'local_as', 'remote_address', 'remote_as' 'description')
+    fields = ('name', 'local_address', 'local_as', 'remote_address', 'remote_as', 'description')

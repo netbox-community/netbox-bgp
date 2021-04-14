@@ -156,6 +156,10 @@ class CommunityBulkEditForm(BootstrapMixin, BulkEditForm):
 
 
 class BGPSessionForm(BootstrapMixin, forms.ModelForm):
+    name = forms.CharField(
+        max_length=64,
+        required=True
+    )
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -177,7 +181,6 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
     )
     local_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(),
-        null_option=None,
         query_params={
             'site_id': '$site'
         },
@@ -209,7 +212,7 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = BGPSession
         fields = [
-            'site', 'device',
+            'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
             'description', 'status', 'tenant', 'tags',
         ]

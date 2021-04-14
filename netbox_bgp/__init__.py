@@ -11,8 +11,9 @@ class BGPConfig(PluginConfig):
     author_email = 'mgk.kolek@gmail.com'
     base_url = 'bgp'
     required_settings = []
-    default_settings = {}
-
+    default_settings = {
+        'device_ext_page': 'right'
+    }
 
 
 config = BGPConfig # noqa

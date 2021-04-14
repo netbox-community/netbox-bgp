@@ -45,7 +45,7 @@ class CommunityTable(BaseTable):
 
 class BGPSessionTable(BaseTable):
     pk = ToggleColumn()
-    id = tables.LinkColumn()
+    name = tables.LinkColumn()
     device = tables.LinkColumn()
     remote_address = tables.LinkColumn()
     remote_as = tables.LinkColumn()
@@ -61,5 +61,5 @@ class BGPSessionTable(BaseTable):
     class Meta(BaseTable.Meta):
         model = BGPSession
         fields = (
-            'pk', 'id', 'device', 'remote_as', 'remote_address', 'local_as', 'description', 'site', 'status'
+            'pk', 'name', 'device', 'remote_as', 'remote_address', 'local_as', 'description', 'site', 'status'
         )

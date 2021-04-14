@@ -20,7 +20,9 @@ Restart NetBox and add `netbox-bgp` to your local_requirements.txt
 
 ## Configuration
 
-The plugin is not configurable
+The following options are available:
+* `device_ext_page`: String (default right) Device related BGP sessions table position. The following values are available:  
+left, right, full_width. Set empty value for disable.
 
 ## Screenshots
 
@@ -29,6 +31,9 @@ BGP Session Object
 
 BGP Session Table
 ![BGP Session Table](docs/img/bgp_sess_list.png)
+
+Device Extension
+![Device Session Table](docs/img/dev_sess_list.png)
 
 ASN Object
 ![ASN](docs/img/asn.png)

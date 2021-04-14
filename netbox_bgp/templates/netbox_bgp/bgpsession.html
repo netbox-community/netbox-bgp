@@ -49,7 +49,7 @@
     </a>
     {% endif %}
 </div>
-<h1>{% block title %}BGP Session: {{ object }}{% endblock %}</h1>
+<h1>{% block title %}BGP Session {{ object }}{% endblock %}</h1>
 {% include 'inc/created_updated.html' %}
 <div class="pull-right noprint">
     {% custom_links object %}
@@ -74,6 +74,26 @@
                 <strong>BGP Session</strong>
             </div>
             <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Name</td>
+                    <td>
+                        {% if object.name %}
+                        {{ object.name }}
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Device</td>
+                    <td>
+                        {% if object.device %}
+                        <a href="{{ object.device.get_absolute_url }}">{{ object.device }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>                          
                 <tr>
                     <td>Local AS</td>
                     <td>
