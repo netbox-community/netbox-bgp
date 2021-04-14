@@ -10,7 +10,7 @@ class ASNSerializer(ModelSerializer):
 
     class Meta:
         model = ASN
-        fields = ['number', 'id', 'status']
+        fields = '__all__'
 
 
 class BGPSessionSerializer(ModelSerializer):
