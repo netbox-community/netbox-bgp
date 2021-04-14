@@ -75,8 +75,14 @@
             </div>
             <table class="table table-hover panel-body attr-table">
                 <tr>
-                    <td>Site</td>
-                    <td>{{ object.site }}</td>
+                    <td>Site</td>                    
+                    <td>
+                        {% if object.site %}
+                        <a href="{{ object.site.get_absolute_url }}">{{ object.site }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
                 </tr>                
                 <tr>
                     <td>Number</td>

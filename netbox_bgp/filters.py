@@ -72,6 +72,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
             return queryset
         qs_filter = (
             Q(remote_as__number__icontains=value)
+            | Q(name__icontains=value)
             | Q(local_as__number__icontains=value)
             | Q(description__icontains=value)
         )

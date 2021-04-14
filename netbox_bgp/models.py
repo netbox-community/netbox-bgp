@@ -170,6 +170,11 @@ class Community(BGPBase):
 
 @extras_features('export_templates', 'webhooks')
 class BGPSession(ChangeLoggedModel):
+    name = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True
+    )
     site = models.ForeignKey(
         to='dcim.Site',
         on_delete=models.SET_NULL,
@@ -225,7 +230,7 @@ class BGPSession(ChangeLoggedModel):
         verbose_name_plural = 'BGP Sessions'
 
     def __str__(self):
-        return f"{self.device}->{self.remote_as}({self.remote_address})"
+        return f"{self.device}:{self.name}"
 
     def get_status_class(self):
         return SessionStatusChoices.CSS_CLASSES.get(self.status)
