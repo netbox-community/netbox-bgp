@@ -77,10 +77,28 @@ class ASNGroup(ChangeLoggedModel):
         return self.name
 
 
+class BGPPeerGroup(ChangeLoggedModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    slug = models.SlugField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.name
+
+
 class BGPBase(ChangeLoggedModel):
     """
     """
-    number = models.PositiveIntegerField(
+    number = models.PositiveBigIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(4294967294)],
         null=True,
         blank=True
@@ -220,6 +238,10 @@ class BGPSession(ChangeLoggedModel):
     description = models.CharField(
         max_length=200,
         blank=True
+    )
+    peer_group = models.ManyToManyField(
+        BGPPeerGroup,
+        blank=True,
     )
     afi_safi = None  # for future use
     tags = TaggableManager(through=TaggedItem)
