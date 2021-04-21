@@ -47,6 +47,13 @@ makemigrations:
 	run netbox python manage.py makemigrations --name ${BUILD_NAME}
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} down
 
+build:
+	python3 -m pip install --upgrade build
+	python3 -m build
+
+pypipub:
+	python3 -m pip install --user --upgrade twine
+	python3 -m twine upload dist/*
 
 relpatch:
 	$(eval GSTATUS := $(shell git status --porcelain))

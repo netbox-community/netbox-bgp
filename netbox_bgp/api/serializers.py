@@ -18,8 +18,10 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
         fields = ['number', 'id', 'status', 'description', 'site', 'tenant', 'tags']
 
 
-class BGPSessionSerializer(ModelSerializer):
+class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     status = ChoiceField(choices=SessionStatusChoices, required=False)
+    site = NestedSiteSerializer(required=False, allow_null=True)
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     class Meta:
         model = BGPSession
