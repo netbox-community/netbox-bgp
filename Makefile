@@ -1,5 +1,5 @@
 PYTHON_VER?=3.7
-NETBOX_VER?=v2.10.3
+NETBOX_VER?=v2.11.1
 
 NAME=netbox-bgp
 
@@ -47,12 +47,12 @@ makemigrations:
 	run netbox python manage.py makemigrations --name ${BUILD_NAME}
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} down
 
-build:
+pbuild:
 	python3 -m pip install --upgrade build
 	python3 -m build
 
 pypipub:
-	python3 -m pip install --user --upgrade twine
+	python3 -m pip install --upgrade twine
 	python3 -m twine upload dist/*
 
 relpatch:
