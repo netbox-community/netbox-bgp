@@ -50,7 +50,13 @@
     {% endif %}
 </div>
 <h1>{% block title %}BGP Session {{ object }}{% endblock %}</h1>
-{% include 'inc/created_updated.html' %}
+<p>
+    <small class="text-muted">
+      Created {{ object.created }} &middot;
+      Updated <span title="{{ object.last_updated }}">{{ object.last_updated|timesince }}</span> ago
+    </small>
+    <span class="label label-default">{{ object|meta:"app_label" }}.{{ object|meta:"model_name" }}:{{ object.pk }}</span>
+</p>
 <div class="pull-right noprint">
     {% custom_links object %}
 </div>

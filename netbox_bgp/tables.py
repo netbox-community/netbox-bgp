@@ -1,15 +1,18 @@
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
 
-from utilities.tables import (
-    BaseTable, ChoiceFieldColumn, ToggleColumn,
-)
-
-from tenancy.tables import COL_TENANT
+from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
 
 from .models import ASN, Community, BGPSession
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
+COL_TENANT = """
+ {% if record.tenant %}
+     <a href="{{ record.tenant.get_absolute_url }}" title="{{ record.tenant.description }}">{{ record.tenant }}</a>
+ {% else %}
+     &mdash;
+ {% endif %}
+ """
 
 
 class ASNTable(BaseTable):

@@ -5,7 +5,11 @@ from taggit.managers import TaggableManager
 
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
-from extras.models import ChangeLoggedModel, TaggedItem
+try:
+    from extras.models import ChangeLoggedModel
+except ImportError:
+    from netbox.models import ChangeLoggedModel
+from extras.models import TaggedItem
 from extras.utils import extras_features
 
 
@@ -239,9 +243,11 @@ class BGPSession(ChangeLoggedModel):
         max_length=200,
         blank=True
     )
-    peer_group = models.ManyToManyField(
+    peer_group = models.ForeignKey(
         BGPPeerGroup,
+        on_delete=models.SET_NULL,
         blank=True,
+        null=True
     )
     afi_safi = None  # for future use
     tags = TaggableManager(through=TaggedItem)
