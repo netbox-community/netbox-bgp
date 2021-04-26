@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from taggit.managers import TaggableManager
@@ -242,6 +243,12 @@ class BGPSession(ChangeLoggedModel):
     peer_group = models.ManyToManyField(
         BGPPeerGroup,
         blank=True,
+    )
+    import_policies = ArrayField(
+        models.CharField(max_length=100, blank=True),
+    )
+    export_policies = ArrayField(
+        models.CharField(max_length=100, blank=True),
     )
     afi_safi = None  # for future use
     tags = TaggableManager(through=TaggedItem)

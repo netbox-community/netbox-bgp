@@ -64,7 +64,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = BGPSession
-        fields = ['description', 'status', 'tenant']
+        fields = ['description', 'status', 'tenant', 'import_policies', 'export_policies']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -75,5 +75,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
             | Q(name__icontains=value)
             | Q(local_as__number__icontains=value)
             | Q(description__icontains=value)
+            | Q(import_policies__icontains=value)
+            | Q(export_policies__icontains=value)
         )
         return queryset.filter(qs_filter)

@@ -47,6 +47,8 @@ class BGPSessionTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
     device = tables.LinkColumn()
+    import_policies = tables.LinkColumn()
+    export_policies = tables.LinkColumn()
     remote_address = tables.LinkColumn()
     remote_as = tables.LinkColumn()
     local_as = tables.LinkColumn()

@@ -13,6 +13,7 @@ from utilities.forms import (
 )
 
 from .models import ASN, ASNStatusChoices, Community, BGPSession, SessionStatusChoices
+from django.contrib.postgres.forms import SimpleArrayField
 
 
 class ASNFilterForm(BootstrapMixin, forms.ModelForm):
@@ -208,13 +209,25 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
             'device_id': '$device'
         }
     )
+    import_policies = SimpleArrayField(
+        forms.CharField(
+            max_length=100,
+            required=False
+        )
+    )
+    export_policies = SimpleArrayField(
+        forms.CharField(
+            max_length=100,
+            required=False
+        )
+    )
 
     class Meta:
         model = BGPSession
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'tenant', 'tags',
+            'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies',
         ]
 
 
