@@ -12,7 +12,10 @@ from utilities.forms import (
     APISelect, APISelectMultiple, StaticSelect2Multiple, TagFilterField
 )
 
-from .models import ASN, ASNStatusChoices, Community, BGPSession, SessionStatusChoices
+from .models import (
+    ASN, ASNStatusChoices, Community, BGPSession,
+    SessionStatusChoices, RoutingPolicy, BGPPeerGroup
+)
 
 
 class ASNFilterForm(BootstrapMixin, forms.ModelForm):
@@ -208,14 +211,34 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
             'device_id': '$device'
         }
     )
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing_policy/'
+        )
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing_policy/'
+        )
+    )
 
     class Meta:
         model = BGPSession
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'tenant', 'tags',
+            'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
+        fieldsets = (
+            ('Session', ('name', 'site', 'device', 'description', 'status', 'tenant', 'tags')),
+            ('Remote', ('remote_as', 'remote_address')),
+            ('Local', ('local_as', 'local_address')),
+            ('Policies', ('import_policies', 'export_policies'))
+        )
 
 
 class BGPSessionAddForm(BGPSessionForm):
@@ -268,3 +291,27 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = BGPSession
         fields = ['q', 'status', 'tenant', 'remote_as', 'local_as']
+
+
+class RoutingPolicyFilterForm(BootstrapMixin, forms.ModelForm):
+    q = forms.CharField(
+        required=False,
+        label='Search'
+    )
+
+    tag = TagFilterField(RoutingPolicy)
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ['q']
+
+
+class RoutingPolicyForm(BootstrapMixin, forms.ModelForm):
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ['name', 'description']

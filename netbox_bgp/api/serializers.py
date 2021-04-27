@@ -10,7 +10,7 @@ except ImportError:
     from netbox.api.serializers import CustomFieldModelSerializer
 
 from extras.models import Tag
-from netbox_bgp.models import ASN, ASNStatusChoices, BGPSession, SessionStatusChoices
+from netbox_bgp.models import ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy
 
 
 class NestedTagSerializer(WritableNestedSerializer):
@@ -67,4 +67,10 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
 
     class Meta:
         model = BGPSession
+        fields = '__all__'
+
+
+class RoutingPolicySerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+    class Meta:
+        model = RoutingPolicy
         fields = '__all__'

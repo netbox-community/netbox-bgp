@@ -167,6 +167,8 @@
         {% plugin_left_page object %}
     </div>
     <div class="col-md-6">
+        {% include 'panel_table.html' with table=import_policies_table heading="Import Policies" %}
+        {% include 'panel_table.html' with table=export_policies_table heading="Export Policies" %}
         {% plugin_right_page object %}
     </div>
 </div>

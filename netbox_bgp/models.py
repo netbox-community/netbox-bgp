@@ -37,14 +37,12 @@ class SessionStatusChoices(ChoiceSet):
     STATUS_OFFLINE = 'offline'
     STATUS_ACTIVE = 'active'
     STATUS_PLANNED = 'planned'
-    STATUS_STAGED = 'staged'
     STATUS_FAILED = 'failed'
 
     CHOICES = (
         (STATUS_OFFLINE, 'Offline'),
         (STATUS_ACTIVE, 'Active'),
         (STATUS_PLANNED, 'Planned'),
-        (STATUS_STAGED, 'Staged'),
         (STATUS_FAILED, 'Failed'),
     )
 
@@ -52,7 +50,6 @@ class SessionStatusChoices(ChoiceSet):
         STATUS_OFFLINE: 'warning',
         STATUS_ACTIVE: 'success',
         STATUS_PLANNED: 'info',
-        STATUS_STAGED: 'primary',
         STATUS_FAILED: 'danger',
     }
 
@@ -61,9 +58,6 @@ class ASNGroup(ChangeLoggedModel):
     """
     """
     name = models.CharField(
-        max_length=100
-    )
-    slug = models.SlugField(
         max_length=100
     )
     site = models.ForeignKey(
@@ -81,18 +75,51 @@ class ASNGroup(ChangeLoggedModel):
         return self.name
 
 
+@extras_features('custom_fields', 'export_templates', 'webhooks')
+class RoutingPolicy(ChangeLoggedModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    tags = TaggableManager(through=TaggedItem)
+
+    objects = RestrictedQuerySet.as_manager()
+
+    class Meta:
+        verbose_name_plural = 'Routing Policies'
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:routing_policy', args=[self.pk])
+
+
 class BGPPeerGroup(ChangeLoggedModel):
     """
     """
     name = models.CharField(
         max_length=100
     )
-    slug = models.SlugField(
-        max_length=100
-    )
     description = models.CharField(
         max_length=200,
         blank=True
+    )
+    import_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='group_import_policies'
+    )
+    export_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='group_export_policies'
     )
 
     def __str__(self):
@@ -249,7 +276,19 @@ class BGPSession(ChangeLoggedModel):
         blank=True,
         null=True
     )
+    import_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='session_import_policies'
+    )
+    export_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='session_export_policies'
+    )
+
     afi_safi = None  # for future use
+
     tags = TaggableManager(through=TaggedItem)
 
     objects = RestrictedQuerySet.as_manager()

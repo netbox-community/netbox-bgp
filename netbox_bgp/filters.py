@@ -3,7 +3,7 @@ from django.db.models import Q
 
 from utilities.filters import TagFilter
 
-from .models import ASN, Community, BGPSession
+from .models import ASN, Community, BGPSession, RoutingPolicy
 
 
 class ASNFilterSet(django_filters.FilterSet):
@@ -74,6 +74,28 @@ class BGPSessionFilterSet(django_filters.FilterSet):
             Q(remote_as__number__icontains=value)
             | Q(name__icontains=value)
             | Q(local_as__number__icontains=value)
+            | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class RoutingPolicyFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ['name', 'description']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+            Q(name__icontains=value)
             | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)

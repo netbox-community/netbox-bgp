@@ -1,12 +1,13 @@
 from netbox.views import generic
 
-from .filters import ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet
-from .models import ASN, Community, BGPSession
-from .tables import ASNTable, CommunityTable, BGPSessionTable
+from .filters import ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet, RoutingPolicyFilterSet
+from .models import ASN, Community, BGPSession, RoutingPolicy
+from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable
 from .forms import (
     ASNFilterForm, ASNBulkEditForm, ASNForm, CommunityForm,
     CommunityFilterForm, CommunityBulkEditForm, BGPSessionForm,
-    BGPSessionFilterForm, BGPSessionAddForm
+    BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
+    RoutingPolicyForm
 )
 
 
@@ -115,6 +116,57 @@ class BGPSessionView(generic.ObjectView):
     queryset = BGPSession.objects.all()
     template_name = 'netbox_bgp/bgpsession.html'
 
+    def get_extra_context(self, request, instance):
+        import_policies_table = RoutingPolicyTable(
+            instance.import_policies.all(),
+            orderable=False
+        )
+        export_policies_table = RoutingPolicyTable(
+            instance.export_policies.all(),
+            orderable=False
+        )
+
+        return {
+            'import_policies_table': import_policies_table,
+            'export_policies_table': export_policies_table
+        }
+
 
 class BGPSessionDeleteView(generic.ObjectDeleteView):
     queryset = BGPSession.objects.all()
+
+
+class RoutingPolicyListView(generic.ObjectListView):
+    queryset = RoutingPolicy.objects.all()
+    filterset = RoutingPolicyFilterSet
+    filterset_form = RoutingPolicyFilterForm
+    table = RoutingPolicyTable
+    action_buttons = ()
+    template_name = 'netbox_bgp/routingpolicy_list.html'
+
+
+class RoutingPolicyEditView(generic.ObjectEditView):
+    queryset = RoutingPolicy.objects.all()
+    model_form = RoutingPolicyForm
+
+
+class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
+    queryset = RoutingPolicy.objects.all()
+    table = RoutingPolicyTable
+
+
+class RoutingPolicyView(generic.ObjectView):
+    queryset = RoutingPolicy.objects.all()
+    template_name = 'netbox_bgp/routingpolicy.html'
+
+    def get_extra_context(self, request, instance):
+        sess = BGPSession.objects.filter(import_policies=instance) | BGPSession.objects.filter(export_policies=instance)
+        sess = sess.distinct()
+        sess_table = BGPSessionTable(sess)
+        return {
+            'related_session_table': sess_table
+        }
+
+
+class RoutingPolicyDeleteView(generic.ObjectDeleteView):
+    queryset = RoutingPolicy.objects.all()
