@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load buttons %}
+{% load custom_links %}
+{% load helpers %}
+{% load plugins %}
+
+{% block header %}
+<div class="row noprint">
+    <div class="col-sm-8 col-md-9">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'plugins:netbox_bgp:routing_policy_list' %}">Routing Policies</a></li>
+            <li>{{ object }}</li>
+        </ol>
+    </div>
+    <div class="col-sm-4 col-md-3">
+        <form action="{% url 'plugins:netbox_bgp:routing_policy_list' %}" method="get">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search Policies" />
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="mdi mdi-magnify" aria-hidden="true"></span>
+                    </button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="pull-right noprint">
+    {% comment %}
+    {% plugin_buttons object %}
+    {% if perms.netbox_bgp.add_policy %}
+    {% clone_button object %}
+    {% endif %}
+    {% if perms.netbox_bgp.change_policy %}
+    {% edit_button object %}
+    {% endif %}
+    {% if perms.netbox_bgp.delete_policy %}
+    {% delete_button object %}
+    {% endif %}
+    {% endcomment %}
+    {% if perms.netbox_bgp.change_policy %}
+    <a href="{% url 'plugins:netbox_bgp:routing_policy_edit' pk=object.pk %}" class="btn btn-warning">
+        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
+    </a>    
+    {% endif %}
+    {% if perms.netbox_bgp.delete_policy %}
+    <a href="{% url 'plugins:netbox_bgp:routing_policy_delete' pk=object.pk %}" class="btn btn-danger">
+        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
+    </a>    
+    {% endif %}    
+</div>
+<h1>{% block title %}{{ object }}{% endblock %}</h1>
+<p>
+    <small class="text-muted">
+      Created {{ object.created }} &middot;
+      Updated <span title="{{ object.last_updated }}">{{ object.last_updated|timesince }}</span> ago
+    </small>
+    <span class="label label-default">{{ object|meta:"app_label" }}.{{ object|meta:"model_name" }}:{{ object.pk }}</span>
+</p>
+<div class="pull-right noprint">
+    {% custom_links object %}
+</div>
+<ul class="nav nav-tabs">
+    <li role="presentation" {% if not active_tab %} class="active" {% endif %}>
+        <a href="{{ object.get_absolute_url }}">Routing Policy</a>
+    </li>
+    {% if perms.extras.view_objectchange %}
+    <li role="presentation" {% if active_tab == 'changelog' %} class="active" {% endif %}>
+        <a href="{% url 'plugins:netbox_bgp:routing_policy_changelog' pk=object.pk %}">Change Log</a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>Routing Policy</strong>
+            </div>
+            <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>name</td>
+                    <td>{{ object.name }}</td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>{{ object.description|placeholder }}</td>
+                </tr>
+            </table>
+        </div>
+        {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_bgp:routing_policy_list' %}
+        {% include 'inc/custom_fields_panel.html' %}
+        {% plugin_left_page object %}
+    </div>
+    <div class="col-md-6">
+        {% plugin_right_page object %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        {% include 'utilities/obj_table.html' with table=related_session_table table_template='panel_table.html' heading='Related BGP Sessions' panel_class='default noprint' %}
+        {% plugin_full_width_page object %}
+    </div>
+</div>
+{% endblock %}

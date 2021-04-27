@@ -1,14 +1,17 @@
 from django.urls import path
 from extras.views import ObjectChangeLogView
-from .models import ASN, BGPSession, Community
+from .models import ASN, BGPSession, Community, RoutingPolicy
 
 from .views import (
     ASNListView, ASNView, ASNBulkDeleteView, ASNEditView, ASNBulkEditView,
     ASNDeleteView, CommunityListView, CommunityEditView, CommunityView,
     CommunityBulkEditView, CommunityBulkDeleteView, CommunityDeleteView,
     BGPSessionListView, BGPSessionEditView, BGPSessionBulkDeleteView,
-    BGPSessionView, BGPSessionDeleteView, BGPSessionAddView
+    BGPSessionView, BGPSessionDeleteView, BGPSessionAddView,
+    RoutingPolicyListView, RoutingPolicyEditView, RoutingPolicyBulkDeleteView,
+    RoutingPolicyView, RoutingPolicyDeleteView
 )
+
 urlpatterns = [
     path('asn/', ASNListView.as_view(), name='asn_list'),
     path('asn/add/', ASNEditView.as_view(), name='asn_add'),
@@ -34,5 +37,13 @@ urlpatterns = [
     path('session/<int:pk>/', BGPSessionView.as_view(), name='session'),
     path('session/<int:pk>/edit/', BGPSessionEditView.as_view(), name='session_edit'),
     path('session/<int:pk>/delete/', BGPSessionDeleteView.as_view(), name='session_delete'),
-    path('session/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='session_changelog', kwargs={'model': BGPSession}),    
+    path('session/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='session_changelog', kwargs={'model': BGPSession}),
+    # Routing Policies
+    path('routing_policy/<int:pk>/', RoutingPolicyView.as_view(), name='routing_policy'),
+    path('routing_policy/', RoutingPolicyListView.as_view(), name='routing_policy_list'),
+    path('routing_policy/add/', RoutingPolicyEditView.as_view(), name='routing_policy_add'),
+    path('routing_policy/<int:pk>/edit/', RoutingPolicyEditView.as_view(), name='routing_policy_edit'),
+    path('routing_policy/delete/', RoutingPolicyBulkDeleteView.as_view(), name='routing_policy_bulk_delete'),
+    path('routing_policy/<int:pk>/delete/', RoutingPolicyDeleteView.as_view(), name='routing_policy_delete'),
+    path('routing_policy/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='routing_policy_changelog', kwargs={'model': RoutingPolicy}),
 ]
