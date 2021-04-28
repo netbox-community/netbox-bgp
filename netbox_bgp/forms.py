@@ -285,6 +285,20 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
         required=False,
         widget=StaticSelect2Multiple()
     )
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing_policy/'
+        )
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing_policy/'
+        )
+    )
 
     tag = TagFilterField(BGPSession)
 

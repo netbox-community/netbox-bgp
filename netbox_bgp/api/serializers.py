@@ -1,24 +1,16 @@
-from rest_framework.serializers import Serializer, HyperlinkedIdentityField
+from rest_framework.serializers import Serializer
 
-from netbox.api import ChoiceField, WritableNestedSerializer
+from netbox.api import ChoiceField
 from dcim.api.nested_serializers import NestedSiteSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
+from extras.api.nested_serializers import NestedTagSerializer
 
 try:
     from extras.api.customfields import CustomFieldModelSerializer
 except ImportError:
     from netbox.api.serializers import CustomFieldModelSerializer
 
-from extras.models import Tag
 from netbox_bgp.models import ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy
-
-
-class NestedTagSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='extras-api:tag-detail')
-
-    class Meta:
-        model = Tag
-        fields = ['id', 'url', 'name', 'slug', 'color']
 
 
 class TaggedObjectSerializer(Serializer):

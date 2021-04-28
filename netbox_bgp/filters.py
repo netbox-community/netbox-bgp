@@ -61,6 +61,16 @@ class BGPSessionFilterSet(django_filters.FilterSet):
     remote_as = django_filters.ModelMultipleChoiceFilter(
         queryset=ASN.objects.all(),
     )
+    local_as = django_filters.ModelMultipleChoiceFilter(
+        queryset=ASN.objects.all(),
+    )
+    import_policies = django_filters.ModelMultipleChoiceFilter(
+
+        queryset=RoutingPolicy.objects.all(),
+    )
+    export_policies = django_filters.ModelMultipleChoiceFilter(
+        queryset=RoutingPolicy.objects.all(),
+    )
 
     class Meta:
         model = BGPSession
