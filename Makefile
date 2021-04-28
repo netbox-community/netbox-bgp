@@ -1,5 +1,5 @@
 PYTHON_VER?=3.7
-NETBOX_VER?=v2.11.1
+NETBOX_VER?=v2.11.2
 
 NAME=netbox-bgp
 

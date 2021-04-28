@@ -7,7 +7,7 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('extras', '0059_exporttemplate_as_attachment'),
+        #('extras', '0059_exporttemplate_as_attachment'),
         ('netbox_bgp', '0010_netbox_bgp'),
     ]
 
