@@ -9,6 +9,12 @@ try:
     from extras.models import ChangeLoggedModel
 except ImportError:
     from netbox.models import ChangeLoggedModel
+
+try:
+    from extras.models import CustomFieldModel
+except ImportError:
+    from netbox.models import CustomFieldsMixin as CustomFieldModel
+
 from extras.models import TaggedItem
 from extras.utils import extras_features
 
@@ -76,7 +82,7 @@ class ASNGroup(ChangeLoggedModel):
 
 
 @extras_features('custom_fields', 'export_templates', 'webhooks')
-class RoutingPolicy(ChangeLoggedModel):
+class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
     """
     """
     name = models.CharField(
@@ -171,7 +177,7 @@ class BGPBase(ChangeLoggedModel):
 
 
 @extras_features('export_templates', 'webhooks')
-class ASN(BGPBase):
+class ASN(BGPBase, CustomFieldModel):
 
     group = models.ForeignKey(
         ASNGroup,
@@ -218,7 +224,7 @@ class Community(BGPBase):
 
 
 @extras_features('export_templates', 'webhooks')
-class BGPSession(ChangeLoggedModel):
+class BGPSession(ChangeLoggedModel, CustomFieldModel):
     name = models.CharField(
         max_length=64,
         blank=True,
