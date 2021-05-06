@@ -1,9 +1,11 @@
 from rest_framework.serializers import Serializer
 
 from netbox.api import ChoiceField
-from dcim.api.nested_serializers import NestedSiteSerializer
+from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from extras.api.nested_serializers import NestedTagSerializer
+from ipam.api.nested_serializers import NestedIPAddressSerializer
+
 
 try:
     from extras.api.customfields import CustomFieldModelSerializer
@@ -56,6 +58,11 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     status = ChoiceField(choices=SessionStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
+    device = NestedDeviceSerializer(required=False, allow_null=True)
+    local_address = NestedIPAddressSerializer(required=True, allow_null=False)
+    remote_address = NestedIPAddressSerializer(required=True, allow_null=False)
+    local_as = ASNSerializer(required=True, allow_null=False)
+    remote_as = ASNSerializer(required=True, allow_null=False)
 
     class Meta:
         model = BGPSession
