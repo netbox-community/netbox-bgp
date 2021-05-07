@@ -50,9 +50,10 @@ class BGPSessionTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
     device = tables.LinkColumn()
+    local_address = tables.LinkColumn()
+    local_as = tables.LinkColumn()
     remote_address = tables.LinkColumn()
     remote_as = tables.LinkColumn()
-    local_as = tables.LinkColumn()
     site = tables.LinkColumn()
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
@@ -64,8 +65,8 @@ class BGPSessionTable(BaseTable):
     class Meta(BaseTable.Meta):
         model = BGPSession
         fields = (
-            'pk', 'name', 'device', 'remote_as',
-            'remote_address', 'local_as', 'description',
+            'pk', 'name', 'device', 'local_address', 'local_as',
+            'remote_address', 'remote_as', 'description',
             'site', 'status'
         )
 
