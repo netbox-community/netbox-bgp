@@ -215,14 +215,14 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
         queryset=RoutingPolicy.objects.all(),
         required=False,
         widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/routing_policy/'
+            api_url='/api/plugins/bgp/routing-policy/'
         )
     )
     export_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
         widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/routing_policy/'
+            api_url='/api/plugins/bgp/routing-policy/'
         )
     )
 
@@ -289,14 +289,14 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
         queryset=RoutingPolicy.objects.all(),
         required=False,
         widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/routing_policy/'
+            api_url='/api/plugins/bgp/routing-policy/'
         )
     )
     export_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
         widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/routing_policy/'
+            api_url='/api/plugins/bgp/routing-policy/'
         )
     )
 
