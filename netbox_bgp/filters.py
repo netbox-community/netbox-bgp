@@ -1,7 +1,11 @@
 import django_filters
 from django.db.models import Q
 
-from utilities.filters import TagFilter
+# With netbox v2.11.3 TagFilter was moved to extras
+try:
+    from extras.filters import TagFilter
+except ImportError:
+    from utilities.filters import TagFilter
 
 from .models import ASN, Community, BGPSession, RoutingPolicy
 from ipam.models import IPAddress
