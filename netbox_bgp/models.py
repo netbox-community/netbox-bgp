@@ -135,11 +135,6 @@ class BGPPeerGroup(ChangeLoggedModel):
 class BGPBase(ChangeLoggedModel):
     """
     """
-    number = models.PositiveBigIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(4294967294)],
-        null=True,
-        blank=True
-    )
     site = models.ForeignKey(
         to='dcim.Site',
         on_delete=models.PROTECT,
@@ -178,6 +173,10 @@ class BGPBase(ChangeLoggedModel):
 
 @extras_features('export_templates', 'webhooks')
 class ASN(BGPBase, CustomFieldModel):
+
+    number = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(4294967294)]
+    )
 
     group = models.ForeignKey(
         ASNGroup,
