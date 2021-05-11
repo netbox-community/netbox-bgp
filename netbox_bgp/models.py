@@ -171,7 +171,7 @@ class BGPBase(ChangeLoggedModel):
         abstract = True
 
 
-@extras_features('export_templates', 'webhooks')
+@extras_features('custom_fields', 'export_templates', 'webhooks')
 class ASN(BGPBase, CustomFieldModel):
 
     number = models.PositiveBigIntegerField(
@@ -222,7 +222,7 @@ class Community(BGPBase):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-@extras_features('export_templates', 'webhooks')
+@extras_features('custom_fields', 'export_templates', 'webhooks')
 class BGPSession(ChangeLoggedModel, CustomFieldModel):
     name = models.CharField(
         max_length=64,
