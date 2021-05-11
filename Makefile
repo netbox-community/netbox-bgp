@@ -41,7 +41,7 @@ adduser:
 collectstatic:
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run netbox python manage.py collectstatic
 
-makemigrations:
+migrations:
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} up -d postgres
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} \
 	run netbox python manage.py makemigrations --name ${BUILD_NAME}
