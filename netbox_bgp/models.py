@@ -190,7 +190,18 @@ class ASN(BGPBase, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'AS Numbers'
-        unique_together = ['number', 'site', 'tenant']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['number', 'tenant'],
+                name='uniqie_number_tenant'
+            ),
+            models.UniqueConstraint(
+                fields=['number'],
+                condition=models.Q(tenant=None),
+                name='uniqie_number'
+            ),
+        ]
+        # unique_together = ['number', 'site', 'tenant']
 
     def get_status_class(self):
         return ASNStatusChoices.CSS_CLASSES.get(self.status)
