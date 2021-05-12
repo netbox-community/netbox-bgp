@@ -65,9 +65,10 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         cleaned_data = self.cleaned_data
         number = cleaned_data['number']
         tenant = cleaned_data.get('tenant')
-        if ASN.objects.filter(number=number, tenant=tenant).count() > 0:
-            self.add_error('number', 'AS number with this number and tenant is already exists.')
-        return self.cleaned_data
+        if 'number' in self.changed_data or 'tenant' in self.changed_data:
+            if ASN.objects.filter(number=number, tenant=tenant).exists():
+                raise forms.ValidationError('AS number with this number and tenant is already exists.')
+        return super().clean()
 
     class Meta:
         model = ASN
