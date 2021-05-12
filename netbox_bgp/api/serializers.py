@@ -51,7 +51,7 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
 
     class Meta:
         model = ASN
-        fields = ['id', 'number', 'status', 'description', 'site', 'tenant', 'tags']
+        fields = ['number', 'id', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
 
 
 class NestedASNSerializer(WritableNestedSerializer):

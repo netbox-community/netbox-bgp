@@ -11,6 +11,9 @@ from utilities.forms import (
     DynamicModelMultipleChoiceField, StaticSelect2,
     APISelect, APISelectMultiple, StaticSelect2Multiple, TagFilterField
 )
+from extras.forms import (
+    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldFilterForm
+)
 
 from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
@@ -18,7 +21,7 @@ from .models import (
 )
 
 
-class ASNFilterForm(BootstrapMixin, forms.ModelForm):
+class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -44,7 +47,7 @@ class ASNFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q', 'status', 'tenant']
 
 
-class ASNForm(BootstrapMixin, forms.ModelForm):
+class ASNForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -73,7 +76,7 @@ class ASNForm(BootstrapMixin, forms.ModelForm):
         ]
 
 
-class ASNBulkEditForm(BootstrapMixin, BulkEditForm):
+class ASNBulkEditForm(BootstrapMixin, CustomFieldBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -166,7 +169,7 @@ class CommunityBulkEditForm(BootstrapMixin, BulkEditForm):
         ]
 
 
-class BGPSessionForm(BootstrapMixin, forms.ModelForm):
+class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
     name = forms.CharField(
         max_length=64,
         required=True
@@ -263,7 +266,7 @@ class BGPSessionAddForm(BGPSessionForm):
         return self.cleaned_data['remote_address']
 
 
-class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
+class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -315,7 +318,7 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q', 'status', 'tenant', 'remote_as', 'local_as']
 
 
-class RoutingPolicyFilterForm(BootstrapMixin, forms.ModelForm):
+class RoutingPolicyFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -328,7 +331,7 @@ class RoutingPolicyFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q']
 
 
-class RoutingPolicyForm(BootstrapMixin, forms.ModelForm):
+class RoutingPolicyForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
