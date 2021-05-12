@@ -1,6 +1,6 @@
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, HyperlinkedIdentityField
 
-from netbox.api import ChoiceField
+from netbox.api import ChoiceField, WritableNestedSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from extras.api.nested_serializers import NestedTagSerializer
@@ -54,6 +54,14 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
         fields = ['number', 'id', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
 
 
+class NestedASNSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:asn')
+
+    class Meta:
+        model = ASN
+        fields = ['id', 'url', 'number', 'description']
+
+
 class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     status = ChoiceField(choices=SessionStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
@@ -61,8 +69,8 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     device = NestedDeviceSerializer(required=False, allow_null=True)
     local_address = NestedIPAddressSerializer(required=True, allow_null=False)
     remote_address = NestedIPAddressSerializer(required=True, allow_null=False)
-    local_as = ASNSerializer(required=True, allow_null=False)
-    remote_as = ASNSerializer(required=True, allow_null=False)
+    local_as = NestedASNSerializer(required=True, allow_null=False)
+    remote_as = NestedASNSerializer(required=True, allow_null=False)
 
     class Meta:
         model = BGPSession

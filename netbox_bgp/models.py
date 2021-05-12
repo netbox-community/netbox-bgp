@@ -99,6 +99,7 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
+        unique_together = ['name', 'description']
 
     def __str__(self):
         return self.name
@@ -189,6 +190,18 @@ class ASN(BGPBase, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'AS Numbers'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['number', 'tenant'],
+                name='uniqie_number_tenant'
+            ),
+            models.UniqueConstraint(
+                fields=['number'],
+                condition=models.Q(tenant=None),
+                name='uniqie_number'
+            ),
+        ]
+        # unique_together = ['number', 'site', 'tenant']
 
     def get_status_class(self):
         return ASNStatusChoices.CSS_CLASSES.get(self.status)
@@ -300,6 +313,7 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'BGP Sessions'
+        unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
 
     def __str__(self):
         return f"{self.device}:{self.name}"
