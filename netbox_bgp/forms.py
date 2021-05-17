@@ -202,8 +202,8 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         display_field='number',
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
-        )
-
+        ),
+        label='Local AS'
     )
     remote_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(),
@@ -213,7 +213,8 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         display_field='number',
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
-        )
+        ),
+        label='Remote AS'
 
     )
     local_address = DynamicModelChoiceField(
@@ -221,7 +222,20 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         display_field='address',
         query_params={
             'device_id': '$device'
-        }
+        },
+        label='Local Address'
+    )
+    ibgp_device = DynamicModelChoiceField(
+        queryset=Device.objects.all(),
+        label='iBGP Device'
+    )
+    ibgp_address = DynamicModelChoiceField(
+        queryset=IPAddress.objects.all(),
+        display_field='address',
+        query_params={
+            'device_id': '$ibgp_device'
+        },
+        label='IP Address'
     )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -242,7 +256,7 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         model = BGPSession
         fields = [
             'name', 'site', 'device',
-            'local_as', 'remote_as', 'local_address', 'remote_address',
+            'local_as', 'remote_as', 'local_address', 'remote_address', 'ibgp_address', 'ibgp_device',
             'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
         fieldsets = (
