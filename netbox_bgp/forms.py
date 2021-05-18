@@ -214,8 +214,8 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
         ),
-        label='Remote AS'
-
+        label='Remote AS',
+        required=False
     )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
@@ -227,7 +227,8 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
     )
     ibgp_device = DynamicModelChoiceField(
         queryset=Device.objects.all(),
-        label='iBGP Device'
+        label='iBGP Device',
+        required=False
     )
     ibgp_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
@@ -235,7 +236,8 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         query_params={
             'device_id': '$ibgp_device'
         },
-        label='IP Address'
+        label='IP Address',
+        required=False
     )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -259,18 +261,48 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
             'local_as', 'remote_as', 'local_address', 'remote_address', 'ibgp_address', 'ibgp_device',
             'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
-        fieldsets = (
-            ('Session', ('name', 'site', 'device', 'description', 'status', 'tenant', 'tags')),
-            ('Remote', ('remote_as', 'remote_address')),
-            ('Local', ('local_as', 'local_address')),
-            ('Policies', ('import_policies', 'export_policies'))
-        )
 
 
 class BGPSessionAddForm(BGPSessionForm):
-    remote_address = IPNetworkFormField()
+    remote_address = IPNetworkFormField(
+        label='Remote Address',
+        required=False
+    )
+
+    def save(self, *args, **kwargs):
+        session = super().save(*args, commit=False, **kwargs)
+
+        if self.is_ibgp():
+            session.remote_address = self.cleaned_data['ibgp_address']
+            session.remote_as = session.local_as
+
+        session.save()
+        return session
+
+    def clean(self, *args, **kwargs):
+        if not self.is_ebgp() and not self.is_ibgp():
+            self.add_error(None, 'Please fill either eBGP or iBGP fields')
+        elif self.is_ebgp() and self.is_ibgp():
+            self.add_error(None, 'Please fill only one set of eBGP or iBGP fields')
+
+        return super().clean(*args, **kwargs)
+
+    def is_ebgp(self):
+        return self.data['remote_address'] and \
+                len(self.data['remote_address']) > 0 and \
+                self.data['remote_as'] and \
+                len(self.data['remote_as']) > 0
+
+    def is_ibgp(self):
+        return self.data['ibgp_address'] and \
+                len(self.data['ibgp_address']) > 0 and \
+                self.data['ibgp_device'] and \
+                len(self.data['ibgp_device']) > 0
 
     def clean_remote_address(self):
+        if self.is_ibgp():
+            return None
+
         try:
             ip = IPAddress.objects.get(address=str(self.cleaned_data['remote_address']))
         except MultipleObjectsReturned:
