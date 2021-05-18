@@ -16,7 +16,13 @@
             {% render_field form.tags %}
         </div>
     </div>
-    
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>Local</strong></div>
+        <div class="panel-body">
+            {% render_field form.local_as %}
+            {% render_field form.local_address %}
+        </div>
+    </div>
     <div class="panel panel-default">
         <div class="panel-heading"><strong>Remote</strong></div>
         <div class="panel-body">
@@ -34,13 +40,6 @@
                         {% render_field form.ibgp_address %}
                     </div>
                 </div>
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading"><strong>Local</strong></div>
-        <div class="panel-body">
-            {% render_field form.local_as %}
-            {% render_field form.local_address %}
         </div>
     </div>
     <div class="panel panel-default">
