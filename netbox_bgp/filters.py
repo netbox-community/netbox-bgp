@@ -96,7 +96,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         queryset=RoutingPolicy.objects.all(),
     )
     local_address_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='local_address__address_id',
+        field_name='local_address__id',
         queryset=IPAddress.objects.all(),
         to_field_name='id',
         label='Local Address (ID)',
@@ -108,7 +108,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         label='Local Address',
     )
     remote_address_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='remote_address__address_id',
+        field_name='remote_address__id',
         queryset=IPAddress.objects.all(),
         to_field_name='id',
         label='Remote Address (ID)',
