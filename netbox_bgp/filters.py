@@ -7,7 +7,7 @@ try:
 except ImportError:
     from extras.filters import TagFilter
 
-from .models import ASN, Community, BGPSession, RoutingPolicy
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
 from ipam.models import IPAddress
 from dcim.models import Device
 
@@ -159,6 +159,28 @@ class RoutingPolicyFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = RoutingPolicy
+        fields = ['name', 'description']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(name__icontains=value)
+                | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class BGPPeerGroupFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = BGPPeerGroup
         fields = ['name', 'description']
 
     def search(self, queryset, name, value):

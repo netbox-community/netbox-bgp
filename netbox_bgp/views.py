@@ -1,13 +1,16 @@
 from netbox.views import generic
 
-from .filters import ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet, RoutingPolicyFilterSet
-from .models import ASN, Community, BGPSession, RoutingPolicy
-from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable
+from .filters import (
+    ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet,
+    RoutingPolicyFilterSet, BGPPeerGroupFilterSet
+)
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
+from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable, BGPPeerGroupTable
 from .forms import (
     ASNFilterForm, ASNBulkEditForm, ASNForm, CommunityForm,
     CommunityFilterForm, CommunityBulkEditForm, BGPSessionForm,
     BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
-    RoutingPolicyForm
+    RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm
 )
 
 
@@ -170,3 +173,50 @@ class RoutingPolicyView(generic.ObjectView):
 
 class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicy.objects.all()
+
+
+class BGPPeerGroupListView(generic.ObjectListView):
+    queryset = BGPPeerGroup.objects.all()
+    filterset = BGPPeerGroupFilterSet
+    filterset_form = BGPPeerGroupFilterForm
+    table = BGPPeerGroupTable
+    action_buttons = ()
+    template_name = 'netbox_bgp/bgppeergroup_list.html'
+
+
+class BGPPeerGroupEditView(generic.ObjectEditView):
+    queryset = BGPPeerGroup.objects.all()
+    model_form = BGPPeerGroupForm
+
+
+class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
+    queryset = BGPPeerGroup.objects.all()
+    table = BGPPeerGroupTable
+
+
+class BGPPeerGroupView(generic.ObjectView):
+    queryset = BGPPeerGroup.objects.all()
+    template_name = 'netbox_bgp/bgppeergroup.html'
+
+    def get_extra_context(self, request, instance):
+        import_policies_table = RoutingPolicyTable(
+            instance.import_policies.all(),
+            orderable=False
+        )
+        export_policies_table = RoutingPolicyTable(
+            instance.export_policies.all(),
+            orderable=False
+        )
+
+        sess = BGPSession.objects.filter(peer_group=instance)
+        sess = sess.distinct()
+        sess_table = BGPSessionTable(sess)
+        return {
+            'import_policies_table': import_policies_table,
+            'export_policies_table': export_policies_table,
+            'related_session_table': sess_table
+        }
+
+
+class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
+    queryset = BGPPeerGroup.objects.all()

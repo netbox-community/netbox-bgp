@@ -108,7 +108,8 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
         return reverse('plugins:netbox_bgp:routing_policy', args=[self.pk])
 
 
-class BGPPeerGroup(ChangeLoggedModel):
+@extras_features('custom_fields', 'export_templates', 'webhooks')
+class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
     """
     """
     name = models.CharField(
@@ -129,8 +130,19 @@ class BGPPeerGroup(ChangeLoggedModel):
         related_name='group_export_policies'
     )
 
+    tags = TaggableManager(through=TaggedItem)
+
+    objects = RestrictedQuerySet.as_manager()
+
+    class Meta:
+        verbose_name_plural = 'Peer Groups'
+        unique_together = ['name', 'description']
+
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:peer_group', args=[self.pk])
 
 
 class BGPBase(ChangeLoggedModel):

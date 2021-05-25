@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
 
-from .models import ASN, Community, BGPSession, RoutingPolicy
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
 COL_TENANT = """
@@ -77,4 +77,13 @@ class RoutingPolicyTable(BaseTable):
 
     class Meta(BaseTable.Meta):
         model = RoutingPolicy
+        fields = ('pk', 'name', 'description')
+
+
+class BGPPeerGroupTable(BaseTable):
+    pk = ToggleColumn()
+    name = tables.LinkColumn()
+
+    class Meta(BaseTable.Meta):
+        model = BGPPeerGroup
         fields = ('pk', 'name', 'description')

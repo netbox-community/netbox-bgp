@@ -341,3 +341,41 @@ class RoutingPolicyForm(BootstrapMixin, CustomFieldModelForm):
     class Meta:
         model = RoutingPolicy
         fields = ['name', 'description']
+
+
+class BGPPeerGroupFilterForm(BootstrapMixin, CustomFieldModelForm):
+    q = forms.CharField(
+        required=False,
+        label='Search'
+    )
+
+    tag = TagFilterField(BGPPeerGroup)
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ['q']
+
+
+class BGPPeerGroupForm(BootstrapMixin, CustomFieldModelForm):
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']
