@@ -214,7 +214,6 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
         )
-
     )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
@@ -222,6 +221,13 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         query_params={
             'device_id': '$device'
         }
+    )
+    peer_group = DynamicModelChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        widget=APISelect(
+            api_url='/api/plugins/bgp/peer-group/',
+        )
     )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -243,10 +249,10 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies'
+            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
         fieldsets = (
-            ('Session', ('name', 'site', 'device', 'description', 'status', 'tenant', 'tags')),
+            ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
             ('Remote', ('remote_as', 'remote_address')),
             ('Local', ('local_as', 'local_address')),
             ('Policies', ('import_policies', 'export_policies'))
@@ -296,6 +302,13 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
         choices=SessionStatusChoices,
         required=False,
         widget=StaticSelect2Multiple()
+    )
+    peer_group = DynamicModelMultipleChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/peer-group/'
+        )
     )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),

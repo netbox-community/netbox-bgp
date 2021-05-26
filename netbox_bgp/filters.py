@@ -89,6 +89,9 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         to_field_name='id',
         label='Local AS (ID)',
     )
+    peer_group = django_filters.ModelMultipleChoiceFilter(
+        queryset=BGPPeerGroup.objects.all(),
+    )
     import_policies = django_filters.ModelMultipleChoiceFilter(
         queryset=RoutingPolicy.objects.all(),
     )

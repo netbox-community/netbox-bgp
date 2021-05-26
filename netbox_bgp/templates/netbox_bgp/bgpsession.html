@@ -151,6 +151,16 @@
                     <td>{{ object.description|placeholder }}</td>
                 </tr>
                 <tr>
+                    <td>Peer Group</td>
+                <td>
+                    {% if object.peer_group %}
+                    <a href="{{ object.peer_group.get_absolute_url }}">{{ object.peer_group }}</a>
+                    {% else %}
+                    <span class="text-muted">None</span>
+                    {% endif %}
+                </td>
+                </tr>
+                <tr>
                     <td>Tenant</td>
                     <td>
                         {% if object.tenant %}
