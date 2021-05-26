@@ -120,12 +120,19 @@ class BGPSessionView(generic.ObjectView):
     template_name = 'netbox_bgp/bgpsession.html'
 
     def get_extra_context(self, request, instance):
+        if instance.peer_group:
+            import_policies_qs = instance.import_policies.all() | instance.peer_group.import_policies.all()
+            export_policies_qs = instance.export_policies.all() | instance.peer_group.export_policies.all()
+        else:
+            import_policies_qs = instance.import_policies.all()
+            export_policies_qs = instance.export_policies.all()
+
         import_policies_table = RoutingPolicyTable(
-            instance.import_policies.all(),
+            import_policies_qs,
             orderable=False
         )
         export_policies_table = RoutingPolicyTable(
-            instance.export_policies.all(),
+            export_policies_qs,
             orderable=False
         )
 

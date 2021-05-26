@@ -55,6 +55,7 @@ class BGPSessionTable(BaseTable):
     remote_address = tables.LinkColumn()
     remote_as = tables.LinkColumn()
     site = tables.LinkColumn()
+    peer_group = tables.LinkColumn()
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
     )
@@ -66,8 +67,13 @@ class BGPSessionTable(BaseTable):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'local_address', 'local_as',
-            'remote_address', 'remote_as', 'description',
+            'remote_address', 'remote_as', 'description', 'peer_group',
             'site', 'status'
+        )
+        default_columns = (
+            'pk', 'name', 'device', 'local_address', 'local_as',
+            'remote_address', 'remote_as', 'description',
+            'site', 'status', 'tenant'
         )
 
 
