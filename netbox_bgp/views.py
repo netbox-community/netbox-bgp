@@ -1,13 +1,18 @@
+from django.db.models import Q
+
 from netbox.views import generic
 
-from .filters import ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet, RoutingPolicyFilterSet
-from .models import ASN, Community, BGPSession, RoutingPolicy
-from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable
+from .filters import (
+    ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet,
+    RoutingPolicyFilterSet, BGPPeerGroupFilterSet
+)
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
+from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable, BGPPeerGroupTable
 from .forms import (
     ASNFilterForm, ASNBulkEditForm, ASNForm, CommunityForm,
     CommunityFilterForm, CommunityBulkEditForm, BGPSessionForm,
     BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
-    RoutingPolicyForm
+    RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm
 )
 
 
@@ -117,12 +122,19 @@ class BGPSessionView(generic.ObjectView):
     template_name = 'netbox_bgp/bgpsession.html'
 
     def get_extra_context(self, request, instance):
+        if instance.peer_group:
+            import_policies_qs = instance.import_policies.all() | instance.peer_group.import_policies.all()
+            export_policies_qs = instance.export_policies.all() | instance.peer_group.export_policies.all()
+        else:
+            import_policies_qs = instance.import_policies.all()
+            export_policies_qs = instance.export_policies.all()
+
         import_policies_table = RoutingPolicyTable(
-            instance.import_policies.all(),
+            import_policies_qs,
             orderable=False
         )
         export_policies_table = RoutingPolicyTable(
-            instance.export_policies.all(),
+            export_policies_qs,
             orderable=False
         )
 
@@ -160,7 +172,12 @@ class RoutingPolicyView(generic.ObjectView):
     template_name = 'netbox_bgp/routingpolicy.html'
 
     def get_extra_context(self, request, instance):
-        sess = BGPSession.objects.filter(import_policies=instance) | BGPSession.objects.filter(export_policies=instance)
+        sess = BGPSession.objects.filter(
+            Q(import_policies=instance)
+            | Q(export_policies=instance)
+            | Q(peer_group__in=instance.group_import_policies.all())
+            | Q(peer_group__in=instance.group_export_policies.all())
+        )
         sess = sess.distinct()
         sess_table = BGPSessionTable(sess)
         return {
@@ -170,3 +187,50 @@ class RoutingPolicyView(generic.ObjectView):
 
 class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicy.objects.all()
+
+
+class BGPPeerGroupListView(generic.ObjectListView):
+    queryset = BGPPeerGroup.objects.all()
+    filterset = BGPPeerGroupFilterSet
+    filterset_form = BGPPeerGroupFilterForm
+    table = BGPPeerGroupTable
+    action_buttons = ()
+    template_name = 'netbox_bgp/bgppeergroup_list.html'
+
+
+class BGPPeerGroupEditView(generic.ObjectEditView):
+    queryset = BGPPeerGroup.objects.all()
+    model_form = BGPPeerGroupForm
+
+
+class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
+    queryset = BGPPeerGroup.objects.all()
+    table = BGPPeerGroupTable
+
+
+class BGPPeerGroupView(generic.ObjectView):
+    queryset = BGPPeerGroup.objects.all()
+    template_name = 'netbox_bgp/bgppeergroup.html'
+
+    def get_extra_context(self, request, instance):
+        import_policies_table = RoutingPolicyTable(
+            instance.import_policies.all(),
+            orderable=False
+        )
+        export_policies_table = RoutingPolicyTable(
+            instance.export_policies.all(),
+            orderable=False
+        )
+
+        sess = BGPSession.objects.filter(peer_group=instance)
+        sess = sess.distinct()
+        sess_table = BGPSessionTable(sess)
+        return {
+            'import_policies_table': import_policies_table,
+            'export_policies_table': export_policies_table,
+            'related_session_table': sess_table
+        }
+
+
+class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
+    queryset = BGPPeerGroup.objects.all()

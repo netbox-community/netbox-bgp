@@ -57,5 +57,19 @@ menu_items = (
                 permissions=['netbox_bgp.add_routing_policy'],
             ),
         ),
+    ),
+    PluginMenuItem(
+        link='plugins:netbox_bgp:peer_group_list',
+        link_text='Peer Groups',
+        permissions=['netbox_bgp.view_session'],
+        buttons=(
+            PluginMenuButton(
+                link='plugins:netbox_bgp:peer_group_add',
+                title='Peer Groups',
+                icon_class='mdi mdi-plus-thick',
+                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_session'],
+            ),
+        ),
     )
 )

@@ -11,6 +11,9 @@ from utilities.forms import (
     DynamicModelMultipleChoiceField, StaticSelect2,
     APISelect, APISelectMultiple, StaticSelect2Multiple, TagFilterField
 )
+from extras.forms import (
+    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldFilterForm
+)
 
 from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
@@ -18,7 +21,7 @@ from .models import (
 )
 
 
-class ASNFilterForm(BootstrapMixin, forms.ModelForm):
+class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -44,7 +47,7 @@ class ASNFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q', 'status', 'tenant']
 
 
-class ASNForm(BootstrapMixin, forms.ModelForm):
+class ASNForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -58,6 +61,15 @@ class ASNForm(BootstrapMixin, forms.ModelForm):
         required=False
     )
 
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        number = cleaned_data['number']
+        tenant = cleaned_data.get('tenant')
+        if 'number' in self.changed_data or 'tenant' in self.changed_data:
+            if ASN.objects.filter(number=number, tenant=tenant).exists():
+                raise forms.ValidationError('AS number with this number and tenant is already exists.')
+        return super().clean()
+
     class Meta:
         model = ASN
         fields = [
@@ -65,7 +77,7 @@ class ASNForm(BootstrapMixin, forms.ModelForm):
         ]
 
 
-class ASNBulkEditForm(BootstrapMixin, BulkEditForm):
+class ASNBulkEditForm(BootstrapMixin, CustomFieldBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -158,7 +170,7 @@ class CommunityBulkEditForm(BootstrapMixin, BulkEditForm):
         ]
 
 
-class BGPSessionForm(BootstrapMixin, forms.ModelForm):
+class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
     name = forms.CharField(
         max_length=64,
         required=True
@@ -202,7 +214,6 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
         )
-
     )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
@@ -210,6 +221,13 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
         query_params={
             'device_id': '$device'
         }
+    )
+    peer_group = DynamicModelChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        widget=APISelect(
+            api_url='/api/plugins/bgp/peer-group/',
+        )
     )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -231,10 +249,10 @@ class BGPSessionForm(BootstrapMixin, forms.ModelForm):
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'tenant', 'tags', 'import_policies', 'export_policies'
+            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
         fieldsets = (
-            ('Session', ('name', 'site', 'device', 'description', 'status', 'tenant', 'tags')),
+            ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
             ('Remote', ('remote_as', 'remote_address')),
             ('Local', ('local_as', 'local_address')),
             ('Policies', ('import_policies', 'export_policies'))
@@ -255,7 +273,7 @@ class BGPSessionAddForm(BGPSessionForm):
         return self.cleaned_data['remote_address']
 
 
-class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
+class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -285,6 +303,13 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
         required=False,
         widget=StaticSelect2Multiple()
     )
+    peer_group = DynamicModelMultipleChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/peer-group/'
+        )
+    )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
@@ -307,7 +332,7 @@ class BGPSessionFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q', 'status', 'tenant', 'remote_as', 'local_as']
 
 
-class RoutingPolicyFilterForm(BootstrapMixin, forms.ModelForm):
+class RoutingPolicyFilterForm(BootstrapMixin, CustomFieldModelForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -320,7 +345,7 @@ class RoutingPolicyFilterForm(BootstrapMixin, forms.ModelForm):
         fields = ['q']
 
 
-class RoutingPolicyForm(BootstrapMixin, forms.ModelForm):
+class RoutingPolicyForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -329,3 +354,41 @@ class RoutingPolicyForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = RoutingPolicy
         fields = ['name', 'description']
+
+
+class BGPPeerGroupFilterForm(BootstrapMixin, CustomFieldModelForm):
+    q = forms.CharField(
+        required=False,
+        label='Search'
+    )
+
+    tag = TagFilterField(BGPPeerGroup)
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ['q']
+
+
+class BGPPeerGroupForm(BootstrapMixin, CustomFieldModelForm):
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']

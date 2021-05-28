@@ -1,6 +1,7 @@
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, HyperlinkedIdentityField
+from rest_framework.relations import PrimaryKeyRelatedField
 
-from netbox.api import ChoiceField
+from netbox.api import ChoiceField, WritableNestedSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from extras.api.nested_serializers import NestedTagSerializer
@@ -12,7 +13,9 @@ try:
 except ImportError:
     from netbox.api.serializers import CustomFieldModelSerializer
 
-from netbox_bgp.models import ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy
+from netbox_bgp.models import (
+    ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup
+)
 
 
 class TaggedObjectSerializer(Serializer):
@@ -44,6 +47,16 @@ class TaggedObjectSerializer(Serializer):
         return instance
 
 
+class SerializedPKRelatedField(PrimaryKeyRelatedField):
+    def __init__(self, serializer, **kwargs):
+        self.serializer = serializer
+        self.pk_field = kwargs.pop('pk_field', None)
+        super().__init__(**kwargs)
+
+    def to_representation(self, value):
+        return self.serializer(value, context={'request': self.context['request']}).data
+
+
 class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
@@ -51,7 +64,58 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
 
     class Meta:
         model = ASN
-        fields = ['number', 'id', 'status', 'description', 'site', 'tenant', 'tags']
+        fields = ['number', 'id', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
+
+
+class NestedASNSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:asn')
+
+    class Meta:
+        model = ASN
+        fields = ['id', 'url', 'number', 'description']
+
+
+class RoutingPolicySerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+    class Meta:
+        model = RoutingPolicy
+        fields = '__all__'
+
+
+class NestedRoutingPolicySerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:routing_policy')
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ['id', 'url', 'name', 'description']
+
+
+class BGPPeerGroupSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+    import_policies = SerializedPKRelatedField(
+        queryset=RoutingPolicy.objects.all(),
+        serializer=NestedRoutingPolicySerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+    export_policies = SerializedPKRelatedField(
+        queryset=RoutingPolicy.objects.all(),
+        serializer=NestedRoutingPolicySerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = '__all__'
+
+
+class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:peer_group')
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ['id', 'url', 'name', 'description']
 
 
 class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
@@ -61,15 +125,39 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     device = NestedDeviceSerializer(required=False, allow_null=True)
     local_address = NestedIPAddressSerializer(required=True, allow_null=False)
     remote_address = NestedIPAddressSerializer(required=True, allow_null=False)
-    local_as = ASNSerializer(required=True, allow_null=False)
-    remote_as = ASNSerializer(required=True, allow_null=False)
+    local_as = NestedASNSerializer(required=True, allow_null=False)
+    remote_as = NestedASNSerializer(required=True, allow_null=False)
+    peer_group = NestedBGPPeerGroupSerializer(required=False, allow_null=True)
+    import_policies = SerializedPKRelatedField(
+        queryset=RoutingPolicy.objects.all(),
+        serializer=NestedRoutingPolicySerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+    export_policies = SerializedPKRelatedField(
+        queryset=RoutingPolicy.objects.all(),
+        serializer=NestedRoutingPolicySerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
 
     class Meta:
         model = BGPSession
         fields = '__all__'
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
 
-class RoutingPolicySerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
-    class Meta:
-        model = RoutingPolicy
-        fields = '__all__'
+        if instance is not None:
+            if instance.peer_group:
+                for pol in instance.peer_group.import_policies.difference(instance.import_policies.all()):
+                    ret['import_policies'].append(
+                        NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
+                    )
+                for pol in instance.peer_group.export_policies.difference(instance.export_policies.all()):
+                    ret['export_policies'].append(
+                        NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
+                    )
+        return ret

@@ -99,6 +99,7 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
+        unique_together = ['name', 'description']
 
     def __str__(self):
         return self.name
@@ -107,7 +108,8 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
         return reverse('plugins:netbox_bgp:routing_policy', args=[self.pk])
 
 
-class BGPPeerGroup(ChangeLoggedModel):
+@extras_features('custom_fields', 'export_templates', 'webhooks')
+class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
     """
     """
     name = models.CharField(
@@ -128,18 +130,24 @@ class BGPPeerGroup(ChangeLoggedModel):
         related_name='group_export_policies'
     )
 
+    tags = TaggableManager(through=TaggedItem)
+
+    objects = RestrictedQuerySet.as_manager()
+
+    class Meta:
+        verbose_name_plural = 'Peer Groups'
+        unique_together = ['name', 'description']
+
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:peer_group', args=[self.pk])
 
 
 class BGPBase(ChangeLoggedModel):
     """
     """
-    number = models.PositiveBigIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(4294967294)],
-        null=True,
-        blank=True
-    )
     site = models.ForeignKey(
         to='dcim.Site',
         on_delete=models.PROTECT,
@@ -176,8 +184,12 @@ class BGPBase(ChangeLoggedModel):
         abstract = True
 
 
-@extras_features('export_templates', 'webhooks')
+@extras_features('custom_fields', 'export_templates', 'webhooks')
 class ASN(BGPBase, CustomFieldModel):
+
+    number = models.PositiveBigIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(4294967294)]
+    )
 
     group = models.ForeignKey(
         ASNGroup,
@@ -190,6 +202,18 @@ class ASN(BGPBase, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'AS Numbers'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['number', 'tenant'],
+                name='uniqie_number_tenant'
+            ),
+            models.UniqueConstraint(
+                fields=['number'],
+                condition=models.Q(tenant=None),
+                name='uniqie_number'
+            ),
+        ]
+        # unique_together = ['number', 'site', 'tenant']
 
     def get_status_class(self):
         return ASNStatusChoices.CSS_CLASSES.get(self.status)
@@ -223,7 +247,7 @@ class Community(BGPBase):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-@extras_features('export_templates', 'webhooks')
+@extras_features('custom_fields', 'export_templates', 'webhooks')
 class BGPSession(ChangeLoggedModel, CustomFieldModel):
     name = models.CharField(
         max_length=64,
@@ -301,6 +325,7 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
 
     class Meta:
         verbose_name_plural = 'BGP Sessions'
+        unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
 
     def __str__(self):
         return f"{self.device}:{self.name}"

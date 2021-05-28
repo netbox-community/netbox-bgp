@@ -1,6 +1,6 @@
 from django.urls import path
 from extras.views import ObjectChangeLogView
-from .models import ASN, BGPSession, Community, RoutingPolicy
+from .models import ASN, BGPSession, Community, RoutingPolicy, BGPPeerGroup
 
 from .views import (
     ASNListView, ASNView, ASNBulkDeleteView, ASNEditView, ASNBulkEditView,
@@ -9,7 +9,9 @@ from .views import (
     BGPSessionListView, BGPSessionEditView, BGPSessionBulkDeleteView,
     BGPSessionView, BGPSessionDeleteView, BGPSessionAddView,
     RoutingPolicyListView, RoutingPolicyEditView, RoutingPolicyBulkDeleteView,
-    RoutingPolicyView, RoutingPolicyDeleteView
+    RoutingPolicyView, RoutingPolicyDeleteView, BGPPeerGroupListView,
+    BGPPeerGroupEditView, BGPPeerGroupBulkDeleteView, BGPPeerGroupView,
+    BGPPeerGroupDeleteView
 )
 
 urlpatterns = [
@@ -46,4 +48,12 @@ urlpatterns = [
     path('routing-policy/delete/', RoutingPolicyBulkDeleteView.as_view(), name='routing_policy_bulk_delete'),
     path('routing-policy/<int:pk>/delete/', RoutingPolicyDeleteView.as_view(), name='routing_policy_delete'),
     path('routing-policy/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='routing_policy_changelog', kwargs={'model': RoutingPolicy}),
+    # Peer Groups
+    path('peer-group/', BGPPeerGroupListView.as_view(), name='peer_group_list'),
+    path('peer-group/add/', BGPPeerGroupEditView.as_view(), name='peer_group_add'),
+    path('peer-group/delete/', BGPPeerGroupBulkDeleteView.as_view(), name='peer_group_bulk_delete'),
+    path('peer-group/<int:pk>/', BGPPeerGroupView.as_view(), name='peer_group'),
+    path('peer-group/<int:pk>/edit/', BGPPeerGroupEditView.as_view(), name='peer_group_edit'),
+    path('peer-group/<int:pk>/delete/', BGPPeerGroupDeleteView.as_view(), name='peer_group_delete'),
+    path('peer-group/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='peer_group_changelog', kwargs={'model': BGPPeerGroup}),
 ]

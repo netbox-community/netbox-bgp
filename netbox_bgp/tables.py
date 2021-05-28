@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
 
-from .models import ASN, Community, BGPSession, RoutingPolicy
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
 COL_TENANT = """
@@ -50,10 +50,12 @@ class BGPSessionTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
     device = tables.LinkColumn()
+    local_address = tables.LinkColumn()
+    local_as = tables.LinkColumn()
     remote_address = tables.LinkColumn()
     remote_as = tables.LinkColumn()
-    local_as = tables.LinkColumn()
     site = tables.LinkColumn()
+    peer_group = tables.LinkColumn()
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
     )
@@ -64,9 +66,14 @@ class BGPSessionTable(BaseTable):
     class Meta(BaseTable.Meta):
         model = BGPSession
         fields = (
-            'pk', 'name', 'device', 'remote_as',
-            'remote_address', 'local_as', 'description',
+            'pk', 'name', 'device', 'local_address', 'local_as',
+            'remote_address', 'remote_as', 'description', 'peer_group',
             'site', 'status'
+        )
+        default_columns = (
+            'pk', 'name', 'device', 'local_address', 'local_as',
+            'remote_address', 'remote_as', 'description',
+            'site', 'status', 'tenant'
         )
 
 
@@ -76,4 +83,13 @@ class RoutingPolicyTable(BaseTable):
 
     class Meta(BaseTable.Meta):
         model = RoutingPolicy
+        fields = ('pk', 'name', 'description')
+
+
+class BGPPeerGroupTable(BaseTable):
+    pk = ToggleColumn()
+    name = tables.LinkColumn()
+
+    class Meta(BaseTable.Meta):
+        model = BGPPeerGroup
         fields = ('pk', 'name', 'description')
