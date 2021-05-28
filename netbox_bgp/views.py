@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from netbox.views import generic
 
 from .filters import (
@@ -170,7 +172,12 @@ class RoutingPolicyView(generic.ObjectView):
     template_name = 'netbox_bgp/routingpolicy.html'
 
     def get_extra_context(self, request, instance):
-        sess = BGPSession.objects.filter(import_policies=instance) | BGPSession.objects.filter(export_policies=instance)
+        sess = BGPSession.objects.filter(
+            Q(import_policies=instance)
+            | Q(export_policies=instance)
+            | Q(peer_group__in=instance.group_import_policies.all())
+            | Q(peer_group__in=instance.group_export_policies.all())
+        )
         sess = sess.distinct()
         sess_table = BGPSessionTable(sess)
         return {
