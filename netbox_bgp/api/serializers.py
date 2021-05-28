@@ -154,10 +154,10 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
             if instance.peer_group:
                 for pol in instance.peer_group.import_policies.difference(instance.import_policies.all()):
                     ret['import_policies'].append(
-                        NestedRoutingPolicySerializer(pol, context=self.context).data
+                        NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
                     )
                 for pol in instance.peer_group.export_policies.difference(instance.export_policies.all()):
                     ret['export_policies'].append(
-                        NestedRoutingPolicySerializer(pol, context=self.context).data
+                        NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
                     )
         return ret
