@@ -110,7 +110,7 @@ class BGPPeerGroupSerializer(TaggedObjectSerializer, CustomFieldModelSerializer)
         fields = '__all__'
 
 
-class NestedRBGPPeerGroupSerializer(WritableNestedSerializer):
+class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
     url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:peer_group')
 
     class Meta:
@@ -127,7 +127,7 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     remote_address = NestedIPAddressSerializer(required=True, allow_null=False)
     local_as = NestedASNSerializer(required=True, allow_null=False)
     remote_as = NestedASNSerializer(required=True, allow_null=False)
-    peer_group = NestedRBGPPeerGroupSerializer(required=False, allow_null=True)
+    peer_group = NestedBGPPeerGroupSerializer(required=False, allow_null=True)
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=NestedRoutingPolicySerializer,
@@ -146,3 +146,18 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     class Meta:
         model = BGPSession
         fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        if instance is not None:
+            if instance.peer_group:
+                for pol in instance.peer_group.import_policies.difference(instance.import_policies.all()):
+                    ret['import_policies'].append(
+                        NestedRoutingPolicySerializer(pol, context=self.context).data
+                    )
+                for pol in instance.peer_group.export_policies.difference(instance.export_policies.all()):
+                    ret['export_policies'].append(
+                        NestedRoutingPolicySerializer(pol, context=self.context).data
+                    )
+        return ret
