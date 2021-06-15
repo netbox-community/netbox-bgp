@@ -1,7 +1,7 @@
 from rest_framework.serializers import Serializer, HyperlinkedIdentityField
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from netbox.api import ChoiceField, WritableNestedSerializer
+from netbox.api import ChoiceField, WritableNestedSerializer, ValidatedModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from extras.api.nested_serializers import NestedTagSerializer
@@ -14,7 +14,8 @@ except ImportError:
     from netbox.api.serializers import CustomFieldModelSerializer
 
 from netbox_bgp.models import (
-    ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup
+    ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup,
+    Community
 )
 
 
@@ -161,3 +162,12 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
                         NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
                     )
         return ret
+
+
+class CommunitySerializer(TaggedObjectSerializer, ValidatedModelSerializer):
+    status = ChoiceField(choices=ASNStatusChoices, required=False)
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
+
+    class Meta:
+        model = Community
+        fields = ['id', 'value', 'status', 'description', 'tenant', 'tags']

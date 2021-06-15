@@ -1,9 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import ASNSerializer, BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer
-from netbox_bgp.models import ASN, BGPSession, RoutingPolicy, BGPPeerGroup
+from .serializers import (
+    ASNSerializer, BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer,
+    CommunitySerializer
+)
+from netbox_bgp.models import ASN, BGPSession, RoutingPolicy, BGPPeerGroup, Community
 from netbox_bgp.filters import (
-    ASNFilterSet, BGPSessionFilterSet, RoutingPolicyFilterSet, BGPPeerGroupFilterSet
+    ASNFilterSet, BGPSessionFilterSet, RoutingPolicyFilterSet, BGPPeerGroupFilterSet,
+    CommunityFilterSet
 )
 
 
@@ -29,3 +33,9 @@ class BGPPeerGroupViewSet(ModelViewSet):
     queryset = BGPPeerGroup.objects.all()
     serializer_class = BGPPeerGroupSerializer
     filterset_class = BGPPeerGroupFilterSet
+
+
+class CommunityViewSet(ModelViewSet):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+    filterset_class = CommunityFilterSet

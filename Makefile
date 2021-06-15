@@ -1,5 +1,5 @@
 PYTHON_VER?=3.7
-NETBOX_VER?=v2.11.2
+NETBOX_VER?=v2.11.6
 
 NAME=netbox-bgp
 
@@ -71,3 +71,7 @@ endif
 	git commit -am 'bump ver'
 	git push origin release-$(NEWVER)
 	git checkout develop
+
+
+test:
+	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run netbox python manage.py test ${BUILD_NAME}
