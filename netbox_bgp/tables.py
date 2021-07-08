@@ -1,7 +1,7 @@
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
 
-from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
+from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
 
 from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
 
@@ -40,10 +40,16 @@ class CommunityTable(BaseTable):
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
     )
+    tags = TagColumn(
+        url_name='plugins:netbox_bgp:community_list'
+    )
 
     class Meta(BaseTable.Meta):
         model = Community
-        fields = ('pk', 'value', 'description', 'status')
+        fields = ('pk', 'value', 'description', 'status', 'tags')
+        default_columns = (
+            'pk', 'value', 'description', 'status', 'tenant'
+        )
 
 
 class BGPSessionTable(BaseTable):
