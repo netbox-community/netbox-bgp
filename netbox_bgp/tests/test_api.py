@@ -7,6 +7,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from users.models import Token
 
+from tenancy.models import Tenant
 from netbox_bgp.models import ASN, Community
 
 
@@ -24,6 +25,7 @@ class ASNTestCase(BaseTestCase):
         self.base_url_lookup = 'plugins-api:netbox_bgp-api:asn'
         self.asn1 = ASN.objects.create(number=65000, description='test_asn1')
         self.asn2 = ASN.objects.create(number=65001, description='test_asn2')
+        self.tenant = Tenant.objects.create(name='tenant')
 
     def test_list_asn(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -71,6 +73,16 @@ class ASNTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         with self.assertRaises(ASN.DoesNotExist):
             ASN.objects.get(pk=self.asn1.pk)
+
+    def test_uniqueconstraint_asn(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {'number': 65001, 'description': 'test_asn3'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        data = {'number': 65001, 'description': 'test_asn3', 'tenant': self.tenant.pk}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 class CommunityTestCase(BaseTestCase):

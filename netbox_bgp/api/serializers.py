@@ -1,4 +1,4 @@
-from rest_framework.serializers import Serializer, HyperlinkedIdentityField
+from rest_framework.serializers import Serializer, HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from netbox.api import ChoiceField, WritableNestedSerializer, ValidatedModelSerializer
@@ -62,6 +62,13 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        if ASN.objects.filter(number=attrs['number'], tenant=attrs.get('tenant')).exists():
+            raise ValidationError(
+                {'error': 'Asn with this Number and Tenant already exists.'}
+            )
+        return attrs
 
     class Meta:
         model = ASN
