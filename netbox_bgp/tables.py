@@ -14,6 +14,14 @@ COL_TENANT = """
  {% endif %}
  """
 
+POLICIES = """
+{% for rp in value.all %}
+    <a href="{{ rp.get_absolute_url }}">{{ rp }}</a>{% if not forloop.last %}<br />{% endif %}
+{% empty %}
+    &mdash;
+{% endfor %}
+"""
+
 
 class ASNTable(BaseTable):
     pk = ToggleColumn()
@@ -95,7 +103,24 @@ class RoutingPolicyTable(BaseTable):
 class BGPPeerGroupTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
+    import_policies = tables.TemplateColumn(
+        template_code=POLICIES,
+        orderable=False
+    )
+    export_policies = tables.TemplateColumn(
+        template_code=POLICIES,
+        orderable=False
+    )
+    tags = TagColumn(
+        url_name='plugins:netbox_bgp:peer_group_list'
+    )
 
     class Meta(BaseTable.Meta):
         model = BGPPeerGroup
-        fields = ('pk', 'name', 'description')
+        fields = (
+            'pk', 'name', 'description', 'tags',
+            'import_policies', 'export_policies'
+        )
+        default_columns = (
+            'pk', 'name', 'description'
+        )
