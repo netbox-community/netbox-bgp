@@ -1,6 +1,7 @@
 import django_filters
+import netaddr
 from django.db.models import Q
-
+from netaddr.core import AddrFormatError
 # With netbox v2.11.3 TagFilter was moved to extras
 try:
     from utilities.filters import TagFilter
@@ -122,7 +123,6 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         to_field_name='address',
         label='Remote Address',
     )
-
     device_id = django_filters.ModelMultipleChoiceFilter(
         field_name='device__id',
         queryset=Device.objects.all(),
@@ -134,6 +134,14 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         queryset=Device.objects.all(),
         to_field_name='name',
         label='Device (name)',
+    )
+    by_remote_address = django_filters.CharFilter(
+        method='search_by_remote_ip',
+        label='Remote Address',
+    )
+    by_local_address = django_filters.CharFilter(
+        method='search_by_local_ip',
+        label='Local Address',
     )
 
     class Meta:
@@ -151,6 +159,24 @@ class BGPSessionFilterSet(django_filters.FilterSet):
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
+
+    def search_by_remote_ip(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        try:
+            query = str(netaddr.IPNetwork(value).cidr)
+            return queryset.filter(remote_address__address=query)
+        except (AddrFormatError, ValueError):
+            return queryset.none()
+
+    def search_by_local_ip(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        try:
+            query = str(netaddr.IPNetwork(value).cidr)
+            return queryset.filter(local_address__address=query)
+        except (AddrFormatError, ValueError):
+            return queryset.none()
 
 
 class RoutingPolicyFilterSet(django_filters.FilterSet):
