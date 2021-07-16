@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.utils.translation import gettext as _
 
 from extras.models import Tag
 from tenancy.models import Tenant
@@ -294,9 +295,18 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
             api_url='/api/plugins/bgp/asn/',
         )
     )
-    tenant = DynamicModelChoiceField(
-        queryset=Tenant.objects.all(),
-        required=False
+    by_local_address = forms.CharField(
+        required=False,
+        label='Local Address'
+    )
+    by_remote_address = forms.CharField(
+        required=False,
+        label='Remote Address'
+    )
+    device_id = DynamicModelMultipleChoiceField(
+        queryset=Device.objects.all(),
+        required=False,
+        label=_('Device')
     )
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
@@ -324,12 +334,16 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    tenant = DynamicModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False
+    )
 
     tag = TagFilterField(BGPSession)
 
     class Meta:
         model = BGPSession
-        fields = ['q', 'status', 'tenant', 'remote_as', 'local_as']
+        fields = ['q', 'status', 'device_id', 'remote_as', 'local_as']
 
 
 class RoutingPolicyFilterForm(BootstrapMixin, CustomFieldModelForm):
