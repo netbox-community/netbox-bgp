@@ -124,6 +124,7 @@ class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
     class Meta:
         model = BGPPeerGroup
         fields = ['id', 'url', 'name', 'description']
+        validators = []
 
 
 class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
