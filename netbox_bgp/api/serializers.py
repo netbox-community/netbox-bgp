@@ -119,11 +119,12 @@ class BGPPeerGroupSerializer(TaggedObjectSerializer, CustomFieldModelSerializer)
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:peer_group')
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:peergroup')
 
     class Meta:
         model = BGPPeerGroup
         fields = ['id', 'url', 'name', 'description']
+        validators = []
 
 
 class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):

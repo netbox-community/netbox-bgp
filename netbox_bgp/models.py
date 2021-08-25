@@ -142,7 +142,7 @@ class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:peer_group', args=[self.pk])
+        return reverse('plugins:netbox_bgp:peergroup', args=[self.pk])
 
 
 class BGPBase(ChangeLoggedModel):
