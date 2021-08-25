@@ -7,9 +7,9 @@ from .views import (
 
 router = routers.DefaultRouter()
 router.register('asn', ASNViewSet)
-router.register('session', BGPSessionViewSet)
+router.register('session', BGPSessionViewSet, 'session')
 router.register('routing-policy', RoutingPolicyViewSet)
-router.register('peer-group', BGPPeerGroupViewSet)
+router.register('peer-group', BGPPeerGroupViewSet, 'peergroup')
 router.register('community', CommunityViewSet)
 
 

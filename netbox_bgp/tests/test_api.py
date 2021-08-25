@@ -8,7 +8,10 @@ from rest_framework.test import APIClient, APITestCase
 from users.models import Token
 
 from tenancy.models import Tenant
-from netbox_bgp.models import ASN, Community
+from dcim.models import Site, DeviceRole, DeviceType, Manufacturer, Device, Interface
+from ipam.models import IPAddress
+
+from netbox_bgp.models import ASN, Community, BGPPeerGroup, BGPSession
 
 
 class BaseTestCase(TestCase):
@@ -97,7 +100,7 @@ class CommunityTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-    def test_get_asn(self):
+    def test_get_community(self):
         url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.community1.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -117,3 +120,111 @@ class CommunityTestCase(BaseTestCase):
 
     def test_delete_community(self):
         pass
+
+
+class PeerGroupTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:peergroup'
+        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description')
+
+    def test_list_peer_group(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_peer_group(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.peer_group.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.peer_group.name)
+        self.assertEqual(response.data['description'], self.peer_group.description)
+
+    def test_create_peer_group(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {'name': 'test_peer_group', 'description': 'peer_group_desc'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).name, 'test_peer_group')
+        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).description, 'peer_group_desc')
+
+    def test_update_peer_group(self):
+        pass
+
+    def test_delete_peer_group(self):
+        pass
+
+
+class SessionTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:session'
+        site = Site.objects.create(name='test', slug='test')
+        manufacturer = Manufacturer.objects.create(name='Juniper', slug='juniper')
+        device_role = DeviceRole.objects.create(name='Firewall', slug='firewall')
+        device_type = DeviceType.objects.create(slug='srx3600', model='SRX3600', manufacturer=manufacturer)
+        self.device = Device.objects.create(
+            device_type=device_type, name='device1', device_role=device_role, site=site,
+        )
+        intf = Interface.objects.create(name='test_intf', device=self.device)
+        local_ip = IPAddress.objects.create(address='1.1.1.1/32')
+        remote_ip = IPAddress.objects.create(address='2.2.2.2/32')
+        self.local_ip = IPAddress.objects.create(address='3.3.3.3/32')
+        self.remote_ip = IPAddress.objects.create(address='4.4.4.4/32')
+        intf.ip_addresses.add(local_ip)
+        self.device.save()
+        self.local_as = ASN.objects.create(number=65000, description='local_as')
+        self.remote_as = ASN.objects.create(number=65001, description='remote_as')
+        local_as = ASN.objects.create(number=65002, description='local_as')
+        remote_as = ASN.objects.create(number=65003, description='remote_as')
+        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description')
+        self.session = BGPSession.objects.create(
+            name='session',
+            description='session_descr',
+            local_as=local_as,
+            remote_as=remote_as,
+            local_address=local_ip,
+            remote_address=remote_ip,
+            status='active',
+            peer_group=self.peer_group
+        )
+
+    def test_list_session(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_session(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.session.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.session.name)
+        self.assertEqual(response.data['description'], self.session.description)
+        self.assertEqual(response.data['local_as']['number'], self.session.local_as.number)
+        self.assertEqual(response.data['remote_as']['number'], self.session.remote_as.number)
+        self.assertEqual(response.data['local_address']['address'], self.session.local_address.address)
+        self.assertEqual(response.data['remote_address']['address'], self.session.remote_address.address)
+        self.assertEqual(response.data['status']['value'], self.session.status)
+        self.assertEqual(response.data['peer_group']['name'], self.session.peer_group.name)
+        self.assertEqual(response.data['peer_group']['description'], self.session.peer_group.description)
+
+    def test_create_session(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {
+            'name': 'test_session',
+            'description': 'session_descr',
+            'local_as': self.local_as.pk,
+            'remote_as': self.remote_as.pk,
+            'local_address': self.local_ip.pk,
+            'remote_address': self.remote_ip.pk,
+            'status': 'active',
+            'device': self.device.pk,
+            'peer_group': self.peer_group.pk
+
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
