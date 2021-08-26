@@ -1,5 +1,9 @@
+import re
+
 from django import forms
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.core.validators import RegexValidator
 from django.utils.translation import gettext as _
 
 from extras.models import Tag
@@ -20,6 +24,31 @@ from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
     SessionStatusChoices, RoutingPolicy, BGPPeerGroup
 )
+
+
+from django.forms.widgets import TextInput
+
+
+class ASdotInput(TextInput):
+    def _format_value(self, value):
+        if not value:
+            return 0
+        if not re.match(r'^\d+(\.\d+)?$', str(value)):
+            return value
+        if '.' not in str(value):
+            if int(value) > 65535:
+                return '{}.{}'.format(value // 65536, value % 65536)
+            else:
+                return value
+        else:
+            return int(value.split('.')[0]) * 65536 + int(value.split('.')[0])
+
+    def render(self, name, value, attrs=None, renderer=None):
+        nb_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
+        asdot = nb_settings.get('asdot', False)
+        if asdot:
+            value = self._format_value(value)
+        return super().render(name, value, attrs, renderer)
 
 
 class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
@@ -49,6 +78,9 @@ class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
 
 
 class ASNForm(BootstrapMixin, CustomFieldModelForm):
+    number = forms.CharField(
+        widget=ASdotInput
+    )
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -62,14 +94,26 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         required=False
     )
 
+    def clean_number(self):
+        number = self.cleaned_data['number']
+        if not re.match(r'^\d+(\.\d+)?$', number):
+            raise forms.ValidationError('AS number is invalid.')
+        if '.' in str(number):
+            number = int(number.split('.')[0]) * 65536 + int(number.split('.')[1])
+        else:
+            number = int(number)
+        return number
+
     def clean(self):
-        cleaned_data = self.cleaned_data
-        number = cleaned_data['number']
+        cleaned_data = super().clean()
+        if self.errors.get('number'):
+            return cleaned_data
+        number = cleaned_data.get('number')
         tenant = cleaned_data.get('tenant')
         if 'number' in self.changed_data or 'tenant' in self.changed_data:
             if ASN.objects.filter(number=number, tenant=tenant).exists():
                 raise forms.ValidationError('AS number with this number and tenant is already exists.')
-        return super().clean()
+        return cleaned_data
 
     class Meta:
         model = ASN

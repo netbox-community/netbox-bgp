@@ -1,5 +1,6 @@
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
+from django_tables2.utils import A
 
 from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
 
@@ -25,7 +26,7 @@ POLICIES = """
 
 class ASNTable(BaseTable):
     pk = ToggleColumn()
-    number = tables.LinkColumn()
+    number = tables.LinkColumn(text=lambda record: record.__str__(), args=[A('pk')])
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
     )
