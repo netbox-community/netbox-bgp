@@ -17,3 +17,26 @@ class TestASNFormCase(TestCase):
             form.errors['number'], ['AS number is invalid.']
         )
 
+    def test_asn_asdot_valid(self):
+        form = ASNForm(
+            data={
+                'number': '1.1',
+                'status': 'active'
+            }
+        )
+        self.assertEqual(
+            form.errors.get('number'), None
+        )
+
+    def test_asn_invalid_range(self):
+        form = ASNForm(
+            data={
+                'number': '65536.1',
+                'status': 'active'
+            }
+        )
+        self.assertEqual(
+            form.errors['number'], ['AS number is invalid.']
+        )
+
+

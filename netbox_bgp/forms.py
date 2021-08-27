@@ -99,6 +99,8 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         if not re.match(r'^\d+(\.\d+)?$', number):
             raise forms.ValidationError('AS number is invalid.')
         if '.' in str(number):
+            if int(number.split('.')[0]) > 65535 or int(number.split('.')[1]) > 65535:
+                raise forms.ValidationError('AS number is invalid.')
             number = int(number.split('.')[0]) * 65536 + int(number.split('.')[1])
         else:
             number = int(number)
