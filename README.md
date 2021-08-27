@@ -22,7 +22,8 @@ Restart NetBox and add `netbox-bgp` to your local_requirements.txt
 
 The following options are available:
 * `device_ext_page`: String (default right) Device related BGP sessions table position. The following values are available:  
-left, right, full_width. Set empty value for disable.
+left, right, full_width. Set empty value for disable.   
+* `asdot`: Boolean (defaul False) asdot notation for 4-byte AS
 
 ## Screenshots
 
