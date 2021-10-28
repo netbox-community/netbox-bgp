@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.utils.translation import gettext as _
 
@@ -9,17 +10,39 @@ from ipam.models import IPAddress
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
     BootstrapMixin, DynamicModelChoiceField, BulkEditForm,
-    DynamicModelMultipleChoiceField, StaticSelect2,
-    APISelect, APISelectMultiple, StaticSelect2Multiple, TagFilterField
+    DynamicModelMultipleChoiceField, APISelect, APISelectMultiple,
+    TagFilterField
 )
+# StaticSelect2 was removed in 3.x
+from .fields import StaticSelect2, StaticSelect2Multiple
+# try:
+#     # TODO: rename once upstream confirms this choice is correct
+#     from utilities.forms import (
+#         StaticSelect as StaticSelect2,
+#         StaticSelectMultiple as StaticSelect2Multiple,
+#     )
+# except ImportError:
+#     # from 2.x
+#     from utilities.forms import StaticSelect2, StaticSelect2Multiple
+
 from extras.forms import (
-    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldFilterForm
+    CustomFieldModelForm, CustomFieldFilterForm
 )
+# refactored in 3.x
+try:
+    from extras.forms import CustomFieldModelBulkEditForm
+except ImportError:
+    # from 2.x
+    from extras.forms import CustomFieldBulkEditForm as CustomFieldModelBulkEditForm
 
 from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
     SessionStatusChoices, RoutingPolicy, BGPPeerGroup
 )
+
+IS_NETBOX_3X = settings.VERSION.startswith("3")
+
+from .fields import PluginDynamicModelMultipleChoiceField, PluginDynamicModelChoiceField
 
 
 class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
@@ -78,7 +101,7 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         ]
 
 
-class ASNBulkEditForm(BootstrapMixin, CustomFieldBulkEditForm):
+class ASNBulkEditForm(BootstrapMixin, CustomFieldModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -195,34 +218,58 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         queryset=Tenant.objects.all(),
         required=False
     )
-    local_as = DynamicModelChoiceField(
-        queryset=ASN.objects.all(),
-        query_params={
-            'site_id': '$site'
-        },
-        display_field='number',
-        widget=APISelect(
-            api_url='/api/plugins/bgp/asn/',
+    if IS_NETBOX_3X:
+        local_as = PluginDynamicModelChoiceField(
+            queryset=ASN.objects.all(),
+            query_params={
+                'site_id': '$site'
+            },
+            to_field_name='number',
         )
+        remote_as = PluginDynamicModelChoiceField(
+            queryset=ASN.objects.all(),
+            query_params={
+                'site_id': '$site'
+            },
+            to_field_name='number',
+        )
+        local_address = DynamicModelChoiceField(
+            queryset=IPAddress.objects.all(),
+            # to_field_name='address',
+            query_params={
+                'device_id': '$device'
+            }
+        )
+    else:
+        local_as = DynamicModelChoiceField(
+            queryset=ASN.objects.all(),
+            query_params={
+                'site_id': '$site'
+            },
+            display_field='number',
+            widget=APISelect(
+                api_url='/api/plugins/bgp/asn/',
+            )
 
-    )
-    remote_as = DynamicModelChoiceField(
-        queryset=ASN.objects.all(),
-        query_params={
-            'site_id': '$site'
-        },
-        display_field='number',
-        widget=APISelect(
-            api_url='/api/plugins/bgp/asn/',
         )
-    )
-    local_address = DynamicModelChoiceField(
-        queryset=IPAddress.objects.all(),
-        display_field='address',
-        query_params={
-            'device_id': '$device'
-        }
-    )
+        remote_as = DynamicModelChoiceField(
+            queryset=ASN.objects.all(),
+            query_params={
+                'site_id': '$site'
+            },
+            display_field='number',
+            widget=APISelect(
+                api_url='/api/plugins/bgp/asn/',
+            )
+        )
+        local_address = DynamicModelChoiceField(
+            queryset=IPAddress.objects.all(),
+            display_field='address',
+            query_params={
+                'device_id': '$device'
+            }
+        )
+    
     peer_group = DynamicModelChoiceField(
         queryset=BGPPeerGroup.objects.all(),
         required=False,
@@ -279,22 +326,45 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
         required=False,
         label='Search'
     )
-    remote_as = DynamicModelMultipleChoiceField(
-        queryset=ASN.objects.all(),
-        required=False,
-        display_field='number',
-        widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/asn/',
+    if IS_NETBOX_3X:
+        pass
+        # remote_as = DynamicModelMultipleChoiceField(
+        #     queryset=ASN.objects.all(),
+        #     required=False,
+        #     # to_field_name='number',
+        #     widget=APISelectMultiple(
+        #         api_url='/api/plugins/bgp/asn/',
+        #     )
+        # )
+        # local_as = PluginDynamicModelMultipleChoiceField(
+        #     queryset=ASN.objects.all(),
+        #     required=False,
+        #     fetch_trigger="open",
+        #     # to_field_name='number',
+        #     # initial_params={"id": "$local_as"},
+        #     # query_params={"id": "$local_as"},
+        #     # widget=APISelectMultiple(
+        #     #     api_url='/api/plugins/bgp/asn/',
+        #     # )
+        # )
+    else:
+        remote_as = DynamicModelMultipleChoiceField(
+            queryset=ASN.objects.all(),
+            required=False,
+            display_field='number',
+            widget=APISelectMultiple(
+                api_url='/api/plugins/bgp/asn/',
+            )
         )
-    )
-    local_as = DynamicModelMultipleChoiceField(
-        queryset=ASN.objects.all(),
-        required=False,
-        display_field='number',
-        widget=APISelectMultiple(
-            api_url='/api/plugins/bgp/asn/',
+        local_as = DynamicModelMultipleChoiceField(
+            queryset=ASN.objects.all(),
+            required=False,
+            display_field='number',
+            widget=APISelectMultiple(
+                api_url='/api/plugins/bgp/asn/',
+            )
         )
-    )
+    
     by_local_address = forms.CharField(
         required=False,
         label='Local Address'

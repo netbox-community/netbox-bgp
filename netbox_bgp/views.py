@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Q
 
 from netbox.views import generic
@@ -14,6 +15,9 @@ from .forms import (
     BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
     RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm
 )
+
+
+IS_NETBOX_3X = settings.VERSION.startswith("3")
 
 
 class ASNListView(generic.ObjectListView):
@@ -33,6 +37,8 @@ class ASNView(generic.ObjectView):
         sess = BGPSession.objects.filter(remote_as=instance) | BGPSession.objects.filter(local_as=instance)
         sess_table = BGPSessionTable(sess)
         return {
+            'parent': 'generic/object.html' if IS_NETBOX_3X else 'base.html',
+            'is_netbox_3x': IS_NETBOX_3X,
             'related_session_table': sess_table
         }
 
@@ -70,6 +76,12 @@ class CommunityListView(generic.ObjectListView):
 class CommunityView(generic.ObjectView):
     queryset = Community.objects.all()
     template_name = 'netbox_bgp/community.html'
+
+    def get_extra_context(self, request, instance):
+        return {
+            'parent': 'generic/object.html' if IS_NETBOX_3X else 'base.html',
+            'is_netbox_3x': IS_NETBOX_3X,
+        }
 
 
 class CommunityEditView(generic.ObjectEditView):
@@ -139,6 +151,8 @@ class BGPSessionView(generic.ObjectView):
         )
 
         return {
+            'parent': 'generic/object.html' if IS_NETBOX_3X else 'base.html',
+            'is_netbox_3x': IS_NETBOX_3X,
             'import_policies_table': import_policies_table,
             'export_policies_table': export_policies_table
         }
@@ -181,6 +195,8 @@ class RoutingPolicyView(generic.ObjectView):
         sess = sess.distinct()
         sess_table = BGPSessionTable(sess)
         return {
+            'parent': 'generic/object.html' if IS_NETBOX_3X else 'base.html',
+            'is_netbox_3x': IS_NETBOX_3X,
             'related_session_table': sess_table
         }
 
@@ -226,6 +242,8 @@ class BGPPeerGroupView(generic.ObjectView):
         sess = sess.distinct()
         sess_table = BGPSessionTable(sess)
         return {
+            'parent': 'generic/object.html' if IS_NETBOX_3X else 'base.html',
+            'is_netbox_3x': IS_NETBOX_3X,
             'import_policies_table': import_policies_table,
             'export_policies_table': export_policies_table,
             'related_session_table': sess_table

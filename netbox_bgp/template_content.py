@@ -1,7 +1,13 @@
+from django.conf import settings
+from django.conf import settings
+
 from extras.plugins import PluginTemplateExtension
 
 from .models import BGPSession
 from .tables import BGPSessionTable
+
+
+IS_NETBOX_3X = settings.VERSION.startswith("3")
 
 
 class DeviceBGPSession(PluginTemplateExtension):
@@ -29,6 +35,7 @@ class DeviceBGPSession(PluginTemplateExtension):
         return self.render(
             'netbox_bgp/device_extend.html',
             extra_context={
+                'is_netbox_3x': IS_NETBOX_3X,
                 'related_session_table': sess_table
             }
         )

@@ -1,8 +1,9 @@
-{% extends 'base.html' %}
+{% extends parent %}
 {% load buttons %}
 {% load custom_links %}
 {% load helpers %}
 {% load plugins %}
+{% load render_table from django_tables2 %}
 
 {% block header %}
 <div class="row noprint">
@@ -177,8 +178,30 @@
         {% plugin_left_page object %}
     </div>
     <div class="col-md-6">
-        {% include 'panel_table.html' with table=import_policies_table heading="Import Policies" %}
-        {% include 'panel_table.html' with table=export_policies_table heading="Export Policies" %}
+        {% if is_netbox_3x %}
+        <div class="card">
+            <h5 class="card-header">
+              Import Policies
+            </h5>
+      
+            <div class="card-body">
+            {% render_table import_policies_table 'inc/table.html' %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h5 class="card-header">
+              Export Policies
+            </h5>
+      
+            <div class="card-body">
+            {% render_table export_policies_table 'inc/table.html' %} 
+            </div>
+        </div>
+        {% else %}
+            {% include 'panel_table.html' with table=import_policies_table heading="Import Policies" %}
+            {% include 'panel_table.html' with table=export_policies_table heading="Export Policies" %}
+        {% endif %}
         {% plugin_right_page object %}
     </div>
 </div>

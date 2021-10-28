@@ -1,2 +1,15 @@
 {% load render_table from django_tables2 %}
-{% include 'utilities/obj_table.html' with table=related_session_table table_template='panel_table.html' heading='Related BGP Sessions' panel_class='default noprint' %}
+
+{% if is_netbox_3x %}
+<div class="card">
+    <h5 class="card-header">
+        Related BGP Sessions
+    </h5>
+
+    <div class="card-body">
+    {% render_table related_session_table 'inc/table.html' %} 
+    </div>
+</div>
+{% else %}
+    {% include 'utilities/obj_table.html' with table=related_session_table table_template='panel_table.html' heading='Related BGP Sessions' panel_class='default noprint' %}
+{% endif %}
