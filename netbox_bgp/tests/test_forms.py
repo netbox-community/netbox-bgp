@@ -14,7 +14,7 @@ class TestASNFormCase(TestCase):
             }
         )
         self.assertEqual(
-            form.errors['number'], ['AS number is invalid.']
+            form.errors['number'], ['Invalid AS Number: dsad']
         )
 
     def test_asn_asdot_valid(self):
@@ -36,7 +36,5 @@ class TestASNFormCase(TestCase):
             }
         )
         self.assertEqual(
-            form.errors['number'], ['AS number is invalid.']
+            form.errors['number'], ['Invalid AS Number: 65536.1']
         )
-
-

@@ -3,12 +3,17 @@
 
 ## Compatibility
 
-This plugin in compatible with [NetBox](https://netbox.readthedocs.org/) 2.10 and later.
+This plugin in compatible with [NetBox](https://netbox.readthedocs.org/) 3.0.0 and later.
+You can use older Netbox version with 0.3.9 version of this plugin.
 
 ## Installation
 
-The plugin is available as a Python package in pypi and can be installed with pip
-
+The plugin is available as a Python package in pypi and can be installed with pip  
+For NetBox 2.10 or 2.11: 
+```
+pip install netbox-bgp=0.3.9
+```
+For NetBox 3.0: 
 ```
 pip install netbox-bgp
 ```

@@ -11,8 +11,8 @@ class BGPConfig(PluginConfig):
     author_email = 'mgk.kolek@gmail.com'
     base_url = 'bgp'
     required_settings = []
-    min_version = '2.10.1'
-    max_version = '2.11.12'
+    min_version = '3.0.0'
+    max_version = '3.0.8'
     default_settings = {
         'device_ext_page': 'right',
         'asdot': False

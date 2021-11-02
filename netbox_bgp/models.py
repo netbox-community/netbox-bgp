@@ -7,15 +7,9 @@ from taggit.managers import TaggableManager
 
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
-try:
-    from extras.models import ChangeLoggedModel
-except ImportError:
-    from netbox.models import ChangeLoggedModel
+from netbox.models import ChangeLoggedModel
 
-try:
-    from extras.models import CustomFieldModel
-except ImportError:
-    from netbox.models import CustomFieldsMixin as CustomFieldModel
+from netbox.models import CustomFieldsMixin as CustomFieldModel
 
 from extras.models import TaggedItem
 from extras.utils import extras_features
@@ -190,7 +184,7 @@ class BGPBase(ChangeLoggedModel):
 class ASN(BGPBase, CustomFieldModel):
 
     number = models.PositiveBigIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(4294967294)]
+        validators=[MinValueValidator(1), MaxValueValidator(4294967295)]
     )
 
     group = models.ForeignKey(
@@ -340,7 +334,7 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
         unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
 
     def __str__(self):
-        return f"{self.device}:{self.name}"
+        return f'{self.device}:{self.name}'
 
     def get_status_class(self):
         return SessionStatusChoices.CSS_CLASSES.get(self.status)

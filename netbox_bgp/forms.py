@@ -2,8 +2,7 @@ import re
 
 from django import forms
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.core.validators import RegexValidator
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.utils.translation import gettext as _
 
 from extras.models import Tag
@@ -13,11 +12,11 @@ from ipam.models import IPAddress
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
     BootstrapMixin, DynamicModelChoiceField, BulkEditForm,
-    DynamicModelMultipleChoiceField, StaticSelect2,
-    APISelect, APISelectMultiple, StaticSelect2Multiple, TagFilterField
+    DynamicModelMultipleChoiceField, StaticSelect,
+    APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
 )
 from extras.forms import (
-    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldFilterForm
+    CustomFieldModelForm, CustomFieldBulkEditForm
 )
 
 from .models import (
@@ -29,19 +28,37 @@ from .models import (
 from django.forms.widgets import TextInput
 
 
+class ASNField(forms.CharField):
+    '''
+    Return int value, but allows to input dotted digit text
+    '''
+
+    def to_python(self, value):
+        if not re.match(r'^\d+(\.\d+)?$', value):
+            raise ValidationError('Invalid AS Number: {}'.format(value))       
+        if '.' in value:
+            if int(value.split('.')[0]) > 65535 or int(value.split('.')[1]) > 65535:
+                raise ValidationError('Invalid AS Number: {}'.format(value))
+            try:
+                return int(value.split('.')[0]) * 65536 + int(value.split('.')[1])
+            except ValueError:
+                raise ValidationError('Invalid AS Number: {}'.format(value))
+        try:
+            return int(value)
+        except ValueError:
+            raise ValidationError('Invalid AS Number: {}'.format(value))
+
+
 class ASdotInput(TextInput):
     def _format_value(self, value):
         if not value:
             return 0
-        if not re.match(r'^\d+(\.\d+)?$', str(value)):
+        if type(value) is str:
             return value
-        if '.' not in str(value):
-            if int(value) > 65535:
-                return '{}.{}'.format(value // 65536, value % 65536)
-            else:
-                return value
+        if int(value) > 65535:
+            return '{}.{}'.format(value // 65536, value % 65536)
         else:
-            return int(value.split('.')[0]) * 65536 + int(value.split('.')[0])
+            return value
 
     def render(self, name, value, attrs=None, renderer=None):
         nb_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
@@ -63,7 +80,7 @@ class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
     status = forms.MultipleChoiceField(
         choices=ASNStatusChoices,
         required=False,
-        widget=StaticSelect2Multiple()
+        widget=StaticSelectMultiple()
     )
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
@@ -78,7 +95,7 @@ class ASNFilterForm(BootstrapMixin, CustomFieldModelForm):
 
 
 class ASNForm(BootstrapMixin, CustomFieldModelForm):
-    number = forms.CharField(
+    number = ASNField(
         widget=ASdotInput
     )
     tags = DynamicModelMultipleChoiceField(
@@ -93,18 +110,6 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         queryset=Tenant.objects.all(),
         required=False
     )
-
-    def clean_number(self):
-        number = self.cleaned_data['number']
-        if not re.match(r'^\d+(\.\d+)?$', number):
-            raise forms.ValidationError('AS number is invalid.')
-        if '.' in str(number):
-            if int(number.split('.')[0]) > 65535 or int(number.split('.')[1]) > 65535:
-                raise forms.ValidationError('AS number is invalid.')
-            number = int(number.split('.')[0]) * 65536 + int(number.split('.')[1])
-        else:
-            number = int(number)
-        return number
 
     def clean(self):
         cleaned_data = super().clean()
@@ -124,7 +129,7 @@ class ASNForm(BootstrapMixin, CustomFieldModelForm):
         ]
 
 
-class ASNBulkEditForm(BootstrapMixin, CustomFieldBulkEditForm):
+class ASNBulkEditForm(CustomFieldBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -140,7 +145,7 @@ class ASNBulkEditForm(BootstrapMixin, CustomFieldBulkEditForm):
     status = forms.ChoiceField(
         required=False,
         choices=ASNStatusChoices,
-        widget=StaticSelect2()
+        widget=StaticSelect()
     )
 
     class Meta:
@@ -178,7 +183,7 @@ class CommunityFilterForm(BootstrapMixin, forms.ModelForm):
     status = forms.MultipleChoiceField(
         choices=ASNStatusChoices,
         required=False,
-        widget=StaticSelect2Multiple()
+        widget=StaticSelectMultiple()
     )
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
@@ -208,7 +213,7 @@ class CommunityBulkEditForm(BootstrapMixin, BulkEditForm):
     status = forms.ChoiceField(
         required=False,
         choices=ASNStatusChoices,
-        widget=StaticSelect2()
+        widget=StaticSelect()
     )
 
     class Meta:
@@ -246,7 +251,6 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         query_params={
             'site_id': '$site'
         },
-        display_field='number',
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
         )
@@ -257,14 +261,12 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
         query_params={
             'site_id': '$site'
         },
-        display_field='number',
         widget=APISelect(
             api_url='/api/plugins/bgp/asn/',
         )
     )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
-        display_field='address',
         query_params={
             'device_id': '$device'
         }
@@ -325,18 +327,18 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
         required=False,
         label='Search'
     )
-    remote_as = DynamicModelMultipleChoiceField(
+    remote_as_id = DynamicModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         required=False,
-        display_field='number',
+        label=_('Remote AS'),
         widget=APISelectMultiple(
             api_url='/api/plugins/bgp/asn/',
         )
     )
-    local_as = DynamicModelMultipleChoiceField(
+    local_as_id = DynamicModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         required=False,
-        display_field='number',
+        label=_('Local AS'),
         widget=APISelectMultiple(
             api_url='/api/plugins/bgp/asn/',
         )
@@ -357,7 +359,7 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
         required=False,
-        widget=StaticSelect2Multiple()
+        widget=StaticSelectMultiple()
     )
     peer_group = DynamicModelMultipleChoiceField(
         queryset=BGPPeerGroup.objects.all(),
@@ -389,7 +391,7 @@ class BGPSessionFilterForm(BootstrapMixin, CustomFieldModelForm):
 
     class Meta:
         model = BGPSession
-        fields = ['q', 'status', 'device_id', 'remote_as', 'local_as']
+        fields = ['q', 'status', 'device_id']
 
 
 class RoutingPolicyFilterForm(BootstrapMixin, CustomFieldModelForm):

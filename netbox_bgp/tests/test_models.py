@@ -26,7 +26,7 @@ class ASNTestCase(TestCase):
         self.assertRaises(ValidationError, asn.full_clean)
 
     def test_invalid_asndohuya(self):
-        asn = ASN(number=4294967295)
+        asn = ASN(number=4294967296)
         self.assertRaises(ValidationError, asn.full_clean)
 
     def test_uniqueconstraint_asn(self):
