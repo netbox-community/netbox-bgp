@@ -1,19 +1,15 @@
 from django.urls import reverse
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.conf import settings
+
 from taggit.managers import TaggableManager
 
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
-try:
-    from extras.models import ChangeLoggedModel
-except ImportError:
-    from netbox.models import ChangeLoggedModel
+from netbox.models import ChangeLoggedModel
 
-try:
-    from extras.models import CustomFieldModel
-except ImportError:
-    from netbox.models import CustomFieldsMixin as CustomFieldModel
+from netbox.models import CustomFieldsMixin as CustomFieldModel
 
 from extras.models import TaggedItem
 from extras.utils import extras_features
@@ -188,7 +184,7 @@ class BGPBase(ChangeLoggedModel):
 class ASN(BGPBase, CustomFieldModel):
 
     number = models.PositiveBigIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(4294967294)]
+        validators=[MinValueValidator(1), MaxValueValidator(4294967295)]
     )
 
     group = models.ForeignKey(
@@ -221,7 +217,17 @@ class ASN(BGPBase, CustomFieldModel):
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:asn', args=[self.pk])
 
+    def get_asdot(self):
+        if self.number > 65535:
+            return '{}.{}'.format(self.number // 65536, self.number % 65536)
+        else:
+            return str(self.number)
+
     def __str__(self):
+        nb_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
+        asdot = nb_settings.get('asdot', False)
+        if asdot:
+            return self.get_asdot()
         return str(self.number)
 
 
@@ -328,7 +334,7 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
         unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
 
     def __str__(self):
-        return f"{self.device}:{self.name}"
+        return f'{self.device}:{self.name}'
 
     def get_status_class(self):
         return SessionStatusChoices.CSS_CLASSES.get(self.status)

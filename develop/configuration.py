@@ -170,7 +170,7 @@ REMOTE_AUTH_DEFAULT_GROUPS = []
 REMOTE_AUTH_DEFAULT_PERMISSIONS = {}
 
 # This determines how often the GitHub API is called to check the latest release of NetBox. Must be at least 1 hour.
-RELEASE_CHECK_TIMEOUT = 24 * 3600
+# RELEASE_CHECK_TIMEOUT = 24 * 3600
 
 # This repository is used to check whether there is a new release of NetBox available. Set to None to disable the
 # version check or use the URL below to check for release in the official NetBox repository.

@@ -64,7 +64,13 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     def validate(self, attrs):
-        if ASN.objects.filter(number=attrs['number'], tenant=attrs.get('tenant')).exists():
+        try:
+            number = attrs['number']
+            tenant = attrs.get('tenant')
+        except KeyError:
+            # this is patch
+            return attrs
+        if ASN.objects.filter(number=number, tenant=tenant).exists():
             raise ValidationError(
                 {'error': 'Asn with this Number and Tenant already exists.'}
             )
@@ -72,7 +78,7 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
 
     class Meta:
         model = ASN
-        fields = ['number', 'id', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
+        fields = ['number', 'id', 'display', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
 
 
 class NestedASNSerializer(WritableNestedSerializer):

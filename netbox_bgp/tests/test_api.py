@@ -69,6 +69,11 @@ class ASNTestCase(BaseTestCase):
         asn = ASN.objects.get(pk=self.asn1.pk)
         self.assertEqual(asn.number, 65005)
 
+        response = self.client.patch(url, {'description': 'changed'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        asn = ASN.objects.get(pk=self.asn1.pk)
+        self.assertEqual(asn.description, 'changed')
+
     def test_delete_task(self):
         url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.asn1.pk})
 
