@@ -233,3 +233,21 @@ class SessionTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
+
+    def test_session_no_device(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {
+            'name': 'test_session',
+            'description': 'session_descr',
+            'local_as': self.local_as.pk,
+            'remote_as': self.remote_as.pk,
+            'local_address': self.local_ip.pk,
+            'remote_address': self.remote_ip.pk,
+            'status': 'active',
+            'peer_group': self.peer_group.pk
+
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
