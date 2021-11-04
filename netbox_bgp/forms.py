@@ -271,6 +271,9 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
             'device_id': '$device'
         }
     )
+    remote_address = DynamicModelChoiceField(
+        queryset=IPAddress.objects.all(),
+    )
     peer_group = DynamicModelChoiceField(
         queryset=BGPPeerGroup.objects.all(),
         required=False,
@@ -306,6 +309,9 @@ class BGPSessionForm(BootstrapMixin, CustomFieldModelForm):
             ('Local', ('local_as', 'local_address')),
             ('Policies', ('import_policies', 'export_policies'))
         )
+        widgets = {
+            'status': StaticSelect(),
+        }
 
 
 class BGPSessionAddForm(BGPSessionForm):
