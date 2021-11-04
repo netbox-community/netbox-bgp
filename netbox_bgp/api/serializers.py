@@ -161,6 +161,21 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
     class Meta:
         model = BGPSession
         fields = '__all__'
+        validators = []
+
+    def validate(self, attrs):
+        qs = BGPSession.objects.filter(
+            device=attrs.get('device'),
+            local_as=attrs.get('local_as'),
+            local_address=attrs.get('local_address'),
+            remote_as=attrs.get('remote_as'),
+            remote_address=attrs.get('remote_address'),
+        )
+        if qs.exists():
+            raise ValidationError(
+                {'error': 'BGP Session with this Device, Local address, Local AS, Remote address and Remote AS already exists.'}
+            )
+        return attrs
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
