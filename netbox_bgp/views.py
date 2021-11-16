@@ -40,6 +40,7 @@ class ASNView(generic.ObjectView):
 class ASNEditView(generic.ObjectEditView):
     queryset = ASN.objects.all()
     model_form = ASNForm
+    default_return_url = 'plugins:netbox_bgp:asn_list'
 
 
 class ASNBulkDeleteView(generic.BulkDeleteView):
@@ -75,6 +76,7 @@ class CommunityView(generic.ObjectView):
 class CommunityEditView(generic.ObjectEditView):
     queryset = Community.objects.all()
     model_form = CommunityForm
+    default_return_url = 'plugins:netbox_bgp:community_list'
 
 
 class CommunityBulkDeleteView(generic.BulkDeleteView):
@@ -105,11 +107,13 @@ class BGPSessionListView(generic.ObjectListView):
 class BGPSessionEditView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
     model_form = BGPSessionForm
+    default_return_url = 'plugins:netbox_bgp:session_list'
 
 
 class BGPSessionAddView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
     model_form = BGPSessionAddForm
+    default_return_url = 'plugins:netbox_bgp:session_list'
 
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
@@ -160,6 +164,7 @@ class RoutingPolicyListView(generic.ObjectListView):
 class RoutingPolicyEditView(generic.ObjectEditView):
     queryset = RoutingPolicy.objects.all()
     model_form = RoutingPolicyForm
+    default_return_url = 'plugins:netbox_bgp:routing_policy_list'
 
 
 class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
@@ -201,6 +206,7 @@ class BGPPeerGroupListView(generic.ObjectListView):
 class BGPPeerGroupEditView(generic.ObjectEditView):
     queryset = BGPPeerGroup.objects.all()
     model_form = BGPPeerGroupForm
+    default_return_url = 'plugins:netbox_bgp:peergroup_list'
 
 
 class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
