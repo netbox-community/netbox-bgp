@@ -61,14 +61,14 @@ menu_items = (
     PluginMenuItem(
         link='plugins:netbox_bgp:peergroup_list',
         link_text='Peer Groups',
-        permissions=['netbox_bgp.view_session'],
+        permissions=['netbox_bgp.view_peergroup'],
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:peergroup_add',
                 title='Peer Groups',
                 icon_class='mdi mdi-plus-thick',
                 color=ButtonColorChoices.GREEN,
-                permissions=['netbox_bgp.add_session'],
+                permissions=['netbox_bgp.add_peergroup'],
             ),
         ),
     )
