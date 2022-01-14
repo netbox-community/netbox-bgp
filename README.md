@@ -48,4 +48,4 @@ Community
 ![Community](docs/img/commun.png)
 
 Peer Group
-![Device Session Table](docs/img/peer_group.png)
+![Peer Group](docs/img/peer_group.png)
