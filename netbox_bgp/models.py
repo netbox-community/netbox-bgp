@@ -194,6 +194,8 @@ class ASN(BGPBase, CustomFieldModel):
         null=True
     )
 
+    tags = TaggableManager(through=TaggedItem, related_name='asn_tags')
+
     clone_fields = ['description', 'status', 'tenant']
 
     class Meta:
