@@ -77,6 +77,7 @@ class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
         return attrs
 
     class Meta:
+        ref_name = 'BGP_ASN'
         model = ASN
         fields = ['number', 'id', 'display', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
 
@@ -85,6 +86,7 @@ class NestedASNSerializer(WritableNestedSerializer):
     url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:asn')
 
     class Meta:
+        ref_name = 'BGP_ASN_Nested'
         model = ASN
         fields = ['id', 'url', 'number', 'description']
 

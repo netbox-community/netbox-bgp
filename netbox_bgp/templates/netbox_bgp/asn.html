@@ -83,9 +83,9 @@
                 </table>
             </div>
         </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
         {% plugin_left_page object %}
-        {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_bgp:asn_list' %}
-        {% include 'inc/custom_fields_panel.html' %}
     </div>
     <div class="col-md-8">
         <div class="card">
