@@ -16,7 +16,7 @@ from utilities.forms import (
     APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
 )
 from extras.forms import (
-    CustomFieldModelForm, CustomFieldBulkEditForm
+    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldModelFilterForm
 )
 
 from .models import (
@@ -68,7 +68,8 @@ class ASdotInput(TextInput):
         return super().render(name, value, attrs, renderer)
 
 
-class ASNFilterForm(CustomFieldModelForm):
+class ASNFilterForm(CustomFieldModelFilterForm):
+    model = ASN
     q = forms.CharField(
         required=False,
         label='Search'
@@ -87,11 +88,7 @@ class ASNFilterForm(CustomFieldModelForm):
         required=False
     )
 
-    tag = TagFilterField(ASN)
-
-    class Meta:
-        model = ASN
-        fields = ['q', 'status', 'tenant']
+    tag = TagFilterField(model)
 
 
 class ASNForm(CustomFieldModelForm):
@@ -328,7 +325,8 @@ class BGPSessionAddForm(BGPSessionForm):
         return self.cleaned_data['remote_address']
 
 
-class BGPSessionFilterForm(CustomFieldModelForm):
+class BGPSessionFilterForm(CustomFieldModelFilterForm):
+    model = BGPSession
     q = forms.CharField(
         required=False,
         label='Search'
@@ -393,24 +391,17 @@ class BGPSessionFilterForm(CustomFieldModelForm):
         required=False
     )
 
-    tag = TagFilterField(BGPSession)
-
-    class Meta:
-        model = BGPSession
-        fields = ['q', 'status', 'device_id']
+    tag = TagFilterField(model)
 
 
-class RoutingPolicyFilterForm(CustomFieldModelForm):
+class RoutingPolicyFilterForm(CustomFieldModelFilterForm):
+    model = RoutingPolicy
     q = forms.CharField(
         required=False,
         label='Search'
     )
 
-    tag = TagFilterField(RoutingPolicy)
-
-    class Meta:
-        model = RoutingPolicy
-        fields = ['q']
+    tag = TagFilterField(model)
 
 
 class RoutingPolicyForm(CustomFieldModelForm):
@@ -424,17 +415,14 @@ class RoutingPolicyForm(CustomFieldModelForm):
         fields = ['name', 'description']
 
 
-class BGPPeerGroupFilterForm(CustomFieldModelForm):
+class BGPPeerGroupFilterForm(CustomFieldModelFilterForm):
+    model = BGPPeerGroup
     q = forms.CharField(
         required=False,
         label='Search'
     )
 
-    tag = TagFilterField(BGPPeerGroup)
-
-    class Meta:
-        model = BGPPeerGroup
-        fields = ['q']
+    tag = TagFilterField(model)
 
 
 class BGPPeerGroupForm(CustomFieldModelForm):
