@@ -98,7 +98,7 @@ class RoutingPolicySerializer(TaggedObjectSerializer, CustomFieldModelSerializer
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:routing_policy')
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:routingpolicy')
 
     class Meta:
         model = RoutingPolicy
@@ -127,7 +127,7 @@ class BGPPeerGroupSerializer(TaggedObjectSerializer, CustomFieldModelSerializer)
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:peergroup')
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:bgppeergroup')
 
     class Meta:
         model = BGPPeerGroup
