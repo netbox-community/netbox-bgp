@@ -2,50 +2,17 @@ from rest_framework.serializers import Serializer, HyperlinkedIdentityField, Val
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from netbox.api import ChoiceField, WritableNestedSerializer, ValidatedModelSerializer
+from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from extras.api.nested_serializers import NestedTagSerializer
 from ipam.api.nested_serializers import NestedIPAddressSerializer
 
 
-try:
-    from extras.api.customfields import CustomFieldModelSerializer
-except ImportError:
-    from netbox.api.serializers import CustomFieldModelSerializer
-
 from netbox_bgp.models import (
     ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup,
     Community
 )
-
-
-class TaggedObjectSerializer(Serializer):
-    tags = NestedTagSerializer(many=True, required=False)
-
-    def create(self, validated_data):
-        tags = validated_data.pop('tags', None)
-        instance = super().create(validated_data)
-
-        if tags is not None:
-            return self._save_tags(instance, tags)
-        return instance
-
-    def update(self, instance, validated_data):
-        tags = validated_data.pop('tags', None)
-        # Cache tags on instance for change logging
-        instance._tags = tags or []
-
-        instance = super().update(instance, validated_data)
-        if tags is not None:
-            return self._save_tags(instance, tags)
-        return instance
-
-    def _save_tags(self, instance, tags):
-        if tags:
-            instance.tags.set(*[t.name for t in tags])
-        else:
-            instance.tags.clear()
-        return instance
 
 
 class SerializedPKRelatedField(PrimaryKeyRelatedField):
@@ -58,7 +25,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
         return self.serializer(value, context={'request': self.context['request']}).data
 
 
-class ASNSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+class ASNSerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
@@ -91,7 +58,7 @@ class NestedASNSerializer(WritableNestedSerializer):
         fields = ['id', 'url', 'number', 'description']
 
 
-class RoutingPolicySerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy
         fields = '__all__'
@@ -105,7 +72,7 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
         fields = ['id', 'url', 'name', 'description']
 
 
-class BGPPeerGroupSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+class BGPPeerGroupSerializer(NetBoxModelSerializer):
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=NestedRoutingPolicySerializer,
@@ -135,7 +102,7 @@ class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
         validators = []
 
 
-class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
+class BGPSessionSerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=SessionStatusChoices, required=False)
     site = NestedSiteSerializer(required=False, allow_null=True)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
@@ -195,7 +162,7 @@ class BGPSessionSerializer(TaggedObjectSerializer, CustomFieldModelSerializer):
         return ret
 
 
-class CommunitySerializer(TaggedObjectSerializer, ValidatedModelSerializer):
+class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
 

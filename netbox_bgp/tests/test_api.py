@@ -130,7 +130,7 @@ class CommunityTestCase(BaseTestCase):
 class PeerGroupTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:bgppeergroup'
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:peergroup'
         self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description')
 
     def test_list_peer_group(self):

@@ -101,6 +101,11 @@ class ASNForm(NetBoxModelForm):
         queryset=Site.objects.all(),
         required=False
     )
+    status = forms.ChoiceField(
+        required=False,
+        choices=ASNStatusChoices,
+        widget=StaticSelect()
+    )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False
@@ -156,6 +161,11 @@ class CommunityForm(BootstrapMixin, forms.ModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=ASNStatusChoices,
+        widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),

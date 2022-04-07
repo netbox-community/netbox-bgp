@@ -38,7 +38,7 @@ class ASNView(generic.ObjectView):
 
 class ASNEditView(generic.ObjectEditView):
     queryset = ASN.objects.all()
-    model_form = ASNForm
+    form = ASNForm
 
 
 class ASNBulkDeleteView(generic.BulkDeleteView):
@@ -72,7 +72,7 @@ class CommunityView(generic.ObjectView):
 
 class CommunityEditView(generic.ObjectEditView):
     queryset = Community.objects.all()
-    model_form = CommunityForm
+    form = CommunityForm
 
 
 class CommunityBulkDeleteView(generic.BulkDeleteView):
@@ -101,12 +101,12 @@ class BGPSessionListView(generic.ObjectListView):
 
 class BGPSessionEditView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
-    model_form = BGPSessionForm
+    form = BGPSessionForm
 
 
 class BGPSessionAddView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
-    model_form = BGPSessionAddForm
+    form = BGPSessionAddForm
 
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
@@ -155,7 +155,7 @@ class RoutingPolicyListView(generic.ObjectListView):
 
 class RoutingPolicyEditView(generic.ObjectEditView):
     queryset = RoutingPolicy.objects.all()
-    model_form = RoutingPolicyForm
+    form = RoutingPolicyForm
 
 
 class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
@@ -195,7 +195,7 @@ class BGPPeerGroupListView(generic.ObjectListView):
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
     queryset = BGPPeerGroup.objects.all()
-    model_form = BGPPeerGroupForm
+    form = BGPPeerGroupForm
 
 
 class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):

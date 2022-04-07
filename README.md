@@ -9,6 +9,7 @@
 | NetBox 2.11 | 0.3.9 |
 | NetBox 3.0  | 0.4.3 |
 | NetBox 3.1  | 0.5.0 |
+| NetBox 3.2  | 0.6.0 |
 
 ## Installation
 
