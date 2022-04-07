@@ -31,12 +31,12 @@ menu_items = (
         ),
     ),
     PluginMenuItem(
-        link='plugins:netbox_bgp:session_list',
+        link='plugins:netbox_bgp:bgpsession_list',
         link_text='Sessions',
         permissions=['netbox_bgp.view_bgpsession'],
         buttons=(
             PluginMenuButton(
-                link='plugins:netbox_bgp:session_add',
+                link='plugins:netbox_bgp:bgpsession_add',
                 title='Sessions',
                 icon_class='mdi mdi-plus-thick',
                 color=ButtonColorChoices.GREEN,
@@ -45,12 +45,12 @@ menu_items = (
         ),
     ),
     PluginMenuItem(
-        link='plugins:netbox_bgp:routing_policy_list',
+        link='plugins:netbox_bgp:routingpolicy_list',
         link_text='Routing Policies',
         permissions=['netbox_bgp.view_routingpolicy'],
         buttons=(
             PluginMenuButton(
-                link='plugins:netbox_bgp:routing_policy_add',
+                link='plugins:netbox_bgp:routingpolicy_add',
                 title='Routing Policies',
                 icon_class='mdi mdi-plus-thick',
                 color=ButtonColorChoices.GREEN,
@@ -59,12 +59,12 @@ menu_items = (
         ),
     ),
     PluginMenuItem(
-        link='plugins:netbox_bgp:peergroup_list',
+        link='plugins:netbox_bgp:bgppeergroup_list',
         link_text='Peer Groups',
         permissions=['netbox_bgp.view_bgppeergroup'],
         buttons=(
             PluginMenuButton(
-                link='plugins:netbox_bgp:peergroup_add',
+                link='plugins:netbox_bgp:bgppeergroup_add',
                 title='Peer Groups',
                 icon_class='mdi mdi-plus-thick',
                 color=ButtonColorChoices.GREEN,

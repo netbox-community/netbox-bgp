@@ -21,8 +21,7 @@ class ASNListView(generic.ObjectListView):
     filterset = ASNFilterSet
     filterset_form = ASNFilterForm
     table = ASNTable
-    action_buttons = ()
-    template_name = 'netbox_bgp/asn_list.html'
+    action_buttons = ('add',)
 
 
 class ASNView(generic.ObjectView):
@@ -40,7 +39,6 @@ class ASNView(generic.ObjectView):
 class ASNEditView(generic.ObjectEditView):
     queryset = ASN.objects.all()
     model_form = ASNForm
-    default_return_url = 'plugins:netbox_bgp:asn_list'
 
 
 class ASNBulkDeleteView(generic.BulkDeleteView):
@@ -64,8 +62,7 @@ class CommunityListView(generic.ObjectListView):
     filterset = CommunityFilterSet
     filterset_form = CommunityFilterForm
     table = CommunityTable
-    action_buttons = ()
-    template_name = 'netbox_bgp/community_list.html'
+    action_buttons = ('add',)
 
 
 class CommunityView(generic.ObjectView):
@@ -76,7 +73,6 @@ class CommunityView(generic.ObjectView):
 class CommunityEditView(generic.ObjectEditView):
     queryset = Community.objects.all()
     model_form = CommunityForm
-    default_return_url = 'plugins:netbox_bgp:community_list'
 
 
 class CommunityBulkDeleteView(generic.BulkDeleteView):
@@ -100,20 +96,17 @@ class BGPSessionListView(generic.ObjectListView):
     filterset = BGPSessionFilterSet
     filterset_form = BGPSessionFilterForm
     table = BGPSessionTable
-    action_buttons = ()
-    template_name = 'netbox_bgp/bgpsession_list.html'
+    action_buttons = ('add',)
 
 
 class BGPSessionEditView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
     model_form = BGPSessionForm
-    default_return_url = 'plugins:netbox_bgp:session_list'
 
 
 class BGPSessionAddView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
     model_form = BGPSessionAddForm
-    default_return_url = 'plugins:netbox_bgp:session_list'
 
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
@@ -157,14 +150,12 @@ class RoutingPolicyListView(generic.ObjectListView):
     filterset = RoutingPolicyFilterSet
     filterset_form = RoutingPolicyFilterForm
     table = RoutingPolicyTable
-    action_buttons = ()
-    template_name = 'netbox_bgp/routingpolicy_list.html'
+    action_buttons = ('add',)
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):
     queryset = RoutingPolicy.objects.all()
     model_form = RoutingPolicyForm
-    default_return_url = 'plugins:netbox_bgp:routing_policy_list'
 
 
 class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
@@ -199,14 +190,12 @@ class BGPPeerGroupListView(generic.ObjectListView):
     filterset = BGPPeerGroupFilterSet
     filterset_form = BGPPeerGroupFilterForm
     table = BGPPeerGroupTable
-    action_buttons = ()
-    template_name = 'netbox_bgp/bgppeergroup_list.html'
+    action_buttons = ('add',)
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
     queryset = BGPPeerGroup.objects.all()
     model_form = BGPPeerGroupForm
-    default_return_url = 'plugins:netbox_bgp:peergroup_list'
 
 
 class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
