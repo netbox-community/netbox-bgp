@@ -6,13 +6,8 @@ from django.conf import settings
 from taggit.managers import TaggableManager
 
 from utilities.choices import ChoiceSet
-from utilities.querysets import RestrictedQuerySet
-from netbox.models import ChangeLoggedModel
-
-from netbox.models import CustomFieldsMixin as CustomFieldModel
-
-from extras.models import TaggedItem
-from extras.utils import extras_features
+from netbox.models import NetBoxModel
+from netbox.models.features import ChangeLoggingMixin
 
 
 class ASNStatusChoices(ChoiceSet):
@@ -22,16 +17,10 @@ class ASNStatusChoices(ChoiceSet):
     STATUS_DEPRECATED = 'deprecated'
 
     CHOICES = (
-        (STATUS_ACTIVE, 'Active'),
-        (STATUS_RESERVED, 'Reserved'),
-        (STATUS_DEPRECATED, 'Deprecated'),
+        (STATUS_ACTIVE, 'Active', 'blue'),
+        (STATUS_RESERVED, 'Reserved', 'cyan'),
+        (STATUS_DEPRECATED, 'Deprecated', 'red'),
     )
-
-    CSS_CLASSES = {
-        STATUS_ACTIVE: 'primary',
-        STATUS_RESERVED: 'info',
-        STATUS_DEPRECATED: 'danger',
-    }
 
 
 class SessionStatusChoices(ChoiceSet):
@@ -42,21 +31,14 @@ class SessionStatusChoices(ChoiceSet):
     STATUS_FAILED = 'failed'
 
     CHOICES = (
-        (STATUS_OFFLINE, 'Offline'),
-        (STATUS_ACTIVE, 'Active'),
-        (STATUS_PLANNED, 'Planned'),
-        (STATUS_FAILED, 'Failed'),
+        (STATUS_OFFLINE, 'Offline', 'orange'),
+        (STATUS_ACTIVE, 'Active', 'green'),
+        (STATUS_PLANNED, 'Planned', 'cyan'),
+        (STATUS_FAILED, 'Failed', 'red'),
     )
 
-    CSS_CLASSES = {
-        STATUS_OFFLINE: 'warning',
-        STATUS_ACTIVE: 'success',
-        STATUS_PLANNED: 'info',
-        STATUS_FAILED: 'danger',
-    }
 
-
-class ASNGroup(ChangeLoggedModel):
+class ASNGroup(ChangeLoggingMixin, models.Model):
     """
     """
     name = models.CharField(
@@ -77,8 +59,7 @@ class ASNGroup(ChangeLoggedModel):
         return self.name
 
 
-@extras_features('custom_fields', 'export_templates', 'webhooks')
-class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
+class RoutingPolicy(NetBoxModel):
     """
     """
     name = models.CharField(
@@ -89,10 +70,6 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
         blank=True
     )
 
-    tags = TaggableManager(through=TaggedItem)
-
-    objects = RestrictedQuerySet.as_manager()
-
     class Meta:
         verbose_name_plural = 'Routing Policies'
         unique_together = ['name', 'description']
@@ -101,11 +78,10 @@ class RoutingPolicy(ChangeLoggedModel, CustomFieldModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:routing_policy', args=[self.pk])
+        return reverse('plugins:netbox_bgp:routingpolicy', args=[self.pk])
 
 
-@extras_features('custom_fields', 'export_templates', 'webhooks')
-class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
+class BGPPeerGroup(NetBoxModel):
     """
     """
     name = models.CharField(
@@ -126,10 +102,6 @@ class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
         related_name='group_export_policies'
     )
 
-    tags = TaggableManager(through=TaggedItem)
-
-    objects = RestrictedQuerySet.as_manager()
-
     class Meta:
         verbose_name_plural = 'Peer Groups'
         unique_together = ['name', 'description']
@@ -138,10 +110,10 @@ class BGPPeerGroup(ChangeLoggedModel, CustomFieldModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:peergroup', args=[self.pk])
+        return reverse('plugins:netbox_bgp:bgppeergroup', args=[self.pk])
 
 
-class BGPBase(ChangeLoggedModel):
+class BGPBase(NetBoxModel):
     """
     """
     site = models.ForeignKey(
@@ -172,16 +144,12 @@ class BGPBase(ChangeLoggedModel):
         max_length=200,
         blank=True
     )
-    tags = TaggableManager(through=TaggedItem)
-
-    objects = RestrictedQuerySet.as_manager()
 
     class Meta:
         abstract = True
 
 
-@extras_features('custom_fields', 'export_templates', 'webhooks')
-class ASN(BGPBase, CustomFieldModel):
+class ASN(BGPBase):
 
     number = models.PositiveBigIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(4294967295)]
@@ -194,11 +162,12 @@ class ASN(BGPBase, CustomFieldModel):
         null=True
     )
 
-    tags = TaggableManager(through=TaggedItem, related_name='asn_tags')
+    tags = TaggableManager(through='extras.TaggedItem', related_name='asn_tags')
 
     clone_fields = ['description', 'status', 'tenant']
 
     class Meta:
+        verbose_name = 'AS Number'
         verbose_name_plural = 'AS Numbers'
         constraints = [
             models.UniqueConstraint(
@@ -213,8 +182,8 @@ class ASN(BGPBase, CustomFieldModel):
         ]
         # unique_together = ['number', 'site', 'tenant']
 
-    def get_status_class(self):
-        return ASNStatusChoices.CSS_CLASSES.get(self.status)
+    def get_status_color(self):
+        return ASNStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:asn', args=[self.pk])
@@ -233,7 +202,6 @@ class ASN(BGPBase, CustomFieldModel):
         return str(self.number)
 
 
-@extras_features('export_templates', 'webhooks')
 class Community(BGPBase):
     """
     """
@@ -248,15 +216,14 @@ class Community(BGPBase):
     def __str__(self):
         return self.value
 
-    def get_status_class(self):
-        return ASNStatusChoices.CSS_CLASSES.get(self.status)
+    def get_status_color(self):
+        return ASNStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-@extras_features('custom_fields', 'export_templates', 'webhooks')
-class BGPSession(ChangeLoggedModel, CustomFieldModel):
+class BGPSession(NetBoxModel):
     name = models.CharField(
         max_length=64,
         blank=True,
@@ -327,10 +294,6 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
 
     afi_safi = None  # for future use
 
-    tags = TaggableManager(through=TaggedItem)
-
-    objects = RestrictedQuerySet.as_manager()
-
     class Meta:
         verbose_name_plural = 'BGP Sessions'
         unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
@@ -338,8 +301,8 @@ class BGPSession(ChangeLoggedModel, CustomFieldModel):
     def __str__(self):
         return f'{self.device}:{self.name}'
 
-    def get_status_class(self):
-        return SessionStatusChoices.CSS_CLASSES.get(self.status)
+    def get_status_color(self):
+        return SessionStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:session', args=[self.pk])
+        return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])

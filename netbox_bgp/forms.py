@@ -15,9 +15,7 @@ from utilities.forms import (
     DynamicModelMultipleChoiceField, StaticSelect,
     APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
 )
-from extras.forms import (
-    CustomFieldModelForm, CustomFieldBulkEditForm, CustomFieldModelFilterForm
-)
+from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
 from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
@@ -68,7 +66,7 @@ class ASdotInput(TextInput):
         return super().render(name, value, attrs, renderer)
 
 
-class ASNFilterForm(CustomFieldModelFilterForm):
+class ASNFilterForm(NetBoxModelFilterSetForm):
     model = ASN
     q = forms.CharField(
         required=False,
@@ -91,7 +89,7 @@ class ASNFilterForm(CustomFieldModelFilterForm):
     tag = TagFilterField(model)
 
 
-class ASNForm(CustomFieldModelForm):
+class ASNForm(NetBoxModelForm):
     number = ASNField(
         widget=ASdotInput
     )
@@ -102,6 +100,11 @@ class ASNForm(CustomFieldModelForm):
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
         required=False
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=ASNStatusChoices,
+        widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -126,7 +129,7 @@ class ASNForm(CustomFieldModelForm):
         ]
 
 
-class ASNBulkEditForm(CustomFieldBulkEditForm):
+class ASNBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=ASN.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -145,16 +148,24 @@ class ASNBulkEditForm(CustomFieldBulkEditForm):
         widget=StaticSelect()
     )
 
-    class Meta:
-        nullable_fields = [
-            'tenant', 'description',
-        ]
+    model = ASN
+    fieldsets = (
+        (None, ('tenant', 'description', 'status')),
+    )
+    nullable_fields = (
+        'tenant', 'description',
+    )
 
 
 class CommunityForm(BootstrapMixin, forms.ModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=ASNStatusChoices,
+        widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -219,7 +230,7 @@ class CommunityBulkEditForm(BulkEditForm):
         ]
 
 
-class BGPSessionForm(CustomFieldModelForm):
+class BGPSessionForm(NetBoxModelForm):
     name = forms.CharField(
         max_length=64,
         required=True
@@ -325,7 +336,7 @@ class BGPSessionAddForm(BGPSessionForm):
         return self.cleaned_data['remote_address']
 
 
-class BGPSessionFilterForm(CustomFieldModelFilterForm):
+class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     model = BGPSession
     q = forms.CharField(
         required=False,
@@ -394,7 +405,7 @@ class BGPSessionFilterForm(CustomFieldModelFilterForm):
     tag = TagFilterField(model)
 
 
-class RoutingPolicyFilterForm(CustomFieldModelFilterForm):
+class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
     model = RoutingPolicy
     q = forms.CharField(
         required=False,
@@ -404,7 +415,7 @@ class RoutingPolicyFilterForm(CustomFieldModelFilterForm):
     tag = TagFilterField(model)
 
 
-class RoutingPolicyForm(CustomFieldModelForm):
+class RoutingPolicyForm(NetBoxModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -415,7 +426,7 @@ class RoutingPolicyForm(CustomFieldModelForm):
         fields = ['name', 'description']
 
 
-class BGPPeerGroupFilterForm(CustomFieldModelFilterForm):
+class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
     model = BGPPeerGroup
     q = forms.CharField(
         required=False,
@@ -425,7 +436,7 @@ class BGPPeerGroupFilterForm(CustomFieldModelFilterForm):
     tag = TagFilterField(model)
 
 
-class BGPPeerGroupForm(CustomFieldModelForm):
+class BGPPeerGroupForm(NetBoxModelForm):
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,

@@ -2,7 +2,8 @@ import django_tables2 as tables
 from django.utils.safestring import mark_safe
 from django_tables2.utils import A
 
-from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
+from netbox.tables import NetBoxTable
+from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
 from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
 
@@ -24,8 +25,7 @@ POLICIES = """
 """
 
 
-class ASNTable(BaseTable):
-    pk = ToggleColumn()
+class ASNTable(NetBoxTable):
     number = tables.LinkColumn(text=lambda record: record.__str__(), args=[A('pk')])
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
@@ -35,13 +35,12 @@ class ASNTable(BaseTable):
         template_code=COL_TENANT
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = ASN
-        fields = ('pk', 'number', 'description', 'status')
+        fields = ('pk', 'number', 'description', 'status', 'tenant')
 
 
-class CommunityTable(BaseTable):
-    pk = ToggleColumn()
+class CommunityTable(NetBoxTable):
     value = tables.LinkColumn()
     status = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
@@ -53,16 +52,15 @@ class CommunityTable(BaseTable):
         url_name='plugins:netbox_bgp:community_list'
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Community
-        fields = ('pk', 'value', 'description', 'status', 'tags')
+        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags')
         default_columns = (
             'pk', 'value', 'description', 'status', 'tenant'
         )
 
 
-class BGPSessionTable(BaseTable):
-    pk = ToggleColumn()
+class BGPSessionTable(NetBoxTable):
     name = tables.LinkColumn()
     device = tables.LinkColumn()
     local_address = tables.LinkColumn()
@@ -78,12 +76,12 @@ class BGPSessionTable(BaseTable):
         template_code=COL_TENANT
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status'
+            'site', 'status', 'tenant'
         )
         default_columns = (
             'pk', 'name', 'device', 'local_address', 'local_as',
@@ -92,17 +90,15 @@ class BGPSessionTable(BaseTable):
         )
 
 
-class RoutingPolicyTable(BaseTable):
-    pk = ToggleColumn()
+class RoutingPolicyTable(NetBoxTable):
     name = tables.LinkColumn()
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
         fields = ('pk', 'name', 'description')
 
 
-class BGPPeerGroupTable(BaseTable):
-    pk = ToggleColumn()
+class BGPPeerGroupTable(NetBoxTable):
     name = tables.LinkColumn()
     import_policies = tables.TemplateColumn(
         template_code=POLICIES,
@@ -116,7 +112,7 @@ class BGPPeerGroupTable(BaseTable):
         url_name='plugins:netbox_bgp:peer_group_list'
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = BGPPeerGroup
         fields = (
             'pk', 'name', 'description', 'tags',
