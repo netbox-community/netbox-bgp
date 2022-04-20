@@ -1,7 +1,11 @@
-from graphene import ObjectType
+from graphene import ObjectType, Field
+
+from netbox.graphql.scalars import BigInt
 from netbox.graphql.types import NetBoxObjectType
 from netbox.graphql.fields import ObjectField, ObjectListField
+
 from . import models, filters
+
 
 class CommunityType(NetBoxObjectType):
     class Meta:
@@ -9,11 +13,15 @@ class CommunityType(NetBoxObjectType):
         fields = '__all__'
         filterset_class = filters.CommunityFilterSet
 
+
 class AsnType(NetBoxObjectType):
+    number = Field(BigInt)
+
     class Meta:
         model = models.ASN
         fields = '__all__'
         filterset_class = filters.ASNFilterSet
+
 
 class BgpSessionType(NetBoxObjectType):
     class Meta:
@@ -21,16 +29,13 @@ class BgpSessionType(NetBoxObjectType):
         fields = '__all__'
         filterset_class = filters.BGPSessionFilterSet
 
-class BgpBaseType(NetBoxObjectType):
-    class Meta:
-        model = models.BGPBase
-        fields = '__all__'
 
-class BgpPeerGroupType(NetBoxObjectType):
+class PeerGroupType(NetBoxObjectType):
     class Meta:
         model = models.BGPPeerGroup
         fields = '__all__'
         filterset_class = filters.BGPPeerGroupFilterSet
+
 
 class RoutingPolicyType(NetBoxObjectType):
     class Meta:
@@ -38,34 +43,22 @@ class RoutingPolicyType(NetBoxObjectType):
         fields = '__all__'
         filterset_class = filters.RoutingPolicyFilterSet
 
-class AsnGroupType(NetBoxObjectType):
-    class Meta:
-        model = models.ASNGroup
-        fields = '__all__'
-
-
-
 
 class BGPQuery(ObjectType):
     community = ObjectField(CommunityType)
     community_list = ObjectListField(CommunityType)
 
-    asn = ObjectField(AsnType)
-    asn_list = ObjectListField(AsnType)
+    bgp_asn = ObjectField(AsnType)
+    bgp_asn_list = ObjectListField(AsnType)
 
-    bgpsession = ObjectField(BgpSessionType)
-    bgpsession_list = ObjectListField(BgpSessionType)
+    bgp_session = ObjectField(BgpSessionType)
+    bgp_session_list = ObjectListField(BgpSessionType)
 
-    bgpbase = ObjectField(BgpBaseType)
-    bgpbase_list = ObjectListField(BgpBaseType)
+    peer_group = ObjectField(PeerGroupType)
+    peer_group_list = ObjectListField(PeerGroupType)
 
-    bgppeergroup = ObjectField(BgpPeerGroupType)
-    bgppeergroup_list = ObjectListField(BgpPeerGroupType)
+    routing_policy = ObjectField(RoutingPolicyType)
+    routing_policy_list = ObjectListField(RoutingPolicyType)
 
-    routingpolicy = ObjectField(RoutingPolicyType)
-    routingpolicy_list = ObjectListField(RoutingPolicyType)
-
-    asngroup = ObjectField(AsnGroupType)
-    asngroup_list = ObjectListField(AsnGroupType)
 
 schema = BGPQuery
