@@ -11,7 +11,7 @@ from dcim.models import Device, Site
 from ipam.models import IPAddress
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
-    BootstrapMixin, DynamicModelChoiceField, BulkEditForm,
+    DynamicModelChoiceField,
     DynamicModelMultipleChoiceField, StaticSelect,
     APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
 )
@@ -33,7 +33,7 @@ class ASNField(forms.CharField):
 
     def to_python(self, value):
         if not re.match(r'^\d+(\.\d+)?$', value):
-            raise ValidationError('Invalid AS Number: {}'.format(value))       
+            raise ValidationError('Invalid AS Number: {}'.format(value))
         if '.' in value:
             if int(value.split('.')[0]) > 65535 or int(value.split('.')[1]) > 65535:
                 raise ValidationError('Invalid AS Number: {}'.format(value))
@@ -157,7 +157,7 @@ class ASNBulkEditForm(NetBoxModelBulkEditForm):
     )
 
 
-class CommunityForm(BootstrapMixin, forms.ModelForm):
+class CommunityForm(NetBoxModelForm):
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -179,7 +179,7 @@ class CommunityForm(BootstrapMixin, forms.ModelForm):
         ]
 
 
-class CommunityFilterForm(BootstrapMixin, forms.ModelForm):
+class CommunityFilterForm(NetBoxModelFilterSetForm):
     q = forms.CharField(
         required=False,
         label='Search'
@@ -200,12 +200,10 @@ class CommunityFilterForm(BootstrapMixin, forms.ModelForm):
 
     tag = TagFilterField(Community)
 
-    class Meta:
-        model = Community
-        fields = ['q', 'status', 'tenant']
+    model = Community
 
 
-class CommunityBulkEditForm(BulkEditForm):
+class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=Community.objects.all(),
         widget=forms.MultipleHiddenInput
@@ -224,10 +222,10 @@ class CommunityBulkEditForm(BulkEditForm):
         widget=StaticSelect()
     )
 
-    class Meta:
-        nullable_fields = [
-            'tenant', 'description',
-        ]
+    model = Community
+    nullable_fields = [
+       'tenant', 'description',
+    ]
 
 
 class BGPSessionForm(NetBoxModelForm):

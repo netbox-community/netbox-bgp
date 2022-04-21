@@ -1,5 +1,8 @@
+import json
+
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.client import Client
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -18,8 +21,10 @@ class BaseTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.token = Token.objects.create(user=self.user)
+        # todo change to Client
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.gql_client = Client(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
 
 class ASNTestCase(BaseTestCase):
@@ -92,6 +97,27 @@ class ASNTestCase(BaseTestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_graphql(self):
+        url = reverse('graphql')
+        query = 'query bgp_asn($id: Int!){bgp_asn(id: $id){number}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query, 'variables': {'id': self.asn1.pk}}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content)['data']['bgp_asn']['number'], self.asn1.number)
+
+    def test_graphql_list(self):
+        url = reverse('graphql')
+        query = '{bgp_asn_list{number}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class CommunityTestCase(BaseTestCase):
     def setUp(self):
@@ -126,6 +152,27 @@ class CommunityTestCase(BaseTestCase):
     def test_delete_community(self):
         pass
 
+    def test_graphql(self):
+        url = reverse('graphql')
+        query = 'query community($id: Int!){community(id: $id){value}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query, 'variables': {'id': self.community1.pk}}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content)['data']['community']['value'], self.community1.value)
+
+    def test_graphql_list(self):
+        url = reverse('graphql')
+        query = '{community_list{value}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class PeerGroupTestCase(BaseTestCase):
     def setUp(self):
@@ -159,6 +206,27 @@ class PeerGroupTestCase(BaseTestCase):
 
     def test_delete_peer_group(self):
         pass
+
+    def test_graphql(self):
+        url = reverse('graphql')
+        query = 'query peer_group($id: Int!){peer_group(id: $id){name}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query, 'variables': {'id': self.peer_group.pk}}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content)['data']['peer_group']['name'], self.peer_group.name)
+
+    def test_graphql_list(self):
+        url = reverse('graphql')
+        query = '{peer_group_list{name}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class SessionTestCase(BaseTestCase):
@@ -251,3 +319,24 @@ class SessionTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
+
+    def test_graphql(self):
+        url = reverse('graphql')
+        query = 'query bgp_session($id: Int!){bgp_session(id: $id){name}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query, 'variables': {'id': self.session.pk}}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content)['data']['bgp_session']['name'], self.session.name)
+
+    def test_graphql_list(self):
+        url = reverse('graphql')
+        query = '{bgp_session_list{name}}'
+        response = self.gql_client.post(
+            url,
+            json.dumps({'query': query}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
