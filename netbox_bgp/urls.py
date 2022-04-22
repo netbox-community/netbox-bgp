@@ -49,7 +49,7 @@ urlpatterns = [
     path('routing-policy/<int:pk>/delete/', RoutingPolicyDeleteView.as_view(), name='routingpolicy_delete'),
     path('routing-policy/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='routingpolicy_changelog', kwargs={'model': RoutingPolicy}),
     # Peer Groups
-    path('peer-group/', BGPPeerGroupListView.as_view(), name='bgppeergroup-list'),
+    path('peer-group/', BGPPeerGroupListView.as_view(), name='bgppeergroup_list'),
     path('peer-group/add/', BGPPeerGroupEditView.as_view(), name='bgppeergroup_add'),
     path('peer-group/delete/', BGPPeerGroupBulkDeleteView.as_view(), name='bgppeergroup_bulk_delete'),
     path('peer-group/<int:pk>/', BGPPeerGroupView.as_view(), name='bgppeergroup'),
