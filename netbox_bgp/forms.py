@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from extras.models import Tag
 from tenancy.models import Tenant
 from dcim.models import Device, Site
-from ipam.models import IPAddress
+from ipam.models import IPAddress, Prefix
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
     DynamicModelChoiceField,
@@ -19,7 +19,7 @@ from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFi
 
 from .models import (
     ASN, ASNStatusChoices, Community, BGPSession,
-    SessionStatusChoices, RoutingPolicy, BGPPeerGroup
+    SessionStatusChoices, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
 )
 
 
@@ -457,3 +457,25 @@ class BGPPeerGroupForm(NetBoxModelForm):
     class Meta:
         model = BGPPeerGroup
         fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']
+
+
+class RoutingPolicyRuleForm(NetBoxModelForm):
+    match_community = DynamicModelMultipleChoiceField(
+        queryset=Community.objects.all(),
+        required=False,
+        #widget=APISelectMultiple(
+        #    api_url='/api/plugins/bgp/community/'
+        #)
+    )
+    match_ip = DynamicModelMultipleChoiceField(
+        queryset=Prefix.objects.all(),
+        required=False,
+    )
+
+    class Meta:
+        model = RoutingPolicyRule
+        fields = [
+            'routing_policy', 'index', 'action', 'match_community',
+            'match_ip', 'description', 'match_ip_cond', 'match_custom',
+            'set_actions'
+        ]
