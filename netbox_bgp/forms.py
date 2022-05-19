@@ -463,19 +463,32 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     match_community = DynamicModelMultipleChoiceField(
         queryset=Community.objects.all(),
         required=False,
-        #widget=APISelectMultiple(
-        #    api_url='/api/plugins/bgp/community/'
-        #)
     )
     match_ip = DynamicModelMultipleChoiceField(
         queryset=Prefix.objects.all(),
         required=False,
+        label='Match Prefix',
+    )
+    match_ip_cond = forms.JSONField(
+        label='Match filtered prefixes',
+        help_text='Filter for Prefixes, e.g., {"site__name": "site1", "tenant__name": "tenant1"}',
+        required=False,
+    )
+    match_custom = forms.JSONField(
+        label='Custom Match',
+        help_text='Any custom match statements, e.g., {"ip nexthop": "1.1.1.1"}',
+        required=False,
+    )
+    set_actions = forms.JSONField(
+        label='Set statements',
+        help_text='Set statements, e.g., {"as-path prepend": [12345,12345]}',
+        required=False
     )
 
     class Meta:
         model = RoutingPolicyRule
         fields = [
             'routing_policy', 'index', 'action', 'match_community',
-            'match_ip', 'description', 'match_ip_cond', 'match_custom',
-            'set_actions'
+            'match_ip', 'match_ip_cond', 'match_custom',
+            'set_actions', 'description',
         ]
