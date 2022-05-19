@@ -6,13 +6,15 @@ from .filters import (
     ASNFilterSet, CommunityFilterSet, BGPSessionFilterSet,
     RoutingPolicyFilterSet, BGPPeerGroupFilterSet
 )
-from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
-from .tables import ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable, BGPPeerGroupTable
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
+from .tables import (
+    ASNTable, CommunityTable, BGPSessionTable, RoutingPolicyTable, BGPPeerGroupTable, RoutingPolicyRuleTable
+)
 from .forms import (
     ASNFilterForm, ASNBulkEditForm, ASNForm, CommunityForm,
     CommunityFilterForm, CommunityBulkEditForm, BGPSessionForm,
     BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
-    RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm
+    RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm, RoutingPolicyRuleForm
 )
 
 
@@ -176,7 +178,10 @@ class RoutingPolicyView(generic.ObjectView):
         )
         sess = sess.distinct()
         sess_table = BGPSessionTable(sess)
+        rules = instance.rules.all()
+        rules_table = RoutingPolicyRuleTable(rules)
         return {
+            'rules_table': rules_table,
             'related_session_table': sess_table
         }
 
@@ -229,3 +234,39 @@ class BGPPeerGroupView(generic.ObjectView):
 
 class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
     queryset = BGPPeerGroup.objects.all()
+
+
+class RoutingPolicyRuleEditView(generic.ObjectEditView):
+    queryset = RoutingPolicyRule.objects.all()
+    form = RoutingPolicyRuleForm
+
+
+class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
+    queryset = RoutingPolicyRule.objects.all()
+
+
+class RoutingPolicyRuleView(generic.ObjectView):
+    queryset = RoutingPolicyRule.objects.all()
+    template_name = 'netbox_bgp/routingpolicyrule.html'
+
+    def get_extra_context(self, request, instance):
+        if request.GET.get('format') in ['json', 'yaml']:
+            format = request.GET.get('format')
+            if request.user.is_authenticated:
+                request.user.config.set('data_format', format, commit=True)
+        elif request.user.is_authenticated:
+            format = request.user.config.get('data_format', 'json')
+        else:
+            format = 'json'
+
+        return {
+            'format': format,
+        }
+
+
+class RoutingPolicyRuleListView(generic.ObjectListView):
+    queryset = RoutingPolicyRule.objects.all()
+    #filterset = RoutingPolicyRuleFilterSet
+    #filterset_form = RoutingPolicyRuleFilterForm
+    table = RoutingPolicyRuleTable
+    action_buttons = ('add',)

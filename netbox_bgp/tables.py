@@ -5,7 +5,7 @@ from django_tables2.utils import A
 from netbox.tables import NetBoxTable
 from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
-from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
 COL_TENANT = """
@@ -120,4 +120,21 @@ class BGPPeerGroupTable(NetBoxTable):
         )
         default_columns = (
             'pk', 'name', 'description'
+        )
+
+
+class RoutingPolicyRuleTable(NetBoxTable):
+    routing_policy = tables.Column(
+        linkify=True
+    )
+    index = tables.Column(
+        linkify=True
+    )
+    action = ChoiceFieldColumn()
+
+    class Meta(NetBoxTable.Meta):
+        model = RoutingPolicyRule
+        fields = (
+            'pk', 'routing_policy', 'index', 'match_statements',
+            'set_statements', 'action', 'description'
         )

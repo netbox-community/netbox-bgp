@@ -11,7 +11,7 @@ from ipam.api.nested_serializers import NestedIPAddressSerializer
 
 from netbox_bgp.models import (
     ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup,
-    Community
+    Community, RoutingPolicyRule
 )
 
 
@@ -161,6 +161,13 @@ class BGPSessionSerializer(NetBoxModelSerializer):
                     )
         return ret
 
+class NestedBGPSessionSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:bgpsession')
+
+    class Meta:
+        model = BGPSession
+        fields = ['id', 'url', 'name', 'description']
+        validators = []
 
 class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
@@ -168,4 +175,11 @@ class CommunitySerializer(NetBoxModelSerializer):
 
     class Meta:
         model = Community
-        fields = ['id', 'value', 'status', 'description', 'tenant', 'tags']
+        # fields = ['id', 'value', 'status', 'description', 'tenant', 'tags']
+        fields = '__all__'
+
+
+class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
+    class Meta:
+        model = RoutingPolicyRule
+        fields = '__all__'

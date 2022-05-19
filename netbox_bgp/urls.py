@@ -1,6 +1,6 @@
 from django.urls import path
 from netbox.views.generic import ObjectChangeLogView
-from .models import ASN, BGPSession, Community, RoutingPolicy, BGPPeerGroup
+from .models import ASN, BGPSession, Community, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
 
 from .views import (
     ASNListView, ASNView, ASNBulkDeleteView, ASNEditView, ASNBulkEditView,
@@ -11,7 +11,8 @@ from .views import (
     RoutingPolicyListView, RoutingPolicyEditView, RoutingPolicyBulkDeleteView,
     RoutingPolicyView, RoutingPolicyDeleteView, BGPPeerGroupListView,
     BGPPeerGroupEditView, BGPPeerGroupBulkDeleteView, BGPPeerGroupView,
-    BGPPeerGroupDeleteView
+    BGPPeerGroupDeleteView, RoutingPolicyRuleEditView, RoutingPolicyRuleDeleteView,
+    RoutingPolicyRuleView, RoutingPolicyRuleListView
 )
 
 urlpatterns = [
@@ -41,11 +42,12 @@ urlpatterns = [
     path('session/<int:pk>/delete/', BGPSessionDeleteView.as_view(), name='bgpsession_delete'),
     path('session/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='bgpsession_changelog', kwargs={'model': BGPSession}),
     # Routing Policies
-    path('routing-policy/<int:pk>/', RoutingPolicyView.as_view(), name='routingpolicy'),
+    
     path('routing-policy/', RoutingPolicyListView.as_view(), name='routingpolicy_list'),
     path('routing-policy/add/', RoutingPolicyEditView.as_view(), name='routingpolicy_add'),
-    path('routing-policy/<int:pk>/edit/', RoutingPolicyEditView.as_view(), name='routingpolicy_edit'),
     path('routing-policy/delete/', RoutingPolicyBulkDeleteView.as_view(), name='routingpolicy_bulk_delete'),
+    path('routing-policy/<int:pk>/', RoutingPolicyView.as_view(), name='routingpolicy'),
+    path('routing-policy/<int:pk>/edit/', RoutingPolicyEditView.as_view(), name='routingpolicy_edit'),
     path('routing-policy/<int:pk>/delete/', RoutingPolicyDeleteView.as_view(), name='routingpolicy_delete'),
     path('routing-policy/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='routingpolicy_changelog', kwargs={'model': RoutingPolicy}),
     # Peer Groups
@@ -56,4 +58,11 @@ urlpatterns = [
     path('peer-group/<int:pk>/edit/', BGPPeerGroupEditView.as_view(), name='bgppeergroup_edit'),
     path('peer-group/<int:pk>/delete/', BGPPeerGroupDeleteView.as_view(), name='bgppeergroup_delete'),
     path('peer-group/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='bgppeergroup_changelog', kwargs={'model': BGPPeerGroup}),
+    # Routing Policy Rules
+    path('routing-policy-rule/', RoutingPolicyRuleListView.as_view(), name='routingpolicyrule_list'),
+    path('routing-policy-rule/add/', RoutingPolicyRuleEditView.as_view(), name='routingpolicyrule_add'),
+    path('routing-policy-rule/<int:pk>/', RoutingPolicyRuleView.as_view(), name='routingpolicyrule'),
+    path('routing-policy-rule/<int:pk>/edit/', RoutingPolicyRuleEditView.as_view(), name='routingpolicyrule_edit'),
+    path('routing-policy-rule/<int:pk>/delete/', RoutingPolicyRuleDeleteView.as_view(), name='routingpolicyrule_delete'),
+    path('routing-policy-rule/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='routingpolicyrule_changelog', kwargs={'model': RoutingPolicyRule}),
 ]

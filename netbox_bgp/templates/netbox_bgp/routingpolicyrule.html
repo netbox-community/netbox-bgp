@@ -1,0 +1,60 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col col-md-5">
+        <div class="card">
+            <h5 class="card-header">Routing Policy Rule</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <th scope="row">Routing Policy</th>
+                        <td>
+                            <a href="{{ object.routing_policy.get_absolute_url }}">{{ object.routing_policy }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Index</th>
+                        <td>{{ object.index }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Action</th>
+                        <td>{% badge object.get_action_display bg_color=object.get_action_color %}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td>{{ object.description|placeholder }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
+    </div>
+    <div class="col col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <h5>Statements</h5>
+                <div class="float-end">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="?format=json" type="button" class="btn btn-outline-dark{% if format == 'json' %} active{% endif %}">JSON</a>
+                        <a href="?format=yaml" type="button" class="btn btn-outline-dark{% if format == 'yaml' %} active{% endif %}">YAML</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                Match
+                <div class="rendered-context-data">
+                    <pre class="block">{% if format == 'json' %}{{ object.match_statements|json }}{% elif format == 'yaml' %}{{ object.match_statements|yaml }}{% else %}{{ object.match_statements }}{% endif %}</pre>
+                </div>
+                Set
+                <div class="rendered-context-data">
+                    <pre class="block">{% if format == 'json' %}{{ object.set_statements|json }}{% elif format == 'yaml' %}{{ object.set_statements|yaml }}{% else %}{{ object.set_statements }}{% endif %}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
