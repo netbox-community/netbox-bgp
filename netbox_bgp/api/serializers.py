@@ -161,6 +161,13 @@ class BGPSessionSerializer(NetBoxModelSerializer):
                     )
         return ret
 
+class NestedBGPSessionSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:bgpsession')
+
+    class Meta:
+        model = BGPSession
+        fields = ['id', 'url', 'name', 'description']
+        validators = []
 
 class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=ASNStatusChoices, required=False)
