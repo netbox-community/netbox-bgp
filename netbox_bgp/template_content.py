@@ -25,13 +25,16 @@ class DeviceBGPSession(PluginTemplateExtension):
     def x_page(self):
         obj = self.context['object']
         sess = BGPSession.objects.filter(device=obj)
-        sess_table = BGPSessionTable(sess)
-        return self.render(
-            'netbox_bgp/device_extend.html',
-            extra_context={
-                'related_session_table': sess_table
-            }
-        )
+        if sess.exists():
+            # Only display the table when a session exists
+            sess_table = BGPSessionTable(sess)
+            return self.render(
+                'netbox_bgp/device_extend.html',
+                extra_context={
+                    'related_session_table': sess_table
+                }
+            )
+        return ''
 
 
 template_extensions = [DeviceBGPSession]
