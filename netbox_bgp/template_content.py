@@ -25,7 +25,7 @@ class DeviceBGPSession(PluginTemplateExtension):
     def x_page(self):
         obj = self.context['object']
         sess = BGPSession.objects.filter(device=obj)
-        if sess:
+        if sess.exists():
             # Only display the table when a session exists
             sess_table = BGPSessionTable(sess)
             return self.render(
