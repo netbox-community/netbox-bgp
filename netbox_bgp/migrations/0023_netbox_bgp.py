@@ -14,8 +14,8 @@ def use_core_asn(apps, schema_editor):
     CoreASN = apps.get_model('ipam', 'ASN')
 
     for bgpsession in BGPSession.objects.all():
-        old_local_as = PluginASN.objects.get(bgpsession.local_as).number
-        old_remote_as = PluginASN.objects.get(bgpsession.remote_as).number
+        old_local_as = PluginASN.objects.get(id=bgpsession.local_as).number
+        old_remote_as = PluginASN.objects.get(id=bgpsession.remote_as).number
         bgpsession.local_as = CoreASN.objects.get(asn=old_local_as).id
         bgpsession.remote_as = CoreASN.objects.get(asn=old_remote_as).id
         bgpsession.save()
