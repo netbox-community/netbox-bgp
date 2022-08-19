@@ -1,0 +1,94 @@
+{% extends 'generic/object.html' %}
+{% load buttons %}
+{% load custom_links %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:prefixlist_list' %}">Prefix Lists</a></li>
+{% endblock %}
+{% block controls %}
+<div class="pull-right noprint">
+    {% if perms.netbox_bgp.change_prefixlist %}
+    <a href="{% url 'plugins:netbox_bgp:prefixlistrule_add' %}?prefix_list={{ object.pk }}" class="btn btn-success">
+        <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Rule
+    </a>
+    {% endif %}
+    {% if perms.netbox_bgp.change_policy %}
+    <a href="{% url 'plugins:netbox_bgp:prefixlist_edit' pk=object.pk %}" class="btn btn-warning">
+        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
+    </a>
+    {% endif %}
+    {% if perms.netbox_bgp.delete_policy %}
+    <a href="{% url 'plugins:netbox_bgp:prefixlist_delete' pk=object.pk %}" class="btn btn-danger">
+        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
+    </a>
+    {% endif %}
+</div>
+{% endblock controls %}
+{% block tabs %}
+<ul class="nav nav-tabs px-3">
+    {% block tab_items %}
+    <li class="nav-item" role="presentation">
+        <a class="nav-link{% if not active_tab %} active{% endif %}" href="{{ object.get_absolute_url }}">{{ object|meta:"verbose_name"|bettertitle }}</a>
+    </li>
+    {% endblock tab_items %}
+    {% if perms.extras.view_objectchange %}
+    <li role="presentation" class="nav-item">
+        <a href="{% url 'plugins:netbox_bgp:prefixlist_changelog' pk=object.pk %}" class="nav-link{% if active_tab == 'changelog'%} active{% endif %}">Change Log</a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock tabs %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card">
+            <h5 class="card-header">
+                Prefix List
+            </h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <td>name</td>
+                        <td>{{ object.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Description</td>
+                        <td>{{ object.description|placeholder }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
+        {% plugin_left_page object %}
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <h5 class="card-header">
+                Related Routing Policy Rules
+            </h5>
+            <div class="card-body">
+                {% render_table rprules_table 'inc/table.html' %}
+            </div>
+            {% plugin_right_page object %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">
+                Rules
+            </h5>
+            <div class="card-body">
+                {% render_table rules_table 'inc/table.html' %}
+            </div>
+            {% plugin_full_width_page object %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.db.models import Q
 from netaddr.core import AddrFormatError
 from extras.filters import TagFilter
 
-from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup, PrefixList
 from ipam.models import IPAddress
 from dcim.models import Device
 
@@ -206,6 +206,28 @@ class BGPPeerGroupFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = BGPPeerGroup
+        fields = ['name', 'description']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(name__icontains=value)
+                | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class PrefixListFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = PrefixList
         fields = ['name', 'description']
 
     def search(self, queryset, name, value):

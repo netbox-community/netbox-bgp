@@ -1,0 +1,35 @@
+{% extends 'base/layout.html' %}
+{% load helpers %}
+{% load render_table from django_tables2 %}
+
+
+{% block title %}Migrate {{ table.rows|length }} ASNs?{% endblock %}
+
+{% block content %}
+<div class="container-md px-0">
+    <div class="alert alert-warning mb-3" role="alert">
+        <h4 class="alert-heading">Confirm Migration</h4>
+        <hr />
+        <strong>Warning:</strong> The following operation will create <strong>{{ table.rows|length }}</strong>
+        NetBox ASNs.
+        {% block message_extra %}{% endblock %}
+    </div>
+</div>
+<div class="container-xl px-0">
+    <div class="table-responsive">
+        {% render_table table 'inc/table.html' %}
+    </div>
+    <div class="row mt-3">
+        <form action="" method="post">
+            {% csrf_token %}
+            {% for field in form.hidden_fields %}
+            {{ field }}
+            {% endfor %}
+            <div class="text-end">
+                <button type="submit" name="_confirm" class="btn btn-warning">Migrate {{ table.rows|length }} ASNs</button>
+                <a href="{{ return_url }}" class="btn btn-outline-dark">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
