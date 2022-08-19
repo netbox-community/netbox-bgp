@@ -5,7 +5,7 @@ from django_tables2.utils import A
 from netbox.tables import NetBoxTable
 from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
-from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
+from .models import ASN, Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
 COL_TENANT = """
@@ -137,4 +137,33 @@ class RoutingPolicyRuleTable(NetBoxTable):
         fields = (
             'pk', 'routing_policy', 'index', 'match_statements',
             'set_statements', 'action', 'description'
+        )
+
+
+class PrefixListTable(NetBoxTable):
+    name = tables.LinkColumn()
+
+    class Meta(NetBoxTable.Meta):
+        model = PrefixList
+        fields = ('pk', 'name', 'description')
+
+
+class PrefixListRuleTable(NetBoxTable):
+    prefix_list = tables.Column(
+        linkify=True
+    )
+    index = tables.Column(
+        linkify=True
+    )
+    action = ChoiceFieldColumn()
+    network = tables.Column(
+        verbose_name='Prefix',
+        linkify=True,
+    )
+
+    class Meta(NetBoxTable.Meta):
+        model = PrefixListRule
+        fields = (
+            'pk', 'prefix_list', 'index',
+            'action', 'network', 'ge', 'le'
         )

@@ -1,0 +1,17 @@
+{% extends 'generic/object_list.html' %}
+
+{% block subtitle %}
+<div class="alert alert-warning text-center mx-3" role="alert">
+    <h4><i class="mdi mdi-alert"></i>Warning</h4>
+    <span>ASN model will be removed in next release. Please migrate plugin ASN objects to NetBox native ASN objects.</span>
+</div>
+{% endblock %}
+{% block extra_controls %}
+<form method="post">
+    {% csrf_token %}
+    <input type="checkbox" name="_all" hidden checked>
+    <button type="submit" formaction="{% url 'plugins:netbox_bgp:asn_migrate' %}" class="btn btn-sm btn-warning">
+        <span class="mdi mdi-source-pull" aria-hidden="true"></span> Migrate ASNs
+    </button>
+</form>
+{% endblock %}
