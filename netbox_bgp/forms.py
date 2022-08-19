@@ -423,7 +423,7 @@ class RoutingPolicyForm(NetBoxModelForm):
 
     class Meta:
         model = RoutingPolicy
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'tags']
 
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
@@ -519,7 +519,7 @@ class PrefixListForm(NetBoxModelForm):
 
     class Meta:
         model = PrefixList
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'tags']
 
 
 class PrefixListRuleForm(NetBoxModelForm):

@@ -176,6 +176,7 @@ class CommunityBulkEditView(generic.BulkEditView):
 
 class CommunityDeleteView(generic.ObjectDeleteView):
     queryset = Community.objects.all()
+    default_return_url = 'plugins:netbox_bgp:community_list'
 
 
 # Session
@@ -234,7 +235,7 @@ class BGPSessionView(generic.ObjectView):
 
 class BGPSessionDeleteView(generic.ObjectDeleteView):
     queryset = BGPSession.objects.all()
-
+    default_return_url = 'plugins:netbox_bgp:bgpsession_list'
 
 # Routing Policy
 
@@ -280,6 +281,7 @@ class RoutingPolicyView(generic.ObjectView):
 
 class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicy.objects.all()
+    default_return_url = 'plugins:netbox_bgp:routingpolicy_list'
 
 
 # Peer Group
@@ -329,6 +331,7 @@ class BGPPeerGroupView(generic.ObjectView):
 
 class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
     queryset = BGPPeerGroup.objects.all()
+    default_return_url = 'plugins:netbox_bgp:bgppeergroup_list'
 
 
 # Routing Policy Rule
@@ -341,6 +344,7 @@ class RoutingPolicyRuleEditView(generic.ObjectEditView):
 
 class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicyRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:routingpolicyrule_list'
 
 
 class RoutingPolicyRuleView(generic.ObjectView):
@@ -408,6 +412,7 @@ class PrefixListView(generic.ObjectView):
 
 class PrefixListDeleteView(generic.ObjectDeleteView):
     queryset = PrefixList.objects.all()
+    default_return_url = 'plugins:netbox_bgp:prefixlist_list'
 
 
 # Prefix List Rule
@@ -433,6 +438,7 @@ class PrefixListRuleBulkDeleteView(generic.BulkDeleteView):
 
 class PrefixListRuleDeleteView(generic.ObjectDeleteView):
     queryset = PrefixListRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:prefixlistrule_list'
 
 
 class PrefixListRuleView(generic.ObjectView):
