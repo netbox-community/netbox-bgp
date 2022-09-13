@@ -18,8 +18,8 @@ from utilities.forms import (
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
 from .models import (
-    CommunityStatusChoices, Community, BGPSession,
-    SessionStatusChoices, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
+    Community, BGPSession, SessionStatusChoices,
+    RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
 )
 
 
@@ -33,7 +33,7 @@ class CommunityForm(NetBoxModelForm):
     )
     status = forms.ChoiceField(
         required=False,
-        choices=CommunityStatusChoices,
+        choices=SessionStatusChoices,
         widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
@@ -58,7 +58,7 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
         required=False
     )
     status = forms.MultipleChoiceField(
-        choices=CommunityStatusChoices,
+        choices=SessionStatusChoices,
         required=False,
         widget=StaticSelectMultiple()
     )
@@ -87,7 +87,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     )
     status = forms.ChoiceField(
         required=False,
-        choices=CommunityStatusChoices,
+        choices=SessionStatusChoices,
         widget=StaticSelect()
     )
 
@@ -276,7 +276,7 @@ class RoutingPolicyForm(NetBoxModelForm):
 
     class Meta:
         model = RoutingPolicy
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'tags']
 
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
@@ -315,19 +315,24 @@ class BGPPeerGroupForm(NetBoxModelForm):
 
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
+    continue_entry = forms.IntegerField(
+        required=False,
+        label='Continue',
+        help_text='Null for disable, 0 to next entry, or any sequence number'
+    )
     match_community = DynamicModelMultipleChoiceField(
         queryset=Community.objects.all(),
         required=False,
     )
-    match_ip = DynamicModelMultipleChoiceField(
-        queryset=Prefix.objects.all(),
+    match_ip_address = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
         required=False,
-        label='Match Prefix',
+        label='Match IP address Prefix lists',
     )
-    match_ip_cond = forms.JSONField(
-        label='Match filtered prefixes',
-        help_text='Filter for Prefixes, e.g., {"site__name": "site1", "tenant__name": "tenant1"}',
+    match_ipv6_address = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
         required=False,
+        label='Match IPv6 address Prefix lists',
     )
     match_custom = forms.JSONField(
         label='Custom Match',
@@ -343,7 +348,57 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     class Meta:
         model = RoutingPolicyRule
         fields = [
-            'routing_policy', 'index', 'action', 'match_community',
-            'match_ip', 'match_ip_cond', 'match_custom',
+            'routing_policy', 'index', 'action', 'continue_entry', 'match_community',
+            'match_ip_address', 'match_ipv6_address', 'match_custom',
             'set_actions', 'description',
+        ]
+
+
+class PrefixListFilterForm(NetBoxModelFilterSetForm):
+    model = PrefixList
+    q = forms.CharField(
+        required=False,
+        label='Search'
+    )
+
+    tag = TagFilterField(model)
+
+
+class PrefixListForm(NetBoxModelForm):
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = PrefixList
+        fields = ['name', 'description', 'tags']
+
+
+class PrefixListRuleForm(NetBoxModelForm):
+    prefix = DynamicModelChoiceField(
+        queryset=Prefix.objects.all(),
+        required=False,
+        help_text='NetBox Prefix Object',
+    )
+    prefix_custom = IPNetworkFormField(
+        required=False,
+        label='Prefix',
+        help_text='Just IP field for define special prefix like 0.0.0.0/0',
+    )
+    ge = forms.IntegerField(
+        label='Greater than or equal to',
+        required=False,
+    )
+    le = forms.IntegerField(
+        label='Less than or equal to',
+        required=False,
+    )
+
+    class Meta:
+        model = PrefixListRule
+        fields = [
+            'prefix_list', 'index',
+            'action', 'prefix', 'prefix_custom',
+            'ge', 'le'
         ]

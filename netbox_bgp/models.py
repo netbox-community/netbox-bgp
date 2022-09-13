@@ -1,51 +1,17 @@
 from django.urls import reverse
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ValidationError
 from django.conf import settings
 
 from taggit.managers import TaggableManager
 
-from utilities.choices import ChoiceSet
 from netbox.models import NetBoxModel
 from netbox.models.features import ChangeLoggingMixin
+from ipam.fields import IPNetworkField
 from ipam.models import Prefix
 
-
-class CommunityStatusChoices(ChoiceSet):
-
-    STATUS_ACTIVE = 'active'
-    STATUS_RESERVED = 'reserved'
-    STATUS_DEPRECATED = 'deprecated'
-
-    CHOICES = (
-        (STATUS_ACTIVE, 'Active', 'blue'),
-        (STATUS_RESERVED, 'Reserved', 'cyan'),
-        (STATUS_DEPRECATED, 'Deprecated', 'red'),
-    )
-
-
-class SessionStatusChoices(ChoiceSet):
-
-    STATUS_OFFLINE = 'offline'
-    STATUS_ACTIVE = 'active'
-    STATUS_PLANNED = 'planned'
-    STATUS_FAILED = 'failed'
-
-    CHOICES = (
-        (STATUS_OFFLINE, 'Offline', 'orange'),
-        (STATUS_ACTIVE, 'Active', 'green'),
-        (STATUS_PLANNED, 'Planned', 'cyan'),
-        (STATUS_FAILED, 'Failed', 'red'),
-    )
-
-
-class ActionChoices(ChoiceSet):
-
-    CHOICES = [
-        ('permit', 'Permit', 'green'),
-        ('deny', 'Deny', 'red'),
-    ]
+from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices
 
 
 class RoutingPolicy(NetBoxModel):
@@ -120,8 +86,8 @@ class BGPBase(NetBoxModel):
     )
     status = models.CharField(
         max_length=50,
-        choices=CommunityStatusChoices,
-        default=CommunityStatusChoices.STATUS_ACTIVE
+        choices=SessionStatusChoices,
+        default=SessionStatusChoices.STATUS_ACTIVE
     )
     role = models.ForeignKey(
         to='ipam.Role',
@@ -153,7 +119,7 @@ class Community(BGPBase):
         return self.value
 
     def get_status_color(self):
-        return CommunityStatusChoices.colors.get(self.status)
+        return SessionStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
@@ -244,6 +210,98 @@ class BGPSession(NetBoxModel):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
 
 
+class PrefixList(NetBoxModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    family = models.CharField(
+        max_length=10,
+        choices=IPAddressFamilyChoices
+    )
+
+    class Meta:
+        verbose_name_plural = 'Prefix Lists'
+        unique_together = ['name', 'description', 'family']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
+
+
+class PrefixListRule(NetBoxModel):
+    """
+    """
+    prefix_list = models.ForeignKey(
+        to=PrefixList,
+        on_delete=models.CASCADE,
+        related_name='prefrules'
+    )
+    index = models.PositiveIntegerField()
+    action = models.CharField(
+        max_length=30,
+        choices=ActionChoices
+    )
+    prefix = models.ForeignKey(
+        to='ipam.Prefix',
+        blank=True,
+        null=True,
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
+    prefix_custom = IPNetworkField(
+        blank=True,
+        null=True,
+    )
+    ge = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(128)]
+    )
+    le = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(128)]
+    )
+
+    class Meta:
+        ordering = ('prefix_list', 'index')
+        unique_together = ('prefix_list', 'index')
+
+    @property
+    def network(self):
+        return self.prefix_custom or self.prefix
+
+    def __str__(self):
+        return f'{self.prefix_list}: Rule {self.index}'
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:prefixlistrule', args=[self.pk])
+
+    def get_action_color(self):
+        return ActionChoices.colors.get(self.action)
+
+    def clean(self):
+        super().clean()
+        # make sure that only one field is setted
+        if self.prefix and self.prefix_custom:
+            raise ValidationError(
+                    {'prefix': 'Cannot set both fields'}
+                )
+        # at least one fields must be setted
+        if self.prefix is None and self.prefix_custom is None:
+            raise ValidationError(
+                    {'prefix': 'Cannot set both fields to Null'}
+                )
+
+
 class RoutingPolicyRule(NetBoxModel):
     routing_policy = models.ForeignKey(
         to=RoutingPolicy,
@@ -259,19 +317,24 @@ class RoutingPolicyRule(NetBoxModel):
         max_length=500,
         blank=True
     )
+    continue_entry = models.PositiveIntegerField(
+        blank=True,
+        null=True
+    )
     match_community = models.ManyToManyField(
         to=Community,
         blank=True,
         related_name='+'
     )
-    match_ip = models.ManyToManyField(
-        to='ipam.Prefix',
+    match_ip_address = models.ManyToManyField(
+        to=PrefixList,
         blank=True,
-        related_name='+',
+        related_name='plrules',
     )
-    match_ip_cond = models.JSONField(
+    match_ipv6_address = models.ManyToManyField(
+        to=PrefixList,
         blank=True,
-        null=True,
+        related_name='plrules6',
     )
     match_custom = models.JSONField(
         blank=True,
@@ -293,16 +356,7 @@ class RoutingPolicyRule(NetBoxModel):
         return reverse('plugins:netbox_bgp:routingpolicyrule', args=[self.pk])
 
     def get_action_color(self):
-        return ActionChoices.colors.get(self.action)      
-
-    def get_ip_conditions(self):
-        queryset = Prefix.objects.none()
-        if self.match_ip_cond and self.match_ip_cond != {}:
-            try:
-                queryset = Prefix.objects.filter(**self.match_ip_cond)
-            except FieldError:
-                pass
-        return queryset
+        return ActionChoices.colors.get(self.action)
 
     def get_match_custom(self):
         # some kind of ckeck?
@@ -319,14 +373,17 @@ class RoutingPolicyRule(NetBoxModel):
             {'community': list(self.match_community.all().values_list('value', flat=True))}
         )
         result.update(
-            {'ip address': [str(prefix) for prefix in self.match_ip.all().values_list('prefix', flat=True)]}
+            {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
         )
-        matched_ip = self.get_ip_conditions()
-        result['ip address'].extend([str(prefix) for prefix in matched_ip.values_list('prefix', flat=True)])
+        result.update(
+            {'ipv6 address': [str(prefix_list) for prefix_list in self.match_ipv6_address.all().values_list('name', flat=True)]}
+        )
+
         custom_match = self.get_match_custom()
         # update community from custom
         result['community'].extend(custom_match.get('community', []))
         result['ip address'].extend(custom_match.get('ip address', []))
+        result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
         # remove empty matches
         result = {k: v for k, v in result.items() if v}
         return result

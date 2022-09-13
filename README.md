@@ -1,6 +1,14 @@
 # NetBox BGP Plugin
 [Netbox](https://github.com/netbox-community/netbox) plugin for BGP related objects documentation.
 
+## Features
+This plugin provide following Models:
+* AS Numbers (will be removed in 0.8.0)
+* BGP Communities
+* BGP Sessions
+* Routing Policy
+* Prefix Lists (new in 0.7.0)
+
 ## Compatibility
 
 |             |       |

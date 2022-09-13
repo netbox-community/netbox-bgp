@@ -1,27 +1,26 @@
+
 from django.db.models import Q
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.utils.text import slugify
 
 from netbox.views import generic
+from ipam.models import ASN
 
-from .filters import (
-    CommunityFilterSet, BGPSessionFilterSet,
-    RoutingPolicyFilterSet, BGPPeerGroupFilterSet
+from .models import (
+    Community, BGPSession, RoutingPolicy,
+    BGPPeerGroup, RoutingPolicyRule, PrefixList,
+    PrefixListRule
 )
-from .models import Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule
-from .tables import (
-    CommunityTable, BGPSessionTable, RoutingPolicyTable, BGPPeerGroupTable, RoutingPolicyRuleTable
-)
-from .forms import (
-    CommunityForm, CommunityFilterForm, CommunityBulkEditForm, BGPSessionForm,
-    BGPSessionFilterForm, BGPSessionAddForm, RoutingPolicyFilterForm,
-    RoutingPolicyForm, BGPPeerGroupFilterForm, BGPPeerGroupForm, RoutingPolicyRuleForm
-)
+
+from . import forms, tables, filters
 
 
 class CommunityListView(generic.ObjectListView):
     queryset = Community.objects.all()
-    filterset = CommunityFilterSet
-    filterset_form = CommunityFilterForm
-    table = CommunityTable
+    filterset = filters.CommunityFilterSet
+    filterset_form = forms.CommunityFilterForm
+    table = tables.CommunityTable
     action_buttons = ('add',)
 
 
@@ -32,46 +31,50 @@ class CommunityView(generic.ObjectView):
 
 class CommunityEditView(generic.ObjectEditView):
     queryset = Community.objects.all()
-    form = CommunityForm
+    form = forms.CommunityForm
 
 
 class CommunityBulkDeleteView(generic.BulkDeleteView):
     queryset = Community.objects.all()
-    table = CommunityTable
+    table = tables.CommunityTable
 
 
 class CommunityBulkEditView(generic.BulkEditView):
     queryset = Community.objects.all()
-    filterset = CommunityFilterSet
-    table = CommunityTable
-    form = CommunityBulkEditForm
+    filterset = filters.CommunityFilterSet
+    table = tables.CommunityTable
+    form = forms.CommunityBulkEditForm
 
 
 class CommunityDeleteView(generic.ObjectDeleteView):
     queryset = Community.objects.all()
+    default_return_url = 'plugins:netbox_bgp:community_list'
+
+
+# Session
 
 
 class BGPSessionListView(generic.ObjectListView):
     queryset = BGPSession.objects.all()
-    filterset = BGPSessionFilterSet
-    filterset_form = BGPSessionFilterForm
-    table = BGPSessionTable
+    filterset = filters.BGPSessionFilterSet
+    filterset_form = forms.BGPSessionFilterForm
+    table = tables.BGPSessionTable
     action_buttons = ('add',)
 
 
 class BGPSessionEditView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
-    form = BGPSessionForm
+    form = forms.BGPSessionForm
 
 
 class BGPSessionAddView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
-    form = BGPSessionAddForm
+    form = forms.BGPSessionAddForm
 
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
     queryset = BGPSession.objects.all()
-    table = BGPSessionTable
+    table = tables.BGPSessionTable
 
 
 class BGPSessionView(generic.ObjectView):
@@ -86,11 +89,11 @@ class BGPSessionView(generic.ObjectView):
             import_policies_qs = instance.import_policies.all()
             export_policies_qs = instance.export_policies.all()
 
-        import_policies_table = RoutingPolicyTable(
+        import_policies_table = tables.RoutingPolicyTable(
             import_policies_qs,
             orderable=False
         )
-        export_policies_table = RoutingPolicyTable(
+        export_policies_table = tables.RoutingPolicyTable(
             export_policies_qs,
             orderable=False
         )
@@ -103,24 +106,27 @@ class BGPSessionView(generic.ObjectView):
 
 class BGPSessionDeleteView(generic.ObjectDeleteView):
     queryset = BGPSession.objects.all()
+    default_return_url = 'plugins:netbox_bgp:bgpsession_list'
+
+# Routing Policy
 
 
 class RoutingPolicyListView(generic.ObjectListView):
     queryset = RoutingPolicy.objects.all()
-    filterset = RoutingPolicyFilterSet
-    filterset_form = RoutingPolicyFilterForm
-    table = RoutingPolicyTable
+    filterset = filters.RoutingPolicyFilterSet
+    filterset_form = forms.RoutingPolicyFilterForm
+    table = tables.RoutingPolicyTable
     action_buttons = ('add',)
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):
     queryset = RoutingPolicy.objects.all()
-    form = RoutingPolicyForm
+    form = forms.RoutingPolicyForm
 
 
 class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
     queryset = RoutingPolicy.objects.all()
-    table = RoutingPolicyTable
+    table = tables.RoutingPolicyTable
 
 
 class RoutingPolicyView(generic.ObjectView):
@@ -135,9 +141,9 @@ class RoutingPolicyView(generic.ObjectView):
             | Q(peer_group__in=instance.group_export_policies.all())
         )
         sess = sess.distinct()
-        sess_table = BGPSessionTable(sess)
+        sess_table = tables.BGPSessionTable(sess)
         rules = instance.rules.all()
-        rules_table = RoutingPolicyRuleTable(rules)
+        rules_table = tables.RoutingPolicyRuleTable(rules)
         return {
             'rules_table': rules_table,
             'related_session_table': sess_table
@@ -146,24 +152,28 @@ class RoutingPolicyView(generic.ObjectView):
 
 class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicy.objects.all()
+    default_return_url = 'plugins:netbox_bgp:routingpolicy_list'
+
+
+# Peer Group
 
 
 class BGPPeerGroupListView(generic.ObjectListView):
     queryset = BGPPeerGroup.objects.all()
-    filterset = BGPPeerGroupFilterSet
-    filterset_form = BGPPeerGroupFilterForm
-    table = BGPPeerGroupTable
+    filterset = filters.BGPPeerGroupFilterSet
+    filterset_form = forms.BGPPeerGroupFilterForm
+    table = tables.BGPPeerGroupTable
     action_buttons = ('add',)
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
     queryset = BGPPeerGroup.objects.all()
-    form = BGPPeerGroupForm
+    form = forms.BGPPeerGroupForm
 
 
 class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
     queryset = BGPPeerGroup.objects.all()
-    table = BGPPeerGroupTable
+    table = tables.BGPPeerGroupTable
 
 
 class BGPPeerGroupView(generic.ObjectView):
@@ -171,18 +181,18 @@ class BGPPeerGroupView(generic.ObjectView):
     template_name = 'netbox_bgp/bgppeergroup.html'
 
     def get_extra_context(self, request, instance):
-        import_policies_table = RoutingPolicyTable(
+        import_policies_table = tables.RoutingPolicyTable(
             instance.import_policies.all(),
             orderable=False
         )
-        export_policies_table = RoutingPolicyTable(
+        export_policies_table = tables.RoutingPolicyTable(
             instance.export_policies.all(),
             orderable=False
         )
 
         sess = BGPSession.objects.filter(peer_group=instance)
         sess = sess.distinct()
-        sess_table = BGPSessionTable(sess)
+        sess_table = tables.BGPSessionTable(sess)
         return {
             'import_policies_table': import_policies_table,
             'export_policies_table': export_policies_table,
@@ -192,15 +202,20 @@ class BGPPeerGroupView(generic.ObjectView):
 
 class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
     queryset = BGPPeerGroup.objects.all()
+    default_return_url = 'plugins:netbox_bgp:bgppeergroup_list'
+
+
+# Routing Policy Rule
 
 
 class RoutingPolicyRuleEditView(generic.ObjectEditView):
     queryset = RoutingPolicyRule.objects.all()
-    form = RoutingPolicyRuleForm
+    form = forms.RoutingPolicyRuleForm
 
 
 class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicyRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:routingpolicyrule_list'
 
 
 class RoutingPolicyRuleView(generic.ObjectView):
@@ -224,7 +239,79 @@ class RoutingPolicyRuleView(generic.ObjectView):
 
 class RoutingPolicyRuleListView(generic.ObjectListView):
     queryset = RoutingPolicyRule.objects.all()
-    #filterset = RoutingPolicyRuleFilterSet
-    #filterset_form = RoutingPolicyRuleFilterForm
-    table = RoutingPolicyRuleTable
+    # filterset = RoutingPolicyRuleFilterSet
+    # filterset_form = RoutingPolicyRuleFilterForm
+    table = tables.RoutingPolicyRuleTable
     action_buttons = ('add',)
+
+
+# Prefix List
+
+
+class PrefixListListView(generic.ObjectListView):
+    queryset = PrefixList.objects.all()
+    filterset = filters.PrefixListFilterSet
+    filterset_form = forms.PrefixListFilterForm
+    table = tables.PrefixListTable
+    action_buttons = ('add',)
+
+
+class PrefixListEditView(generic.ObjectEditView):
+    queryset = PrefixList.objects.all()
+    form = forms.PrefixListForm
+
+
+class PrefixListBulkDeleteView(generic.BulkDeleteView):
+    queryset = PrefixList.objects.all()
+    table = tables.PrefixListTable
+
+
+class PrefixListView(generic.ObjectView):
+    queryset = PrefixList.objects.all()
+    template_name = 'netbox_bgp/prefixlist.html'
+
+    def get_extra_context(self, request, instance):
+        rprules = instance.plrules.all()
+        rprules_table = tables.RoutingPolicyRuleTable(rprules)
+        rules = instance.prefrules.all()
+        rules_table = tables.PrefixListRuleTable(rules)
+        return {
+            'rules_table': rules_table,
+            'rprules_table': rprules_table
+        }
+
+
+class PrefixListDeleteView(generic.ObjectDeleteView):
+    queryset = PrefixList.objects.all()
+    default_return_url = 'plugins:netbox_bgp:prefixlist_list'
+
+
+# Prefix List Rule
+
+
+class PrefixListRuleListView(generic.ObjectListView):
+    queryset = PrefixListRule.objects.all()
+    # filterset = RoutingPolicyRuleFilterSet
+    # filterset_form = RoutingPolicyRuleFilterForm
+    table = tables.PrefixListRuleTable
+    action_buttons = ('add',)
+
+
+class PrefixListRuleEditView(generic.ObjectEditView):
+    queryset = PrefixListRule.objects.all()
+    form = forms.PrefixListRuleForm
+
+
+class PrefixListRuleBulkDeleteView(generic.BulkDeleteView):
+    queryset = PrefixListRule.objects.all()
+    table = tables.PrefixListRuleTable
+
+
+class PrefixListRuleDeleteView(generic.ObjectDeleteView):
+    queryset = PrefixListRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:prefixlistrule_list'
+
+
+class PrefixListRuleView(generic.ObjectView):
+    queryset = PrefixListRule.objects.all()
+    template_name = 'netbox_bgp/prefixlistrule.html'

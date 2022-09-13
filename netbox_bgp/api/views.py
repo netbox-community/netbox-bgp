@@ -2,12 +2,12 @@ from rest_framework.viewsets import ModelViewSet
 
 from .serializers import (
     BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer,
-    CommunitySerializer
+    CommunitySerializer, PrefixListSerializer
 )
-from netbox_bgp.models import BGPSession, RoutingPolicy, BGPPeerGroup, Community
+from netbox_bgp.models import BGPSession, RoutingPolicy, BGPPeerGroup, Community, PrefixList
 from netbox_bgp.filters import (
     BGPSessionFilterSet, RoutingPolicyFilterSet, BGPPeerGroupFilterSet,
-    CommunityFilterSet
+    CommunityFilterSet, PrefixListFilterSet
 )
 
 
@@ -33,3 +33,9 @@ class CommunityViewSet(ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     filterset_class = CommunityFilterSet
+
+
+class PrefixListViewSet(ModelViewSet):
+    queryset = PrefixList.objects.all()
+    serializer_class = PrefixListSerializer
+    filterset_class = PrefixListFilterSet

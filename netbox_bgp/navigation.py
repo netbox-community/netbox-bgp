@@ -45,6 +45,20 @@ menu_items = (
         ),
     ),
     PluginMenuItem(
+        link='plugins:netbox_bgp:prefixlist_list',
+        link_text='Prefix Lists',
+        permissions=['netbox_bgp.view_prefixlist'],
+        buttons=(
+            PluginMenuButton(
+                link='plugins:netbox_bgp:prefixlist_add',
+                title='Prefix Lists',
+                icon_class='mdi mdi-plus-thick',
+                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_prefixlist'],
+            ),
+        ),
+    ),
+    PluginMenuItem(
         link='plugins:netbox_bgp:bgppeergroup_list',
         link_text='Peer Groups',
         permissions=['netbox_bgp.view_bgppeergroup'],
