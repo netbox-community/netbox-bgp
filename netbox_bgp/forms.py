@@ -18,12 +18,11 @@ from utilities.forms import (
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
 from .models import (
-    Community, BGPSession, SessionStatusChoices,
-    RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
+    Community, BGPSession, RoutingPolicy, BGPPeerGroup,
+    RoutingPolicyRule, PrefixList, PrefixListRule
 )
 
-
-from django.forms.widgets import TextInput
+from .choices import SessionStatusChoices, CommunityStatusChoices
 
 
 class CommunityForm(NetBoxModelForm):
@@ -33,7 +32,7 @@ class CommunityForm(NetBoxModelForm):
     )
     status = forms.ChoiceField(
         required=False,
-        choices=SessionStatusChoices,
+        choices=CommunityStatusChoices,
         widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
@@ -58,7 +57,7 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
         required=False
     )
     status = forms.MultipleChoiceField(
-        choices=SessionStatusChoices,
+        choices=CommunityStatusChoices,
         required=False,
         widget=StaticSelectMultiple()
     )
@@ -87,7 +86,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     )
     status = forms.ChoiceField(
         required=False,
-        choices=SessionStatusChoices,
+        choices=CommunityStatusChoices,
         widget=StaticSelect()
     )
 

@@ -1,17 +1,12 @@
 from django.urls import reverse
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.core.exceptions import FieldError, ValidationError
-from django.conf import settings
-
-from taggit.managers import TaggableManager
+from django.core.exceptions import ValidationError
 
 from netbox.models import NetBoxModel
-from netbox.models.features import ChangeLoggingMixin
 from ipam.fields import IPNetworkField
-from ipam.models import Prefix
 
-from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices
+from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
 
 
 class RoutingPolicy(NetBoxModel):
@@ -86,8 +81,8 @@ class BGPBase(NetBoxModel):
     )
     status = models.CharField(
         max_length=50,
-        choices=SessionStatusChoices,
-        default=SessionStatusChoices.STATUS_ACTIVE
+        choices=CommunityStatusChoices,
+        default=CommunityStatusChoices.STATUS_ACTIVE
     )
     role = models.ForeignKey(
         to='ipam.Role',
@@ -119,7 +114,7 @@ class Community(BGPBase):
         return self.value
 
     def get_status_color(self):
-        return SessionStatusChoices.colors.get(self.status)
+        return CommunityStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])

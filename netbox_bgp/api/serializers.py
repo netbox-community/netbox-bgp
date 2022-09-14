@@ -1,18 +1,19 @@
-from rest_framework.serializers import Serializer, HyperlinkedIdentityField, ValidationError
+from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from netbox.api import ChoiceField, WritableNestedSerializer, ValidatedModelSerializer
+from netbox.api import ChoiceField, WritableNestedSerializer
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
-from extras.api.nested_serializers import NestedTagSerializer
 from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer
 
 
 from netbox_bgp.models import (
-    BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup,
-    Community, RoutingPolicyRule, PrefixList, PrefixListRule
+    BGPSession, RoutingPolicy, BGPPeerGroup,
+    Community, RoutingPolicyRule, PrefixList, PrefixListRule, 
 )
+
+from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
 
 
 class SerializedPKRelatedField(PrimaryKeyRelatedField):
@@ -139,7 +140,7 @@ class NestedBGPSessionSerializer(WritableNestedSerializer):
 
 
 class CommunitySerializer(NetBoxModelSerializer):
-    status = ChoiceField(choices=SessionStatusChoices, required=False)
+    status = ChoiceField(choices=CommunityStatusChoices, required=False)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     class Meta:

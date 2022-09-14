@@ -1,6 +1,19 @@
 from utilities.choices import ChoiceSet
 
 
+class CommunityStatusChoices(ChoiceSet):
+
+    STATUS_ACTIVE = 'active'
+    STATUS_RESERVED = 'reserved'
+    STATUS_DEPRECATED = 'deprecated'
+
+    CHOICES = (
+        (STATUS_ACTIVE, 'Active', 'blue'),
+        (STATUS_RESERVED, 'Reserved', 'cyan'),
+        (STATUS_DEPRECATED, 'Deprecated', 'red'),
+     )
+
+
 class SessionStatusChoices(ChoiceSet):
 
     STATUS_OFFLINE = 'offline'
