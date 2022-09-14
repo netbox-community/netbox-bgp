@@ -11,28 +11,7 @@ from netbox.models.features import ChangeLoggingMixin
 from ipam.fields import IPNetworkField
 from ipam.models import Prefix
 
-from .choices import IPAddressFamilyChoices, ASNStatusChoices, SessionStatusChoices, ActionChoices
-
-
-class ASNGroup(ChangeLoggingMixin, models.Model):
-    """
-    """
-    name = models.CharField(
-        max_length=100
-    )
-    site = models.ForeignKey(
-        to='dcim.Site',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
-    )
-
-    def __str__(self):
-        return self.name
+from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices
 
 
 class RoutingPolicy(NetBoxModel):
@@ -107,8 +86,8 @@ class BGPBase(NetBoxModel):
     )
     status = models.CharField(
         max_length=50,
-        choices=ASNStatusChoices,
-        default=ASNStatusChoices.STATUS_ACTIVE
+        choices=SessionStatusChoices,
+        default=SessionStatusChoices.STATUS_ACTIVE
     )
     role = models.ForeignKey(
         to='ipam.Role',
@@ -123,59 +102,6 @@ class BGPBase(NetBoxModel):
 
     class Meta:
         abstract = True
-
-
-class ASN(BGPBase):
-
-    number = models.PositiveBigIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(4294967295)]
-    )
-
-    group = models.ForeignKey(
-        ASNGroup,
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True
-    )
-
-    tags = TaggableManager(through='extras.TaggedItem', related_name='asn_tags')
-
-    clone_fields = ['description', 'status', 'tenant']
-
-    class Meta:
-        verbose_name = 'AS Number'
-        verbose_name_plural = 'AS Numbers'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['number', 'tenant'],
-                name='uniqie_number_tenant'
-            ),
-            models.UniqueConstraint(
-                fields=['number'],
-                condition=models.Q(tenant=None),
-                name='uniqie_number'
-            ),
-        ]
-        # unique_together = ['number', 'site', 'tenant']
-
-    def get_status_color(self):
-        return ASNStatusChoices.colors.get(self.status)
-
-    def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:asn', args=[self.pk])
-
-    def get_asdot(self):
-        if self.number > 65535:
-            return '{}.{}'.format(self.number // 65536, self.number % 65536)
-        else:
-            return str(self.number)
-
-    def __str__(self):
-        nb_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
-        asdot = nb_settings.get('asdot', False)
-        if asdot:
-            return self.get_asdot()
-        return str(self.number)
 
 
 class Community(BGPBase):
@@ -193,7 +119,7 @@ class Community(BGPBase):
         return self.value
 
     def get_status_color(self):
-        return ASNStatusChoices.colors.get(self.status)
+        return SessionStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
@@ -233,12 +159,12 @@ class BGPSession(NetBoxModel):
         related_name='remote_address'
     )
     local_as = models.ForeignKey(
-        ASN,
+        to='ipam.ASN',
         on_delete=models.PROTECT,
         related_name='local_as'
     )
     remote_as = models.ForeignKey(
-        ASN,
+        to='ipam.ASN',
         on_delete=models.PROTECT,
         related_name='remote_as'
     )
