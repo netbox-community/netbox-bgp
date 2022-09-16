@@ -1,18 +1,19 @@
-from rest_framework.serializers import Serializer, HyperlinkedIdentityField, ValidationError
+from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from netbox.api import ChoiceField, WritableNestedSerializer, ValidatedModelSerializer
+from netbox.api import ChoiceField, WritableNestedSerializer
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
-from extras.api.nested_serializers import NestedTagSerializer
-from ipam.api.nested_serializers import NestedIPAddressSerializer
+from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer
 
 
 from netbox_bgp.models import (
-    ASN, ASNStatusChoices, BGPSession, SessionStatusChoices, RoutingPolicy, BGPPeerGroup,
-    Community, RoutingPolicyRule, PrefixList, PrefixListRule
+    BGPSession, RoutingPolicy, BGPPeerGroup,
+    Community, RoutingPolicyRule, PrefixList, PrefixListRule, 
 )
+
+from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
 
 
 class SerializedPKRelatedField(PrimaryKeyRelatedField):
@@ -23,39 +24,6 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 
     def to_representation(self, value):
         return self.serializer(value, context={'request': self.context['request']}).data
-
-
-class ASNSerializer(NetBoxModelSerializer):
-    status = ChoiceField(choices=ASNStatusChoices, required=False)
-    site = NestedSiteSerializer(required=False, allow_null=True)
-    tenant = NestedTenantSerializer(required=False, allow_null=True)
-
-    def validate(self, attrs):
-        try:
-            number = attrs['number']
-            tenant = attrs.get('tenant')
-        except KeyError:
-            # this is patch
-            return attrs
-        if ASN.objects.filter(number=number, tenant=tenant).exists():
-            raise ValidationError(
-                {'error': 'Asn with this Number and Tenant already exists.'}
-            )
-        return attrs
-
-    class Meta:
-        ref_name = 'BGP_ASN'
-        model = ASN
-        fields = ['number', 'id', 'display', 'status', 'description', 'custom_fields', 'site', 'tenant', 'tags']
-
-
-class NestedASNSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:asn')
-
-    class Meta:
-        ref_name = 'BGP_ASN_Nested'
-        model = ASN
-        fields = ['id', 'url', 'number', 'description']
 
 
 class RoutingPolicySerializer(NetBoxModelSerializer):
@@ -172,7 +140,7 @@ class NestedBGPSessionSerializer(WritableNestedSerializer):
 
 
 class CommunitySerializer(NetBoxModelSerializer):
-    status = ChoiceField(choices=ASNStatusChoices, required=False)
+    status = ChoiceField(choices=CommunityStatusChoices, required=False)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     class Meta:

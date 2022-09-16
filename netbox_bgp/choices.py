@@ -1,7 +1,7 @@
 from utilities.choices import ChoiceSet
 
 
-class ASNStatusChoices(ChoiceSet):
+class CommunityStatusChoices(ChoiceSet):
 
     STATUS_ACTIVE = 'active'
     STATUS_RESERVED = 'reserved'
@@ -11,7 +11,7 @@ class ASNStatusChoices(ChoiceSet):
         (STATUS_ACTIVE, 'Active', 'blue'),
         (STATUS_RESERVED, 'Reserved', 'cyan'),
         (STATUS_DEPRECATED, 'Deprecated', 'red'),
-    )
+     )
 
 
 class SessionStatusChoices(ChoiceSet):
@@ -58,7 +58,19 @@ class AFISAFIChoices(ChoiceSet):
     AFISAFI_VPNV6_FLOWSPEC = 'vpnv6-flowspec'
 
     CHOICES = (
-
+        (AFISAFI_IPV4_UNICAST, 'IPv4 Unicast'),
+        (AFISAFI_IPV4_MULTICAST, 'IPv4 Multicast'),
+        (AFISAFI_IPV4_FLOWSPEC, 'IPv4 Flowspec'),
+        (AFISAFI_IPV6_UNICAST, 'IPv6 Unicast'),
+        (AFISAFI_IPV6_MULTICAST, 'IPv6 Multicast'),
+        (AFISAFI_L2VPN_VPLS, 'L2VPN VPLS'),
+        (AFISAFI_L2VPN_EVPN, 'L2VPN EVPN'),
+        (AFISAFI_VPNV4_UNICAST, 'VPNv4 Unicast'),
+        (AFISAFI_VPNV4_MULTICAST, 'VPNv4 Multicast'),
+        (AFISAFI_VPNV4_FLOWSPEC, 'VPNv4 Flowspec'),
+        (AFISAFI_VPNV6_UNICAST, 'VPNv6 Unicast'),
+        (AFISAFI_VPNV6_MULTICAST, 'VPNv6 Multicast'),
+        (AFISAFI_VPNV6_FLOWSPEC, 'VPNv6 Flowspec')
     )
 
 

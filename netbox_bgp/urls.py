@@ -1,19 +1,10 @@
 from django.urls import path
 from netbox.views.generic import ObjectChangeLogView
-from .models import ASN, BGPSession, Community, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
+from .models import BGPSession, Community, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
 
 from . import views
 
 urlpatterns = [
-    path('asn/', views.ASNListView.as_view(), name='asn_list'),
-    path('asn/add/', views.ASNEditView.as_view(), name='asn_add'),
-    path('asn/edit/', views.ASNBulkEditView.as_view(), name='asn_bulk_edit'),
-    path('asn/delete/', views.ASNBulkDeleteView.as_view(), name='asn_bulk_delete'),
-    path('asn/<int:pk>/', views.ASNView.as_view(), name='asn'),
-    path('asn/<int:pk>/edit/', views.ASNEditView.as_view(), name='asn_edit'),
-    path('asn/<int:pk>/delete/', views.ASNDeleteView.as_view(), name='asn_delete'),
-    path('asn/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='asn_changelog', kwargs={'model': ASN}),
-    path('asn/migrate/', views.ASNMigrateView.as_view(), name='asn_migrate'),
     # Community
     path('community/', views.CommunityListView.as_view(), name='community_list'),
     path('community/add/', views.CommunityEditView.as_view(), name='community_add'),
