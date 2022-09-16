@@ -1,7 +1,13 @@
 from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from netbox.api import ChoiceField, WritableNestedSerializer
+# for netbox 3.3
+try:
+    from netbox.api import ChoiceField, WritableNestedSerializer
+except ImportError:
+    from netbox.api.fields import ChoiceField
+    from netbox.api.serializers.nested import WritableNestedSerializer
+
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
@@ -10,7 +16,7 @@ from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSeri
 
 from netbox_bgp.models import (
     BGPSession, RoutingPolicy, BGPPeerGroup,
-    Community, RoutingPolicyRule, PrefixList, PrefixListRule, 
+    Community, RoutingPolicyRule, PrefixList, PrefixListRule,
 )
 
 from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices

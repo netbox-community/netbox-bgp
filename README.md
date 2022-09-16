@@ -6,7 +6,7 @@ This plugin provide following Models:
 * BGP Communities
 * BGP Sessions
 * Routing Policy
-* Prefix Lists (new in 0.7.0)
+* Prefix Lists 
 
 ## Compatibility
 
@@ -17,6 +17,7 @@ This plugin provide following Models:
 | NetBox 3.0  | 0.4.3 |
 | NetBox 3.1  | 0.5.0 |
 | NetBox 3.2  | >= 0.6.0 |
+| NetBox 3.3  | >= 0.8.1 |
 
 ## Installation
 
