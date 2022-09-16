@@ -40,13 +40,19 @@ left, right, full_width. Set empty value for disable.
 ## Screenshots
 
 BGP Session
-![BGP Session](docs/img/bgp_sess.png)
+![BGP Session](docs/img/session.png)
 
 BGP Sessions
-![BGP Session Table](docs/img/bgp_sess_list.png)
+![BGP Session Table](docs/img/sessions.png)
 
 Community
 ![Community](docs/img/commun.png)
 
 Peer Group
 ![Peer Group](docs/img/peer_group.png)
+
+Routing Policy
+![Routing Policy](docs/img/routepolicy.png)
+
+Prefix List
+![Prefix List](docs/img/preflist.png)
