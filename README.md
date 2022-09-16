@@ -31,6 +31,8 @@ PLUGINS = ['netbox_bgp']
 ```
 Restart NetBox and add `netbox-bgp` to your local_requirements.txt
 
+See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing-plugins) for details
+
 ## Configuration
 
 The following options are available:
