@@ -6,7 +6,7 @@ This plugin provide following Models:
 * BGP Communities
 * BGP Sessions
 * Routing Policy
-* Prefix Lists (new in 0.7.0)
+* Prefix Lists 
 
 ## Compatibility
 
