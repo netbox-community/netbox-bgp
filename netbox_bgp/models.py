@@ -103,7 +103,7 @@ class Community(BGPBase):
     """
     """
     value = models.CharField(
-        max_length=64,
+        max_length=128,
         validators=[RegexValidator(r'\d+:\d+')]
     )
 
