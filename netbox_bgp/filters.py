@@ -40,7 +40,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
     tag = TagFilter()
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
-        field_name='remote_as__number',
+        field_name='remote_as__asn',
         queryset=ASN.objects.all(),
         to_field_name='asn',
         label='Remote AS (Number)',
@@ -52,7 +52,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         label='Remote AS (ID)',
     )
     local_as = django_filters.ModelMultipleChoiceFilter(
-        field_name='local_as__number',
+        field_name='local_as__asn',
         queryset=ASN.objects.all(),
         to_field_name='asn',
         label='Local AS (Number)',
@@ -126,9 +126,9 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(remote_as__number__icontains=value)
+                Q(remote_as__asn__icontains=value)
                 | Q(name__icontains=value)
-                | Q(local_as__number__icontains=value)
+                | Q(local_as__asn__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
