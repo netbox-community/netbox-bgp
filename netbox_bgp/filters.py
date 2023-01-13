@@ -5,7 +5,7 @@ from netaddr.core import AddrFormatError
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
-from .models import Community, BGPSession, RoutingPolicy, BGPPeerGroup, PrefixList
+from .models import Community, BGPSession, RoutingPolicy, RoutingPolicyRule, BGPPeerGroup, PrefixList, PrefixListRule
 from ipam.models import IPAddress, ASN
 from dcim.models import Device
 
@@ -175,7 +175,33 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
         return queryset.filter(qs_filter)
 
 
-class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
+class RoutingPolicyRuleFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = RoutingPolicyRule
+        fields = ['id', 'index', 'action', 'description', 'routing_policy_id', 'continue_entry']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(id__icontains=value)
+                | Q(index__icontains=value)
+                | Q(action__icontains=value)
+                | Q(description__icontains=value)
+                | Q(routing_policy_id__icontains=value)
+                | Q(continue_entry__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class BGPPeerGroupFilterSet(django_filters.FilterSet):
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -215,5 +241,33 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
         qs_filter = (
                 Q(name__icontains=value)
                 | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+class PrefixListRuleFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = PrefixListRule
+        #fields = ['index', 'action', 'prefix_custom', 'ge', 'le', 'prefix_list', 'prefix_list_id']
+        fields = ['id', 'index', 'action', 'ge', 'le', 'prefix_list', 'prefix_list_id']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(id__icontains=value)
+                | Q(index__icontains=value)
+                | Q(action__icontains=value)
+                #| Q(prefix_custom__icontains=value)
+                | Q(ge__icontains=value)
+                | Q(le__icontains=value)
+                | Q(prefix_list__icontains=value)
+                | Q(prefix_list_id__icontains=value)
         )
         return queryset.filter(qs_filter)
