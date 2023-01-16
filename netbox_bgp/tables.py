@@ -60,18 +60,19 @@ class BGPSessionTable(NetBoxTable):
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
     )
+    vrf = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status', 'tenant'
+            'site', 'status', 'tenant', 'vrf'
         )
         default_columns = (
             'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description',
-            'site', 'status', 'tenant'
+            'site', 'status', 'tenant', 'vrf'
         )
 
 

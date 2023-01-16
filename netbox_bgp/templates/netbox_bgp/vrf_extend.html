@@ -1,0 +1,9 @@
+{% load render_table from django_tables2 %}
+<div class="card">
+    <h5 class="card-header">
+        Related BGP Sessions
+    </h5>
+    <div class="card-body">
+        {% render_table related_session_table 'inc/table.html' %}
+    </div>
+</div>

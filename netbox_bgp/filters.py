@@ -6,7 +6,7 @@ from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
 from .models import Community, BGPSession, RoutingPolicy, RoutingPolicyRule, BGPPeerGroup, PrefixList, PrefixListRule
-from ipam.models import IPAddress, ASN
+from ipam.models import IPAddress, ASN, VRF
 from dcim.models import Device
 
 
@@ -116,6 +116,18 @@ class BGPSessionFilterSet(NetBoxModelFilterSet):
     by_local_address = django_filters.CharFilter(
         method='search_by_local_ip',
         label='Local Address',
+    )
+    vrf_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='vrf__id',
+        queryset=VRF.objects.all(),
+        to_field_name='id',
+        label='VRF (id)',
+    )
+    vrf = django_filters.ModelMultipleChoiceFilter(
+        field_name='vrf__name',
+        queryset=VRF.objects.all(),
+        to_field_name='name',
+        label='VRF (name)',
     )
 
     class Meta:

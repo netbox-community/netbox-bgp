@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from extras.models import Tag
 from tenancy.models import Tenant
 from dcim.models import Device, Site
-from ipam.models import IPAddress, Prefix, ASN
+from ipam.models import IPAddress, Prefix, ASN, VRF
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
     DynamicModelChoiceField,
@@ -161,16 +161,20 @@ class BGPSessionForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    vrf = DynamicModelChoiceField(
+        queryset=VRF.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = BGPSession
         fields = [
-            'name', 'site', 'device',
+            'name', 'site', 'device', 'vrf',
             'local_as', 'remote_as', 'local_address', 'remote_address',
             'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
         ]
         fieldsets = (
-            ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
+            ('Session', ('name', 'site', 'device', 'vrf', 'description', 'status', 'peer_group', 'tenant', 'tags')),
             ('Remote', ('remote_as', 'remote_address')),
             ('Local', ('local_as', 'local_address')),
             ('Policies', ('import_policies', 'export_policies'))
@@ -252,6 +256,12 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False
+    )
+
+    vrf_id = DynamicModelChoiceField(
+        queryset=VRF.objects.all(),
+        required=False,
+        label=_('VRF')
     )
 
     tag = TagFilterField(model)

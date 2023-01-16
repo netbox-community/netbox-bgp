@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from tenancy.models import Tenant
 from dcim.models import Site, Device, Manufacturer, DeviceRole, DeviceType
-from ipam.models import IPAddress, ASN, RIR
+from ipam.models import IPAddress, ASN, RIR, VRF
 
 from netbox_bgp.models import BGPSession, Community, RoutingPolicy, BGPPeerGroup
 
@@ -165,6 +165,9 @@ class BGPSessionTestCase(TestCase):
         self.remote_ip = IPAddress.objects.create(
             address='1.1.1.2/32'
         )
+        self.vrf = VRF.objects.create(
+            name='vrf-test'
+        )
         self.session = BGPSession.objects.create(
             name='session',
             site=self.site,
@@ -176,6 +179,7 @@ class BGPSessionTestCase(TestCase):
             remote_as=self.remote_as,
             status='active',
             peer_group=self.peer_group,
+            vrf=self.vrf,
         )
 
     def test_create_session(self):

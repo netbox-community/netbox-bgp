@@ -191,6 +191,13 @@ class BGPSession(NetBoxModel):
 
     afi_safi = None  # for future use
 
+    vrf = models.ForeignKey(
+        to="ipam.vrf",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
+
     class Meta:
         verbose_name_plural = 'BGP Sessions'
         unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']

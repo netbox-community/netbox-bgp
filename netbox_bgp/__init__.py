@@ -15,6 +15,7 @@ class BGPConfig(PluginConfig):
     max_version = '3.4.99'
     default_settings = {
         'device_ext_page': 'right',
+        'vrf_ext_page': 'right',
     }
 
 

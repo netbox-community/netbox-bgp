@@ -11,7 +11,7 @@ except ImportError:
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
-from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer
+from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer, NestedVRFSerializer
 
 
 from netbox_bgp.models import (
@@ -100,6 +100,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
         allow_null=True,
         many=True
     )
+    vrf = NestedVRFSerializer(required=False, allow_null=True)
 
     class Meta:
         model = BGPSession
