@@ -3,13 +3,14 @@ import netaddr
 from django.db.models import Q
 from netaddr.core import AddrFormatError
 from extras.filters import TagFilter
+from netbox.filtersets import NetBoxModelFilterSet
 
-from .models import Community, BGPSession, RoutingPolicy, BGPPeerGroup, PrefixList
+from .models import Community, BGPSession, RoutingPolicy, RoutingPolicyRule, BGPPeerGroup, PrefixList, PrefixListRule
 from ipam.models import IPAddress, ASN
 from dcim.models import Device
 
 
-class CommunityFilterSet(django_filters.FilterSet):
+class CommunityFilterSet(NetBoxModelFilterSet):
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -32,7 +33,7 @@ class CommunityFilterSet(django_filters.FilterSet):
         return queryset.filter(qs_filter)
 
 
-class BGPSessionFilterSet(django_filters.FilterSet):
+class BGPSessionFilterSet(NetBoxModelFilterSet):
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -40,7 +41,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
     tag = TagFilter()
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
-        field_name='remote_as__number',
+        field_name='remote_as__asn',
         queryset=ASN.objects.all(),
         to_field_name='asn',
         label='Remote AS (Number)',
@@ -52,7 +53,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         label='Remote AS (ID)',
     )
     local_as = django_filters.ModelMultipleChoiceFilter(
-        field_name='local_as__number',
+        field_name='local_as__asn',
         queryset=ASN.objects.all(),
         to_field_name='asn',
         label='Local AS (Number)',
@@ -126,9 +127,9 @@ class BGPSessionFilterSet(django_filters.FilterSet):
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(remote_as__number__icontains=value)
+                Q(remote_as__asn__icontains=value)
                 | Q(name__icontains=value)
-                | Q(local_as__number__icontains=value)
+                | Q(local_as__asn__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
@@ -152,7 +153,7 @@ class BGPSessionFilterSet(django_filters.FilterSet):
             return queryset.none()
 
 
-class RoutingPolicyFilterSet(django_filters.FilterSet):
+class RoutingPolicyFilterSet(NetBoxModelFilterSet):
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -170,6 +171,32 @@ class RoutingPolicyFilterSet(django_filters.FilterSet):
         qs_filter = (
                 Q(name__icontains=value)
                 | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class RoutingPolicyRuleFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = RoutingPolicyRule
+        fields = ['id', 'index', 'action', 'description', 'routing_policy_id', 'continue_entry']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(id__icontains=value)
+                | Q(index__icontains=value)
+                | Q(action__icontains=value)
+                | Q(description__icontains=value)
+                | Q(routing_policy_id__icontains=value)
+                | Q(continue_entry__icontains=value)
         )
         return queryset.filter(qs_filter)
 
@@ -196,7 +223,7 @@ class BGPPeerGroupFilterSet(django_filters.FilterSet):
         return queryset.filter(qs_filter)
 
 
-class PrefixListFilterSet(django_filters.FilterSet):
+class PrefixListFilterSet(NetBoxModelFilterSet):
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -214,5 +241,33 @@ class PrefixListFilterSet(django_filters.FilterSet):
         qs_filter = (
                 Q(name__icontains=value)
                 | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+class PrefixListRuleFilterSet(django_filters.FilterSet):
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+    tag = TagFilter()
+
+    class Meta:
+        model = PrefixListRule
+        #fields = ['index', 'action', 'prefix_custom', 'ge', 'le', 'prefix_list', 'prefix_list_id']
+        fields = ['id', 'index', 'action', 'ge', 'le', 'prefix_list', 'prefix_list_id']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(id__icontains=value)
+                | Q(index__icontains=value)
+                | Q(action__icontains=value)
+                #| Q(prefix_custom__icontains=value)
+                | Q(ge__icontains=value)
+                | Q(le__icontains=value)
+                | Q(prefix_list__icontains=value)
+                | Q(prefix_list_id__icontains=value)
         )
         return queryset.filter(qs_filter)
