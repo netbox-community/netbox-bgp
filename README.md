@@ -40,6 +40,7 @@ See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing
 The following options are available:
 * `device_ext_page`: String (default right) Device related BGP sessions table position. The following values are available:  
 left, right, full_width. Set empty value for disable.
+* `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin. 
 
 ## Screenshots
 
