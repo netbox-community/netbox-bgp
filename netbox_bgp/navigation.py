@@ -1,7 +1,10 @@
-from extras.plugins import PluginMenuButton, PluginMenuItem
+from django.conf import settings
+
+from extras.plugins import PluginMenuButton, PluginMenuItem, PluginMenu
 from utilities.choices import ButtonColorChoices
 
-menu_items = (
+
+_menu_items = (
     PluginMenuItem(
         link='plugins:netbox_bgp:community_list',
         link_text='Communities',
@@ -73,3 +76,14 @@ menu_items = (
         ),
     )
 )
+
+plugin_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
+
+if plugin_settings.get('top_level_menu'):
+    menu = PluginMenu(  
+        label="BGP",
+        groups=(("BGP", _menu_items),),
+        icon_class="mdi mdi-bootstrap",
+    )
+else:
+    menu_items = _menu_items
