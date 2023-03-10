@@ -167,7 +167,17 @@ class PrefixListSerializer(NetBoxModelSerializer):
         fields = '__all__'
 
 
+class NestedPrefixListSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
+
+    class Meta:
+        model = PrefixList
+        fields = ("id", "url", "display", "name")
+
+
 class PrefixListRuleSerializer(NetBoxModelSerializer):
+    prefix_list = NestedPrefixListSerializer()
+
     class Meta:
         model = PrefixListRule
         fields = '__all__'
