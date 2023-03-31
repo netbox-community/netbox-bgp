@@ -175,9 +175,9 @@ class BGPSessionForm(NetBoxModelForm):
             ('Local', ('local_as', 'local_address')),
             ('Policies', ('import_policies', 'export_policies'))
         )
-        widgets = {
-            'status': StaticSelect(),
-        }
+        #widgets = {
+        #    'status': StaticSelect(),
+        #}
 
 
 class BGPSessionAddForm(BGPSessionForm):
