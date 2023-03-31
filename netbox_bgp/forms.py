@@ -12,8 +12,8 @@ from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
 from utilities.forms import (
     DynamicModelChoiceField,
-    DynamicModelMultipleChoiceField, StaticSelect,
-    APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
+    DynamicModelMultipleChoiceField,
+    APISelect, APISelectMultiple, TagFilterField
 )
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
@@ -226,7 +226,7 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
         required=False,
-        widget=StaticSelectMultiple()
+        #widget=StaticSelectMultiple()
     )
     peer_group = DynamicModelMultipleChoiceField(
         queryset=BGPPeerGroup.objects.all(),
