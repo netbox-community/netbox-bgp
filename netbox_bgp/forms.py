@@ -33,7 +33,7 @@ class CommunityForm(NetBoxModelForm):
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
-        widget=StaticSelect()
+        #widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -59,7 +59,7 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
     status = forms.MultipleChoiceField(
         choices=CommunityStatusChoices,
         required=False,
-        widget=StaticSelectMultiple()
+        #widget=StaticSelectMultiple()
     )
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
