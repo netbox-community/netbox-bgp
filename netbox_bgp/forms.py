@@ -10,10 +10,12 @@ from tenancy.models import Tenant
 from dcim.models import Device, Site
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
-from utilities.forms import (
+
+from utilities.forms.widgets import APISelect, APISelectMultiple
+from utilities.forms.fields import (
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
-    APISelect, APISelectMultiple, TagFilterField
+    TagFilterField
 )
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
