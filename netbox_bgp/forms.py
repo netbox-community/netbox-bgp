@@ -89,7 +89,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
-        widget=StaticSelect()
+        #widget=StaticSelect()
     )
 
     model = Community
