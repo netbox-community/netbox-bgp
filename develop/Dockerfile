@@ -15,9 +15,6 @@ RUN git clone --single-branch --branch ${netbox_ver} https://github.com/netbox-c
     cd /opt/netbox/ && \
     pip install -r /opt/netbox/requirements.txt
 
-# Work around https://github.com/rq/django-rq/issues/421
-RUN pip install django-rq==2.3.2
-
 # -------------------------------------------------------------------------------------
 # Install Netbox Plugin
 # -------------------------------------------------------------------------------------

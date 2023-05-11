@@ -10,11 +10,12 @@ from tenancy.models import Tenant
 from dcim.models import Device, Site
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
-from utilities.forms import (
+from utilities.forms.fields import (
     DynamicModelChoiceField,
-    DynamicModelMultipleChoiceField, StaticSelect,
-    APISelect, APISelectMultiple, StaticSelectMultiple, TagFilterField
+    DynamicModelMultipleChoiceField,
+    TagFilterField
 )
+from utilities.forms.widgets import APISelect, APISelectMultiple
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
 
 from .models import (
@@ -33,7 +34,6 @@ class CommunityForm(NetBoxModelForm):
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
-        widget=StaticSelect()
     )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -59,7 +59,6 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
     status = forms.MultipleChoiceField(
         choices=CommunityStatusChoices,
         required=False,
-        widget=StaticSelectMultiple()
     )
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
@@ -87,7 +86,6 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
-        widget=StaticSelect()
     )
 
     model = Community
@@ -176,7 +174,7 @@ class BGPSessionForm(NetBoxModelForm):
             ('Policies', ('import_policies', 'export_policies'))
         )
         widgets = {
-            'status': StaticSelect(),
+            'status': forms.Select(),
         }
 
 
@@ -226,7 +224,6 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
         required=False,
-        widget=StaticSelectMultiple()
     )
     peer_group = DynamicModelMultipleChoiceField(
         queryset=BGPPeerGroup.objects.all(),
