@@ -19,6 +19,7 @@ This plugin provide following Models:
 | NetBox 3.2  | >= 0.6.0 |
 | NetBox 3.3  | >= 0.8.1 |
 | NetBox 3.4  | >= 0.9.0 |
+| NetBox 3.5  | >= 0.10.0 |
 
 ## Installation
 
@@ -40,6 +41,7 @@ See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing
 The following options are available:
 * `device_ext_page`: String (default right) Device related BGP sessions table position. The following values are available:  
 left, right, full_width. Set empty value for disable.
+* `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin. 
 
 ## Screenshots
 
