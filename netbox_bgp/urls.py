@@ -8,6 +8,7 @@ urlpatterns = [
     # Community
     path('community/', views.CommunityListView.as_view(), name='community_list'),
     path('community/add/', views.CommunityEditView.as_view(), name='community_add'),
+    path('community/import/', views.CommunityBulkImportView.as_view(), name='community_import'),
     path('community/edit/', views.CommunityBulkEditView.as_view(), name='community_bulk_edit'),
     path('community/delete/', views.CommunityBulkDeleteView.as_view(), name='community_bulk_delete'),
     path('community/<int:pk>/', views.CommunityView.as_view(), name='community'),

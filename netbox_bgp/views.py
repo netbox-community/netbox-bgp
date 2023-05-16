@@ -51,6 +51,11 @@ class CommunityDeleteView(generic.ObjectDeleteView):
     default_return_url = 'plugins:netbox_bgp:community_list'
 
 
+class CommunityBulkImportView(generic.BulkImportView):
+    queryset = Community.objects.all()
+    model_form = forms.CommunityImportForm
+
+
 # Session
 
 
