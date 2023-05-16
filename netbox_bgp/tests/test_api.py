@@ -211,6 +211,35 @@ class SessionTestCase(BaseTestCase):
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
 
+    def test_update_session(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.session.pk})
+        data = {'description': 'new_description2'}
+
+        response = self.client.patch(url, data, format='json')
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_204_NO_CONTENT])
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'new_description2')        
+
+
+    def test_duplicate_session(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {
+            'name': 'test_session',
+            'description': 'session_descr',
+            'local_as': self.local_as.pk,
+            'remote_as': self.remote_as.pk,
+            'local_address': self.local_ip.pk,
+            'remote_address': self.remote_ip.pk,
+            'status': 'active',
+            'device': self.device.pk,
+            'peer_group': self.peer_group.pk
+
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_session_no_device(self):
         url = reverse(f'{self.base_url_lookup}-list')
         data = {
@@ -221,7 +250,8 @@ class SessionTestCase(BaseTestCase):
             'local_address': self.local_ip.pk,
             'remote_address': self.remote_ip.pk,
             'status': 'active',
-            'peer_group': self.peer_group.pk
+            'peer_group': self.peer_group.pk,
+            'device': None
 
         }
         response = self.client.post(url, data, format='json')
