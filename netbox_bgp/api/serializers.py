@@ -103,7 +103,15 @@ class BGPSessionSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPSession
-        fields = '__all__'
+        #fields = '__all__'
+        fields = [
+            'id', 'tags', 'custom_fields',
+            'display', 'status', 'site', 'tenant',
+            'device', 'local_address', 'remote_address',
+            'local_as', 'remote_as', 'peer_group', 'import_policies',
+            'export_policies', 'created', 'last_updated',
+            'name', 'description'
+            ]
         validators = []
 
     def validate(self, attrs):
@@ -152,7 +160,13 @@ class CommunitySerializer(NetBoxModelSerializer):
     class Meta:
         model = Community
         # fields = ['id', 'value', 'status', 'description', 'tenant', 'tags']
-        fields = '__all__'
+        fields = [
+            'id', 'tags', 'custom_fields', 'display',
+            'status', 'tenant', 'created', 'last_updated',
+            'description',
+            'value', 'site', 'role'
+        ]
+        # fields = '__all__'
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -172,7 +186,7 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 
     class Meta:
         model = PrefixList
-        fields = ("id", "url", "display", "name")
+        fields = ['id', 'url', 'display', 'name']
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
@@ -181,3 +195,9 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
     class Meta:
         model = PrefixListRule
         fields = '__all__'
+        fields = [
+            'id', 'tags', 'custom_fields', 'display',
+            'prefix_list', 'created', 'last_updated',
+            'index', 'action',
+            'prefix_custom', 'ge', 'le', 'prefix'
+        ]

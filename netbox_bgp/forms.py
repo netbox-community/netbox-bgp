@@ -1,5 +1,3 @@
-import re
-
 from django import forms
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
@@ -11,12 +9,12 @@ from dcim.models import Device, Site
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
-    DynamicModelChoiceField,
+    DynamicModelChoiceField, CSVModelChoiceField,
     DynamicModelMultipleChoiceField,
-    TagFilterField
+    TagFilterField, CSVChoiceField,
 )
 from utilities.forms.widgets import APISelect, APISelectMultiple
-from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm
+from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelImportForm  
 
 from .models import (
     Community, BGPSession, RoutingPolicy, BGPPeerGroup,
@@ -92,6 +90,23 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = [
        'tenant', 'description',
     ]
+
+class CommunityImportForm(NetBoxModelImportForm):
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Assigned tenant')
+    )
+
+    status = CSVChoiceField(
+        choices=CommunityStatusChoices,
+        help_text=_('Operational status')
+    )    
+
+    class Meta:
+        model = Community
+        fields = ('value', 'description', 'tags')    
 
 
 class BGPSessionForm(NetBoxModelForm):
