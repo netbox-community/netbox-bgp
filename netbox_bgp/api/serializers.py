@@ -1,12 +1,8 @@
 from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
-# for netbox 3.3
-try:
-    from netbox.api import ChoiceField, WritableNestedSerializer
-except ImportError:
-    from netbox.api.fields import ChoiceField
-    from netbox.api.serializers.nested import WritableNestedSerializer
+from netbox.api.fields import ChoiceField
+from netbox.api.serializers.nested import WritableNestedSerializer
 
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
@@ -103,7 +99,6 @@ class BGPSessionSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPSession
-        #fields = '__all__'
         fields = [
             'id', 'tags', 'custom_fields',
             'display', 'status', 'site', 'tenant',
@@ -112,21 +107,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             'export_policies', 'created', 'last_updated',
             'name', 'description'
             ]
-        validators = []
 
-    def validate(self, attrs):
-        qs = BGPSession.objects.filter(
-            device=attrs.get('device'),
-            local_as=attrs.get('local_as'),
-            local_address=attrs.get('local_address'),
-            remote_as=attrs.get('remote_as'),
-            remote_address=attrs.get('remote_address'),
-        )
-        if qs.exists():
-            raise ValidationError(
-                {'error': 'BGP Session with this Device, Local address, Local AS, Remote address and Remote AS already exists.'}
-            )
-        return attrs
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -159,14 +140,12 @@ class CommunitySerializer(NetBoxModelSerializer):
 
     class Meta:
         model = Community
-        # fields = ['id', 'value', 'status', 'description', 'tenant', 'tags']
         fields = [
             'id', 'tags', 'custom_fields', 'display',
             'status', 'tenant', 'created', 'last_updated',
             'description',
             'value', 'site', 'role'
         ]
-        # fields = '__all__'
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -194,7 +173,6 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = PrefixListRule
-        fields = '__all__'
         fields = [
             'id', 'tags', 'custom_fields', 'display',
             'prefix_list', 'created', 'last_updated',

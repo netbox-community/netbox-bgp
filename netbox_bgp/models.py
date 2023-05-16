@@ -142,6 +142,7 @@ class BGPSession(NetBoxModel):
         to='dcim.Device',
         on_delete=models.PROTECT,
         null=True,
+        blank=True,
     )
     local_address = models.ForeignKey(
         to='ipam.IPAddress',
