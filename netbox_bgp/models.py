@@ -31,6 +31,32 @@ class RoutingPolicy(NetBoxModel):
         return reverse('plugins:netbox_bgp:routingpolicy', args=[self.pk])
 
 
+class PrefixList(NetBoxModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    family = models.CharField(
+        max_length=10,
+        choices=IPAddressFamilyChoices
+    )
+
+    class Meta:
+        verbose_name_plural = 'Prefix Lists'
+        unique_together = ['name', 'description', 'family']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
+
+
 class BGPPeerGroup(NetBoxModel):
     """
     """
@@ -50,6 +76,16 @@ class BGPPeerGroup(NetBoxModel):
         RoutingPolicy,
         blank=True,
         related_name='group_export_policies'
+    )
+    import_prefix_lists = models.ManyToManyField(
+        PrefixList,
+        blank=True,
+        related_name='group_import_prefix_lists'
+    )
+    export_prefix_lists = models.ManyToManyField(
+        PrefixList,
+        blank=True,
+        related_name='group_export_prefix_lists'
     )
 
     class Meta:
@@ -189,6 +225,16 @@ class BGPSession(NetBoxModel):
         blank=True,
         related_name='session_export_policies'
     )
+    import_prefix_lists = models.ManyToManyField(
+        PrefixList,
+        blank=True,
+        related_name='session_import_prefix_lists'
+    )
+    export_prefix_lists = models.ManyToManyField(
+        PrefixList,
+        blank=True,
+        related_name='session_export_prefix_lists'
+    )
 
     afi_safi = None  # for future use
 
@@ -204,32 +250,6 @@ class BGPSession(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
-
-
-class PrefixList(NetBoxModel):
-    """
-    """
-    name = models.CharField(
-        max_length=100
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
-    )
-    family = models.CharField(
-        max_length=10,
-        choices=IPAddressFamilyChoices
-    )
-
-    class Meta:
-        verbose_name_plural = 'Prefix Lists'
-        unique_together = ['name', 'description', 'family']
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
 
 
 class PrefixListRule(NetBoxModel):

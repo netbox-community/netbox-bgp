@@ -79,6 +79,22 @@
                 {% render_table export_policies_table 'inc/table.html' %}
             </div>
         </div>
+        <div class="card">
+            <h5 class="card-header">
+                Import Prefix Lists
+            </h5>
+            <div class="card-body">
+                {% render_table import_prefix_lists_table 'inc/table.html' %}
+            </div>
+        </div>
+        <div class="card">
+            <h5 class="card-header">
+                Export Prefix Lists
+            </h5>
+            <div class="card-body">
+                {% render_table export_prefix_lists_table 'inc/table.html' %}
+            </div>
+        </div>
         {% plugin_right_page object %}
     </div>
 </div>

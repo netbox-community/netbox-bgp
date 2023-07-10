@@ -11,13 +11,17 @@ class CommunityAdmin(admin.ModelAdmin):
 class BGPSessionAdmin(admin.ModelAdmin):
     fields = (
         'name', 'local_address', 'local_as', 'remote_address',
-        'remote_as', 'description', 'import_policies', 'export_policies'
+        'remote_as', 'description', 'import_policies', 'export_policies',
+        'import_prefix_lists', 'export_prefix_lists',
     )
 
 
 @admin.register(BGPPeerGroup)
 class BGPpeerGroupAdmin(admin.ModelAdmin):
-    fields = ('name', 'description', 'import_policies', 'export_policies')
+    fields = (
+        'name', 'description', 'import_policies', 'export_policies',
+        'import_prefix_lists', 'export_prefix_lists'
+    )
 
 
 @admin.register(RoutingPolicy)

@@ -93,6 +93,12 @@ class BGPSessionView(generic.ObjectView):
         export_policies_qs = instance.export_policies.all()
         if not export_policies_qs and instance.peer_group:
             export_policies_qs = instance.peer_group.export_policies.all()
+        import_prefix_lists_qs = instance.import_prefix_lists.all()
+        if not import_prefix_lists_qs and instance.peer_group:
+            import_prefix_lists_qs = instance.peer_group.import_prefix_lists.all()
+        export_prefix_lists_qs = instance.export_prefix_lists.all()
+        if not export_prefix_lists_qs and instance.peer_group:
+            export_prefix_lists_qs = instance.peer_group.export_prefix_lists.all()
 
         import_policies_table = tables.RoutingPolicyTable(
             import_policies_qs,
@@ -102,10 +108,20 @@ class BGPSessionView(generic.ObjectView):
             export_policies_qs,
             orderable=False
         )
+        import_prefix_lists_table = tables.PrefixListTable(
+            import_prefix_lists_qs,
+            orderable=False
+        )
+        export_prefix_lists_table = tables.PrefixListTable(
+            export_prefix_lists_qs,
+            orderable=False
+        )
 
         return {
             'import_policies_table': import_policies_table,
-            'export_policies_table': export_policies_table
+            'export_policies_table': export_policies_table,
+            'import_prefix_lists_table': import_prefix_lists_table,
+            'export_prefix_lists_table': export_prefix_lists_table,
         }
 
 
@@ -194,6 +210,14 @@ class BGPPeerGroupView(generic.ObjectView):
             instance.export_policies.all(),
             orderable=False
         )
+        import_prefix_lists_table = tables.PrefixListTable(
+            instance.import_prefix_lists.all(),
+            orderable=False
+        )
+        export_prefix_lists_table = tables.PrefixListTable(
+            instance.export_prefix_lists.all(),
+            orderable=False
+        )
 
         sess = BGPSession.objects.filter(peer_group=instance)
         sess = sess.distinct()
@@ -201,6 +225,8 @@ class BGPPeerGroupView(generic.ObjectView):
         return {
             'import_policies_table': import_policies_table,
             'export_policies_table': export_policies_table,
+            'import_prefix_lists_table': import_prefix_lists_table,
+            'export_prefix_lists_table': export_prefix_lists_table,
             'related_session_table': sess_table
         }
 

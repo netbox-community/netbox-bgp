@@ -174,19 +174,35 @@ class BGPSessionForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    import_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
+    export_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
 
     class Meta:
         model = BGPSession
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
+            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies',
+            'import_prefix_lists', 'export_prefix_lists'
         ]
         fieldsets = (
             ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
             ('Remote', ('remote_as', 'remote_address')),
             ('Local', ('local_as', 'local_address')),
-            ('Policies', ('import_policies', 'export_policies'))
+            ('Policies', ('import_policies', 'export_policies')),
+            ('Prefix Lists', ('import_prefix_lists', 'export_prefix_lists')),
         )
         widgets = {
             'status': forms.Select(),
@@ -261,6 +277,20 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    import_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
+    export_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False
@@ -315,6 +345,20 @@ class BGPPeerGroupForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    import_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
+    export_prefix_lists = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False
@@ -322,7 +366,10 @@ class BGPPeerGroupForm(NetBoxModelForm):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']
+        fields = [
+            'name', 'description', 'import_policies', 'export_policies',
+            'import_prefix_lists', 'export_prefix_lists', 'tags'
+        ]
 
 
 class RoutingPolicyRuleForm(NetBoxModelForm):

@@ -73,6 +73,12 @@ class BGPSessionFilterSet(NetBoxModelFilterSet):
     export_policies = django_filters.ModelMultipleChoiceFilter(
         queryset=RoutingPolicy.objects.all(),
     )
+    import_prefix_lists = django_filters.ModelMultipleChoiceFilter(
+        queryset=PrefixList.objects.all(),
+    )
+    export_prefix_lists = django_filters.ModelMultipleChoiceFilter(
+        queryset=PrefixList.objects.all(),
+    )
     local_address_id = django_filters.ModelMultipleChoiceFilter(
         field_name='local_address__id',
         queryset=IPAddress.objects.all(),

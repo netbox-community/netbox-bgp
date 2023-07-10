@@ -42,6 +42,20 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
         fields = ['id', 'url', 'name', 'description']
 
 
+class PrefixListSerializer(NetBoxModelSerializer):
+    class Meta:
+        model = PrefixList
+        fields = '__all__'
+
+
+class NestedPrefixListSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
+
+    class Meta:
+        model = PrefixList
+        fields = ['id', 'url', 'display', 'name']
+
+
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
@@ -53,6 +67,20 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
     export_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=NestedRoutingPolicySerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+    import_prefix_lists = SerializedPKRelatedField(
+        queryset=PrefixList.objects.all(),
+        serializer=NestedPrefixListSerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+    export_prefix_lists = SerializedPKRelatedField(
+        queryset=PrefixList.objects.all(),
+        serializer=NestedPrefixListSerializer,
         required=False,
         allow_null=True,
         many=True
@@ -96,6 +124,20 @@ class BGPSessionSerializer(NetBoxModelSerializer):
         allow_null=True,
         many=True
     )
+    import_prefix_lists = SerializedPKRelatedField(
+        queryset=PrefixList.objects.all(),
+        serializer=NestedPrefixListSerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
+    export_prefix_lists = SerializedPKRelatedField(
+        queryset=PrefixList.objects.all(),
+        serializer=NestedPrefixListSerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    )
 
     class Meta:
         model = BGPSession
@@ -104,8 +146,8 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             'display', 'status', 'site', 'tenant',
             'device', 'local_address', 'remote_address',
             'local_as', 'remote_as', 'peer_group', 'import_policies',
-            'export_policies', 'created', 'last_updated',
-            'name', 'description'
+            'export_policies', 'import_prefix_lists', 'export_prefix_lists',
+            'created', 'last_updated', 'name', 'description'
             ]
 
 
@@ -121,6 +163,14 @@ class BGPSessionSerializer(NetBoxModelSerializer):
                 for pol in instance.peer_group.export_policies.difference(instance.export_policies.all()):
                     ret['export_policies'].append(
                         NestedRoutingPolicySerializer(pol, context={'request': self.context['request']}).data
+                    )
+                for prefix_list in instance.peer_group.import_prefix_lists.difference(instance.import_prefix_lists.all()):
+                    ret['import_prefix_lists'].append(
+                        NestedPrefixListSerializer(prefix_list, context={'request': self.context['request']}).data
+                    )
+                for prefix_list in instance.peer_group.export_prefix_lists.difference(instance.export_prefix_lists.all()):
+                    ret['export_prefix_lists'].append(
+                        NestedPrefixListSerializer(prefix_list, context={'request': self.context['request']}).data
                     )
         return ret
 
@@ -152,20 +202,6 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicyRule
         fields = '__all__'
-
-
-class PrefixListSerializer(NetBoxModelSerializer):
-    class Meta:
-        model = PrefixList
-        fields = '__all__'
-
-
-class NestedPrefixListSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
-
-    class Meta:
-        model = PrefixList
-        fields = ['id', 'url', 'display', 'name']
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
