@@ -7,7 +7,7 @@ from netbox.api.serializers.nested import WritableNestedSerializer
 from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
-from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer
+from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer, NestedPrefixSerializer
 
 
 from netbox_bgp.models import (
@@ -169,7 +169,8 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
-    prefix_list = NestedPrefixListSerializer()
+    prefix_list = NestedPrefixListSerializer()  
+    prefix = NestedPrefixSerializer(required=False, allow_null=True)
 
     class Meta:
         model = PrefixListRule
