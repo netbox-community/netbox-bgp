@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
+from netbox.api.viewsets import NetBoxModelViewSet
 
 from .serializers import (
     BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer,
@@ -11,42 +11,43 @@ from netbox_bgp.filters import (
 )
 
 
-class BGPSessionViewSet(ModelViewSet):
+class BGPSessionViewSet(NetBoxModelViewSet):
     queryset = BGPSession.objects.all()
     serializer_class = BGPSessionSerializer
     filterset_class = BGPSessionFilterSet
 
 
-class RoutingPolicyViewSet(ModelViewSet):
+class RoutingPolicyViewSet(NetBoxModelViewSet):
     queryset = RoutingPolicy.objects.all()
     serializer_class = RoutingPolicySerializer
     filterset_class = RoutingPolicyFilterSet
 
 
-class RoutingPolicyRuleViewSet(ModelViewSet):
+class RoutingPolicyRuleViewSet(NetBoxModelViewSet):
     queryset = RoutingPolicyRule.objects.all()
     serializer_class = RoutingPolicyRuleSerializer
     filterset_class = RoutingPolicyRuleFilterSet
 
 
-class BGPPeerGroupViewSet(ModelViewSet):
+class BGPPeerGroupViewSet(NetBoxModelViewSet):
     queryset = BGPPeerGroup.objects.all()
     serializer_class = BGPPeerGroupSerializer
     filterset_class = BGPPeerGroupFilterSet
 
 
-class CommunityViewSet(ModelViewSet):
+class CommunityViewSet(NetBoxModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     filterset_class = CommunityFilterSet
 
 
-class PrefixListViewSet(ModelViewSet):
+class PrefixListViewSet(NetBoxModelViewSet):
     queryset = PrefixList.objects.all()
     serializer_class = PrefixListSerializer
     filterset_class = PrefixListFilterSet
 
-class PrefixListRuleViewSet(ModelViewSet):
+class PrefixListRuleViewSet(NetBoxModelViewSet):
+  
     queryset = PrefixListRule.objects.all()
     serializer_class = PrefixListRuleSerializer
     filterset_class = PrefixListRuleFilterSet
