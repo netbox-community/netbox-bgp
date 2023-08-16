@@ -30,7 +30,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
-        model = RoutingPolicy
+        model = RoutingPolicy        
         fields = '__all__'
 
 
@@ -39,7 +39,8 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
 
     class Meta:
         model = RoutingPolicy
-        fields = ['id', 'url', 'name', 'display','description']
+        fields = ['id', 'url', 'name', 'display', 'description']        
+        validators = []
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     import_policies = SerializedPKRelatedField(
@@ -160,12 +161,14 @@ class PrefixListSerializer(NetBoxModelSerializer):
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
     match_ip_address = SerializedPKRelatedField(
-        queryset=RoutingPolicyRule.objects.all(),
+        queryset=PrefixList.objects.all(),
         serializer=NestedPrefixListSerializer,
         required=False,
         allow_null=True,
         many=True
-    ) 
+    )
+    routing_policy = NestedRoutingPolicySerializer()
+
     class Meta:
         model = RoutingPolicyRule
         fields = '__all__'
