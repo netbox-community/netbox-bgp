@@ -39,7 +39,7 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
 
     class Meta:
         model = RoutingPolicy
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'url', 'name', 'display','description']
 
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
