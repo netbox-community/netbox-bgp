@@ -41,7 +41,6 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
         model = RoutingPolicy
         fields = ['id', 'url', 'name', 'display','description']
 
-
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
