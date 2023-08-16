@@ -147,19 +147,6 @@ class CommunitySerializer(NetBoxModelSerializer):
             'value', 'site', 'role'
         ]
 
-
-class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
-    class Meta:
-        model = RoutingPolicyRule
-        fields = '__all__'
-
-
-class PrefixListSerializer(NetBoxModelSerializer):
-    class Meta:
-        model = PrefixList
-        fields = '__all__'
-
-
 class NestedPrefixListSerializer(WritableNestedSerializer):
     url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
 
@@ -167,6 +154,22 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
         model = PrefixList
         fields = ['id', 'url', 'display', 'name']
 
+class PrefixListSerializer(NetBoxModelSerializer):
+    class Meta:
+        model = PrefixList
+        fields = '__all__'
+
+class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
+    match_ip_address = SerializedPKRelatedField(
+        queryset=RoutingPolicyRule.objects.all(),
+        serializer=NestedPrefixListSerializer,
+        required=False,
+        allow_null=True,
+        many=True
+    ) 
+    class Meta:
+        model = RoutingPolicyRule
+        fields = '__all__'
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
     prefix_list = NestedPrefixListSerializer()  
