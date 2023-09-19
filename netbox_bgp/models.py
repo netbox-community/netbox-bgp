@@ -122,7 +122,7 @@ class Community(BGPBase):
 
 class BGPSession(NetBoxModel):
     name = models.CharField(
-        max_length=64,
+        max_length=256,
         blank=True,
         null=True
     )

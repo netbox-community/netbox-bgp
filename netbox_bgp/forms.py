@@ -383,7 +383,7 @@ class PrefixListForm(NetBoxModelForm):
 
     class Meta:
         model = PrefixList
-        fields = ['name', 'description', 'tags']
+        fields = ['name', 'description', 'family', 'tags']
 
 
 class PrefixListRuleForm(NetBoxModelForm):
