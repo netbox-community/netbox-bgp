@@ -227,6 +227,11 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=_('Device')
     )
+    site_id = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        label=_('Site')
+    )
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
         required=False,

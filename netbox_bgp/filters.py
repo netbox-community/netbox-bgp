@@ -7,7 +7,7 @@ from netbox.filtersets import NetBoxModelFilterSet
 
 from .models import Community, BGPSession, RoutingPolicy, RoutingPolicyRule, BGPPeerGroup, PrefixList, PrefixListRule
 from ipam.models import IPAddress, ASN
-from dcim.models import Device
+from dcim.models import Device, Site
 
 
 class CommunityFilterSet(NetBoxModelFilterSet):
@@ -109,6 +109,18 @@ class BGPSessionFilterSet(NetBoxModelFilterSet):
         to_field_name='name',
         label='Device (name)',
     )
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )    
     by_remote_address = django_filters.CharFilter(
         method='search_by_remote_ip',
         label='Remote Address',
@@ -232,14 +244,15 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = PrefixList
-        fields = ['name', 'description']
+        fields = ['id', 'name', 'description']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(name__icontains=value)
+                Q(id__icontains=value)
+                | Q(name__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
