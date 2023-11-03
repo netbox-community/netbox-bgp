@@ -11,34 +11,23 @@ from dcim.models import Device, Site
 
 
 class CommunityFilterSet(NetBoxModelFilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
 
     class Meta:
         model = Community
-        fields = ['value', 'description', 'status', 'tenant']
+        fields = ['id', 'value', 'description', 'status', 'tenant']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(id__icontains=value)
-                | Q(value__icontains=value)
+                Q(value__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
 
 
 class BGPSessionFilterSet(NetBoxModelFilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
         field_name='remote_as__asn',
@@ -132,7 +121,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = BGPSession
-        fields = ['name', 'description', 'status', 'tenant']
+        fields = ['id', 'name', 'description', 'status', 'tenant']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -166,15 +155,10 @@ class BGPSessionFilterSet(NetBoxModelFilterSet):
 
 
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
 
     class Meta:
         model = RoutingPolicy
-        fields = ['name', 'description']
+        fields = ['id', 'name', 'description']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -187,12 +171,7 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
         return queryset.filter(qs_filter)
 
 
-class RoutingPolicyRuleFilterSet(django_filters.FilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
+class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = RoutingPolicyRule
@@ -203,8 +182,7 @@ class RoutingPolicyRuleFilterSet(django_filters.FilterSet):
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(id__icontains=value)
-                | Q(index__icontains=value)
+                Q(index__icontains=value)
                 | Q(action__icontains=value)
                 | Q(description__icontains=value)
                 | Q(routing_policy_id__icontains=value)
@@ -213,16 +191,11 @@ class RoutingPolicyRuleFilterSet(django_filters.FilterSet):
         return queryset.filter(qs_filter)
 
 
-class BGPPeerGroupFilterSet(django_filters.FilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
+class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['name', 'description']
+        fields = ['id', 'name', 'description']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -236,11 +209,6 @@ class BGPPeerGroupFilterSet(django_filters.FilterSet):
 
 
 class PrefixListFilterSet(NetBoxModelFilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
 
     class Meta:
         model = PrefixList
@@ -251,18 +219,12 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(id__icontains=value)
-                | Q(name__icontains=value)
+                Q(name__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
 
-class PrefixListRuleFilterSet(django_filters.FilterSet):
-    q = django_filters.CharFilter(
-        method='search',
-        label='Search',
-    )
-    tag = TagFilter()
+class PrefixListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = PrefixListRule
@@ -274,8 +236,7 @@ class PrefixListRuleFilterSet(django_filters.FilterSet):
         if not value.strip():
             return queryset
         qs_filter = (
-                Q(id__icontains=value)
-                | Q(index__icontains=value)
+                Q(index__icontains=value)
                 | Q(action__icontains=value)
                 #| Q(prefix_custom__icontains=value)
                 | Q(ge__icontains=value)
