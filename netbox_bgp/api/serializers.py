@@ -62,7 +62,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['id', 'name', 'description', 'import_policies', 'export_policies']
+        fields = ['id', 'display', 'name', 'description', 'import_policies', 'export_policies']
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
@@ -70,7 +70,7 @@ class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'display', 'url', 'name', 'description']
         validators = []
 
 
