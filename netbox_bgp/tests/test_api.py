@@ -14,7 +14,10 @@ from tenancy.models import Tenant
 from dcim.models import Site, DeviceRole, DeviceType, Manufacturer, Device, Interface
 from ipam.models import IPAddress, ASN, RIR
 
-from netbox_bgp.models import Community, BGPPeerGroup, BGPSession
+from netbox_bgp.models import (
+    Community, BGPPeerGroup, BGPSession, 
+    RoutingPolicy, RoutingPolicyRule, PrefixList, PrefixListRule
+)
 
 
 class BaseTestCase(TestCase):
@@ -278,4 +281,79 @@ class SessionTestCase(BaseTestCase):
             json.dumps({'query': query}),
             content_type='application/json'
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class RoutingPolicyTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:routingpolicy'
+        self.rp = RoutingPolicy.objects.create(name='rp1', description='test_rp')
+
+    def test_list_routing_policy(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_routing_policy(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.rp.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.rp.name)
+        self.assertEqual(response.data['description'], self.rp.description)
+
+    def test_create_routing_policy(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {'name': 'testrp', 'description': 'test_rp1'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).name, 'testrp')
+        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).description, 'test_rp1')    
+
+
+class PrefixListTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:prefixlist'
+        self.obj = PrefixList.objects.create(name='pl1', description='test_pl', family='ipv4')
+
+    def test_list_prefix_list(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_prefix_list(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.obj.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.obj.name)
+        self.assertEqual(response.data['description'], self.obj.description)
+
+    def test_create_prefix_list(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {'name': 'testrp', 'description': 'test_rp1', 'family': 'ipv4'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).name, 'testrp')
+        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).description, 'test_rp1')  
+
+
+class RoutingPolicyRuleTestCase(BaseTestCase):
+    pass
+
+
+class PrefixListRuleTestCase(BaseTestCase):
+    pass
+
+
+class TestAPISchema(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'schema'
+
+    def test_api_schema(self):
+        url = reverse(f'{self.base_url_lookup}')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

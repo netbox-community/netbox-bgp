@@ -8,6 +8,7 @@ from netbox.api.serializers import NetBoxModelSerializer
 from dcim.api.nested_serializers import NestedSiteSerializer, NestedDeviceSerializer
 from tenancy.api.nested_serializers import NestedTenantSerializer
 from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedASNSerializer, NestedPrefixSerializer
+from ipam.api.field_serializers import IPNetworkField
 
 
 from netbox_bgp.models import (
@@ -31,7 +32,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy        
-        fields = '__all__'
+        fields = ['id', 'name', 'description']
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
@@ -41,6 +42,7 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
         model = RoutingPolicy
         fields = ['id', 'url', 'name', 'display', 'description']        
         validators = []
+
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     import_policies = SerializedPKRelatedField(
@@ -60,7 +62,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'import_policies', 'export_policies']
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
@@ -164,10 +166,12 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
         model = PrefixList
         fields = ['id', 'url', 'display', 'name']
 
+
 class PrefixListSerializer(NetBoxModelSerializer):
     class Meta:
         model = PrefixList
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'family']
+
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
     match_ip_address = SerializedPKRelatedField(
@@ -189,11 +193,13 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = '__all__'
+        fields = ['id', 'index', 'action', 'match_ip_address', 'routing_policy', 'match_community']
+
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
     prefix_list = NestedPrefixListSerializer()  
     prefix = NestedPrefixSerializer(required=False, allow_null=True)
+    prefix_custom = IPNetworkField(required=False, allow_null=True)
 
     class Meta:
         model = PrefixListRule

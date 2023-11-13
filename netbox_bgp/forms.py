@@ -3,7 +3,6 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.utils.translation import gettext as _
 
-from extras.models import Tag
 from tenancy.models import Tenant
 from dcim.models import Device, Site
 from ipam.models import IPAddress, Prefix, ASN
@@ -25,10 +24,6 @@ from .choices import SessionStatusChoices, CommunityStatusChoices
 
 
 class CommunityForm(NetBoxModelForm):
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False
-    )
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
@@ -113,10 +108,6 @@ class BGPSessionForm(NetBoxModelForm):
     name = forms.CharField(
         max_length=64,
         required=True
-    )
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False
     )
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
@@ -236,6 +227,11 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=_('Device')
     )
+    site_id = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        label=_('Site')
+    )
     status = forms.MultipleChoiceField(
         choices=SessionStatusChoices,
         required=False,
@@ -280,10 +276,6 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
 
 
 class RoutingPolicyForm(NetBoxModelForm):
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False
-    )
 
     class Meta:
         model = RoutingPolicy
@@ -314,10 +306,6 @@ class BGPPeerGroupForm(NetBoxModelForm):
         widget=APISelectMultiple(
             api_url='/api/plugins/bgp/routing-policy/'
         )
-    )
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False
     )
 
     class Meta:
@@ -361,7 +349,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         fields = [
             'routing_policy', 'index', 'action', 'continue_entry', 'match_community',
             'match_ip_address', 'match_ipv6_address', 'match_custom',
-            'set_actions', 'description',
+            'set_actions', 'description', 'tags'
         ]
 
 
@@ -376,10 +364,6 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
 
 
 class PrefixListForm(NetBoxModelForm):
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False
-    )
 
     class Meta:
         model = PrefixList
@@ -411,5 +395,5 @@ class PrefixListRuleForm(NetBoxModelForm):
         fields = [
             'prefix_list', 'index',
             'action', 'prefix', 'prefix_custom',
-            'ge', 'le'
+            'ge', 'le', 'tags'
         ]
