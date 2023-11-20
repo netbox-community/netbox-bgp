@@ -132,7 +132,7 @@ class NestedBGPSessionSerializer(WritableNestedSerializer):
 
     class Meta:
         model = BGPSession
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'url', 'name', 'display', 'description']
         validators = []
 
 
@@ -170,7 +170,7 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 class PrefixListSerializer(NetBoxModelSerializer):
     class Meta:
         model = PrefixList
-        fields = ['id', 'name', 'description', 'family']
+        fields = ['id', 'name', 'display', 'description', 'family']
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -193,7 +193,11 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = ['id', 'index', 'action', 'match_ip_address', 'routing_policy', 'match_community']
+        fields = [
+            'id', 'index', 'display' ,'action', 'match_ip_address', 
+            'routing_policy', 'match_community', 'match_custom', 'set_actions',
+            'match_ipv6_address'
+        ]
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
