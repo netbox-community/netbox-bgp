@@ -196,7 +196,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         fields = [
             'id', 'index', 'display' ,'action', 'match_ip_address', 
             'routing_policy', 'match_community', 'match_custom', 'set_actions',
-            'match_ipv6_address'
+            'match_ipv6_address', 'description'
         ]
 
 
