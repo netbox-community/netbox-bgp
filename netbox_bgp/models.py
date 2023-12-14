@@ -3,21 +3,17 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 
-from netbox.models import NetBoxModel
+from netbox.models import PrimaryModel
 from ipam.fields import IPNetworkField
 
 from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
 
 
-class RoutingPolicy(NetBoxModel):
+class RoutingPolicy(PrimaryModel):
     """
     """
     name = models.CharField(
         max_length=100
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
     )
 
     class Meta:
@@ -31,15 +27,11 @@ class RoutingPolicy(NetBoxModel):
         return reverse('plugins:netbox_bgp:routingpolicy', args=[self.pk])
 
 
-class BGPPeerGroup(NetBoxModel):
+class BGPPeerGroup(PrimaryModel):
     """
     """
     name = models.CharField(
         max_length=100
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
     )
     import_policies = models.ManyToManyField(
         RoutingPolicy,
@@ -63,7 +55,7 @@ class BGPPeerGroup(NetBoxModel):
         return reverse('plugins:netbox_bgp:bgppeergroup', args=[self.pk])
 
 
-class BGPBase(NetBoxModel):
+class BGPBase(PrimaryModel):
     """
     """
     site = models.ForeignKey(
@@ -89,10 +81,6 @@ class BGPBase(NetBoxModel):
         on_delete=models.SET_NULL,
         blank=True,
         null=True
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
     )
 
     class Meta:
@@ -120,7 +108,7 @@ class Community(BGPBase):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-class BGPSession(NetBoxModel):
+class BGPSession(PrimaryModel):
     name = models.CharField(
         max_length=256,
         blank=True,
@@ -169,10 +157,6 @@ class BGPSession(NetBoxModel):
         choices=SessionStatusChoices,
         default=SessionStatusChoices.STATUS_ACTIVE
     )
-    description = models.CharField(
-        max_length=200,
-        blank=True
-    )
     peer_group = models.ForeignKey(
         BGPPeerGroup,
         on_delete=models.SET_NULL,
@@ -206,15 +190,11 @@ class BGPSession(NetBoxModel):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
 
 
-class PrefixList(NetBoxModel):
+class PrefixList(PrimaryModel):
     """
     """
     name = models.CharField(
         max_length=100
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
     )
     family = models.CharField(
         max_length=10,
@@ -232,7 +212,7 @@ class PrefixList(NetBoxModel):
         return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
 
 
-class PrefixListRule(NetBoxModel):
+class PrefixListRule(PrimaryModel):
     """
     """
     prefix_list = models.ForeignKey(
@@ -298,7 +278,7 @@ class PrefixListRule(NetBoxModel):
                 )
 
 
-class RoutingPolicyRule(NetBoxModel):
+class RoutingPolicyRule(PrimaryModel):
     routing_policy = models.ForeignKey(
         to=RoutingPolicy,
         on_delete=models.CASCADE,
@@ -308,10 +288,6 @@ class RoutingPolicyRule(NetBoxModel):
     action = models.CharField(
         max_length=30,
         choices=ActionChoices
-    )
-    description = models.CharField(
-        max_length=500,
-        blank=True
     )
     continue_entry = models.PositiveIntegerField(
         blank=True,
