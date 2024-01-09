@@ -32,7 +32,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy        
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'tags', 'custom_fields']
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
@@ -170,7 +170,7 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 class PrefixListSerializer(NetBoxModelSerializer):
     class Meta:
         model = PrefixList
-        fields = ['id', 'name', 'description', 'family']
+        fields = ['id', 'name', 'display','description', 'family', 'tags', 'custom_fields']
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -193,7 +193,11 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = ['id', 'index', 'action', 'match_ip_address', 'routing_policy', 'match_community']
+        fields = [
+            'id', 'index', 'display' ,'action', 'match_ip_address', 
+            'routing_policy', 'match_community', 'match_custom', 'set_actions',
+            'match_ipv6_address', 'description', 'tags', 'custom_fields',
+        ]
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
