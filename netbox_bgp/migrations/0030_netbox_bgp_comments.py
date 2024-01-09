@@ -50,9 +50,4 @@ class Migration(migrations.Migration):
             name='comments',
             field=models.TextField(blank=True),
         ),
-        migrations.AlterField(
-            model_name='routingpolicyrule',
-            name='description',
-            field=models.CharField(blank=True, max_length=200),
-        ),
     ]

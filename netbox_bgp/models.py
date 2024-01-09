@@ -3,17 +3,24 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 
-from netbox.models import PrimaryModel
+from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
 
 from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
 
 
-class RoutingPolicy(PrimaryModel):
+class RoutingPolicy(NetBoxModel):
     """
     """
     name = models.CharField(
         max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -27,11 +34,15 @@ class RoutingPolicy(PrimaryModel):
         return reverse('plugins:netbox_bgp:routingpolicy', args=[self.pk])
 
 
-class BGPPeerGroup(PrimaryModel):
+class BGPPeerGroup(NetBoxModel):
     """
     """
     name = models.CharField(
         max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
     )
     import_policies = models.ManyToManyField(
         RoutingPolicy,
@@ -42,6 +53,9 @@ class BGPPeerGroup(PrimaryModel):
         RoutingPolicy,
         blank=True,
         related_name='group_export_policies'
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -55,7 +69,7 @@ class BGPPeerGroup(PrimaryModel):
         return reverse('plugins:netbox_bgp:bgppeergroup', args=[self.pk])
 
 
-class BGPBase(PrimaryModel):
+class BGPBase(NetBoxModel):
     """
     """
     site = models.ForeignKey(
@@ -81,6 +95,13 @@ class BGPBase(PrimaryModel):
         on_delete=models.SET_NULL,
         blank=True,
         null=True
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -108,7 +129,7 @@ class Community(BGPBase):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-class BGPSession(PrimaryModel):
+class BGPSession(NetBoxModel):
     name = models.CharField(
         max_length=256,
         blank=True,
@@ -157,6 +178,10 @@ class BGPSession(PrimaryModel):
         choices=SessionStatusChoices,
         default=SessionStatusChoices.STATUS_ACTIVE
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
     peer_group = models.ForeignKey(
         BGPPeerGroup,
         on_delete=models.SET_NULL,
@@ -172,6 +197,9 @@ class BGPSession(PrimaryModel):
         RoutingPolicy,
         blank=True,
         related_name='session_export_policies'
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     afi_safi = None  # for future use
@@ -190,15 +218,22 @@ class BGPSession(PrimaryModel):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
 
 
-class PrefixList(PrimaryModel):
+class PrefixList(NetBoxModel):
     """
     """
     name = models.CharField(
         max_length=100
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
     family = models.CharField(
         max_length=10,
         choices=IPAddressFamilyChoices
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -212,7 +247,7 @@ class PrefixList(PrimaryModel):
         return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
 
 
-class PrefixListRule(PrimaryModel):
+class PrefixListRule(NetBoxModel):
     """
     """
     prefix_list = models.ForeignKey(
@@ -246,6 +281,13 @@ class PrefixListRule(PrimaryModel):
         null=True,
         validators=[MinValueValidator(0), MaxValueValidator(128)]
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
 
     class Meta:
         ordering = ('prefix_list', 'index')
@@ -278,7 +320,7 @@ class PrefixListRule(PrimaryModel):
                 )
 
 
-class RoutingPolicyRule(PrimaryModel):
+class RoutingPolicyRule(NetBoxModel):
     routing_policy = models.ForeignKey(
         to=RoutingPolicy,
         on_delete=models.CASCADE,
@@ -288,6 +330,10 @@ class RoutingPolicyRule(PrimaryModel):
     action = models.CharField(
         max_length=30,
         choices=ActionChoices
+    )
+    description = models.CharField(
+        max_length=500,
+        blank=True
     )
     continue_entry = models.PositiveIntegerField(
         blank=True,
@@ -316,6 +362,9 @@ class RoutingPolicyRule(PrimaryModel):
         blank=True,
         null=True,
     )
+    comments = models.TextField(
+        blank=True
+    )    
 
     class Meta:
         ordering = ('routing_policy', 'index')
