@@ -80,7 +80,7 @@ class BGPSessionBulkEditView(generic.BulkEditView):
     queryset = BGPSession.objects.all()
     filterset = filters.BGPSessionFilterSet
     table = tables.BGPSessionTable
-    form = forms.BGPSessionEditForm
+    form = forms.BGPSessionBulkEditForm
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
     queryset = BGPSession.objects.all()
