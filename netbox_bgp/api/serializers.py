@@ -132,7 +132,7 @@ class NestedBGPSessionSerializer(WritableNestedSerializer):
 
     class Meta:
         model = BGPSession
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'url', 'name', 'display','description']
         validators = []
 
 
