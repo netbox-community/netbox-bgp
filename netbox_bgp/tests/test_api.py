@@ -34,7 +34,7 @@ class CommunityTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.base_url_lookup = 'plugins-api:netbox_bgp-api:community'
-        self.community1 = Community.objects.create(value='65000:65000', description='test_community')
+        self.community1 = Community.objects.create(value='65000:65000', description='test_community', comments='community_test')
 
     def test_list_community(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -51,11 +51,12 @@ class CommunityTestCase(BaseTestCase):
 
     def test_create_community(self):
         url = reverse(f'{self.base_url_lookup}-list')
-        data = {'value': '65001:65001', 'description': 'test_community1'}
+        data = {'value': '65001:65001', 'description': 'test_community1', 'comments': 'community_test1'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Community.objects.get(pk=response.data['id']).value, '65001:65001')
         self.assertEqual(Community.objects.get(pk=response.data['id']).description, 'test_community1')
+        self.assertEqual(Community.objects.get(pk=response.data['id']).comments, 'community_test1')
 
     def test_update_community(self):
         pass
@@ -89,7 +90,7 @@ class PeerGroupTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.base_url_lookup = 'plugins-api:netbox_bgp-api:peergroup'
-        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description')
+        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description', comments='peer_group_comment')
 
     def test_list_peer_group(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -106,11 +107,12 @@ class PeerGroupTestCase(BaseTestCase):
 
     def test_create_peer_group(self):
         url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'test_peer_group', 'description': 'peer_group_desc'}
+        data = {'name': 'test_peer_group', 'description': 'peer_group_desc', 'comments': 'peer_group_comment1'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).name, 'test_peer_group')
         self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).description, 'peer_group_desc')
+        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).comments, 'peer_group_comment1')
 
     def test_update_peer_group(self):
         pass
@@ -172,7 +174,8 @@ class SessionTestCase(BaseTestCase):
             local_address=local_ip,
             remote_address=remote_ip,
             status='active',
-            peer_group=self.peer_group
+            peer_group=self.peer_group,
+            comments="comment_session_test"
         )
 
     def test_list_session(self):
@@ -194,6 +197,8 @@ class SessionTestCase(BaseTestCase):
         self.assertEqual(response.data['status']['value'], self.session.status)
         self.assertEqual(response.data['peer_group']['name'], self.session.peer_group.name)
         self.assertEqual(response.data['peer_group']['description'], self.session.peer_group.description)
+        self.assertEqual(response.data['comments'], self.session.comments)
+
 
     def test_create_session(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -206,21 +211,25 @@ class SessionTestCase(BaseTestCase):
             'remote_address': self.remote_ip.pk,
             'status': 'active',
             'device': self.device.pk,
-            'peer_group': self.peer_group.pk
+            'peer_group': self.peer_group.pk,
+            'comments': 'comment_session_test1'
 
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
         self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).comments, 'comment_session_test1')
+
 
     def test_update_session(self):
         url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.session.pk})
-        data = {'description': 'new_description2'}
+        data = {'description': 'new_description2', 'comments': 'comment_session_test2'}
 
         response = self.client.patch(url, data, format='json')
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_204_NO_CONTENT])
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'new_description2')        
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'new_description2')
+        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).comments, 'comment_session_test2')
 
 
     def test_duplicate_session(self):
@@ -288,7 +297,7 @@ class RoutingPolicyTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.base_url_lookup = 'plugins-api:netbox_bgp-api:routingpolicy'
-        self.rp = RoutingPolicy.objects.create(name='rp1', description='test_rp')
+        self.rp = RoutingPolicy.objects.create(name='rp1', description='test_rp', comments='comments_routing_policy')
 
     def test_list_routing_policy(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -302,21 +311,23 @@ class RoutingPolicyTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.rp.name)
         self.assertEqual(response.data['description'], self.rp.description)
+        self.assertEqual(response.data['comments'], self.rp.comments)
 
     def test_create_routing_policy(self):
         url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'testrp', 'description': 'test_rp1'}
+        data = {'name': 'testrp', 'description': 'test_rp1', 'comments': 'comment_rp1'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).name, 'testrp')
-        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).description, 'test_rp1')    
+        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).description, 'test_rp1')  
+        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).comments, 'comment_rp1')  
 
 
 class PrefixListTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.base_url_lookup = 'plugins-api:netbox_bgp-api:prefixlist'
-        self.obj = PrefixList.objects.create(name='pl1', description='test_pl', family='ipv4')
+        self.obj = PrefixList.objects.create(name='pl1', description='test_pl', family='ipv4', comments='comments_pl')
 
     def test_list_prefix_list(self):
         url = reverse(f'{self.base_url_lookup}-list')
@@ -330,14 +341,16 @@ class PrefixListTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.obj.name)
         self.assertEqual(response.data['description'], self.obj.description)
+        self.assertEqual(response.data['comments'], self.obj.comments)
 
     def test_create_prefix_list(self):
         url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'testrp', 'description': 'test_rp1', 'family': 'ipv4'}
+        data = {'name': 'testrp', 'description': 'test_rp1', 'family': 'ipv4', 'comments': 'comment_rp1'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(PrefixList.objects.get(pk=response.data['id']).name, 'testrp')
         self.assertEqual(PrefixList.objects.get(pk=response.data['id']).description, 'test_rp1')  
+        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).comments, 'comment_rp1')  
 
 
 class RoutingPolicyRuleTestCase(BaseTestCase):
