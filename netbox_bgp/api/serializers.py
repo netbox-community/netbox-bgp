@@ -32,7 +32,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy        
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'tags', 'custom_fields']
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
@@ -62,7 +62,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['id', 'name', 'description', 'import_policies', 'export_policies']
+        fields = ['id', 'display', 'name', 'description', 'import_policies', 'export_policies']
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
@@ -70,7 +70,7 @@ class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'display', 'url', 'name', 'description']
         validators = []
 
 
@@ -132,7 +132,7 @@ class NestedBGPSessionSerializer(WritableNestedSerializer):
 
     class Meta:
         model = BGPSession
-        fields = ['id', 'url', 'name', 'description']
+        fields = ['id', 'url', 'name', 'display','description']
         validators = []
 
 
@@ -170,7 +170,7 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 class PrefixListSerializer(NetBoxModelSerializer):
     class Meta:
         model = PrefixList
-        fields = ['id', 'name', 'description', 'family']
+        fields = ['id', 'name', 'display','description', 'family', 'tags', 'custom_fields']
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -193,7 +193,11 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = ['id', 'index', 'action', 'match_ip_address', 'routing_policy', 'match_community']
+        fields = [
+            'id', 'index', 'display' ,'action', 'match_ip_address', 
+            'routing_policy', 'match_community', 'match_custom', 'set_actions',
+            'match_ipv6_address', 'description', 'tags', 'custom_fields',
+        ]
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
