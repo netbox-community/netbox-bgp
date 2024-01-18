@@ -198,6 +198,65 @@ class BGPSessionAddForm(BGPSessionForm):
         return self.cleaned_data['remote_address']
 
 
+class BGPSessionImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_('Site'),
+        required=False,
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        help_text=_('Assigned site')
+    )
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Assigned tenant')
+    )
+    device = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        to_field_name='name',
+        help_text=_('Assigned device')
+    )
+    status = CSVChoiceField(
+        choices=SessionStatusChoices,
+        required=False,
+        help_text=_('Operational status')
+    )   
+    local_address = CSVModelChoiceField(
+        queryset=IPAddress.objects.all(),
+        to_field_name='address',
+        help_text=_('Local IP Address'),
+    )
+    remote_address = CSVModelChoiceField(
+        queryset=IPAddress.objects.all(),
+        to_field_name='address',
+        help_text=_('Remote IP Address'),
+    )
+    local_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name='asn',
+        help_text=_('Local ASN'),
+    )
+    remote_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name='asn',
+        help_text=_('Remote ASN'),
+    )
+    peer_group = CSVModelChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Peer Group'),
+    )
+
+    class Meta:
+        model = BGPSession
+        fields = [
+            'name', 'device', 'site', 'description', 'tenant', 'status', 'peer_group',  
+            'local_address', 'remote_address', 'local_as', 'remote_as', 'tags',
+        ]
+
+
 class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     model = BGPSession
     q = forms.CharField(

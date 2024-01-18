@@ -18,6 +18,7 @@ urlpatterns = [
     # Sessions
     path('session/', views.BGPSessionListView.as_view(), name='bgpsession_list'),
     path('session/add/', views.BGPSessionAddView.as_view(), name='bgpsession_add'),
+    path('session/import/', views.BGPSessionBulkImportView.as_view(), name='bgpsession_import'),
     path('session/edit/', views.BGPSessionBulkEditView.as_view(), name='bgpsession_bulk_edit'),
     path('session/delete/', views.BGPSessionBulkDeleteView.as_view(), name='bgpsession_bulk_delete'),
     path('session/<int:pk>/', views.BGPSessionView.as_view(), name='bgpsession'),
