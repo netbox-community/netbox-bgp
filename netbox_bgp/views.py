@@ -244,7 +244,7 @@ class RoutingPolicyRuleView(generic.ObjectView):
 
 class RoutingPolicyRuleListView(generic.ObjectListView):
     queryset = RoutingPolicyRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
+    filterset = filters.RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.RoutingPolicyRuleTable
     action_buttons = ('add',)
@@ -296,7 +296,7 @@ class PrefixListDeleteView(generic.ObjectDeleteView):
 
 class PrefixListRuleListView(generic.ObjectListView):
     queryset = PrefixListRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
+    filterset = filters.PrefixListRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
     action_buttons = ('add',)
