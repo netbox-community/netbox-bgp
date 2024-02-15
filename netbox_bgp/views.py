@@ -76,6 +76,15 @@ class BGPSessionAddView(generic.ObjectEditView):
     queryset = BGPSession.objects.all()
     form = forms.BGPSessionAddForm
 
+class BGPSessionBulkImportView(generic.BulkImportView):
+    queryset = BGPSession.objects.all()
+    model_form = forms.BGPSessionImportForm
+
+class BGPSessionBulkEditView(generic.BulkEditView):
+    queryset = BGPSession.objects.all()
+    filterset = filters.BGPSessionFilterSet
+    table = tables.BGPSessionTable
+    form = forms.BGPSessionBulkEditForm
 
 class BGPSessionBulkDeleteView(generic.BulkDeleteView):
     queryset = BGPSession.objects.all()
