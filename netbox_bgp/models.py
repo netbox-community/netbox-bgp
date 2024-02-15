@@ -19,6 +19,9 @@ class RoutingPolicy(NetBoxModel):
         max_length=200,
         blank=True
     )
+    comments = models.TextField(
+        blank=True
+    )
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
@@ -50,6 +53,9 @@ class BGPPeerGroup(NetBoxModel):
         RoutingPolicy,
         blank=True,
         related_name='group_export_policies'
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -92,6 +98,9 @@ class BGPBase(NetBoxModel):
     )
     description = models.CharField(
         max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
         blank=True
     )
 
@@ -189,6 +198,9 @@ class BGPSession(NetBoxModel):
         blank=True,
         related_name='session_export_policies'
     )
+    comments = models.TextField(
+        blank=True
+    )
 
     afi_safi = None  # for future use
 
@@ -219,6 +231,9 @@ class PrefixList(NetBoxModel):
     family = models.CharField(
         max_length=10,
         choices=IPAddressFamilyChoices
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -265,6 +280,13 @@ class PrefixListRule(NetBoxModel):
         blank=True,
         null=True,
         validators=[MinValueValidator(0), MaxValueValidator(128)]
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -340,6 +362,9 @@ class RoutingPolicyRule(NetBoxModel):
         blank=True,
         null=True,
     )
+    comments = models.TextField(
+        blank=True
+    )    
 
     class Meta:
         ordering = ('routing_policy', 'index')

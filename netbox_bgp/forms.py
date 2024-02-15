@@ -10,7 +10,7 @@ from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
     DynamicModelChoiceField, CSVModelChoiceField,
     DynamicModelMultipleChoiceField,
-    TagFilterField, CSVChoiceField,
+    TagFilterField, CSVChoiceField, CommentField
 )
 from utilities.forms.widgets import APISelect, APISelectMultiple
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelImportForm  
@@ -32,11 +32,12 @@ class CommunityForm(NetBoxModelForm):
         queryset=Tenant.objects.all(),
         required=False
     )
+    comments = CommentField()
 
     class Meta:
         model = Community
         fields = [
-            'value', 'description', 'status', 'tenant', 'tags',
+            'value', 'description', 'status', 'tenant', 'tags', 'comments'
         ]
 
 
@@ -165,13 +166,14 @@ class BGPSessionForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    comments = CommentField()
 
     class Meta:
         model = BGPSession
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
+            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies', 'comments'
         ]
         fieldsets = (
             ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
@@ -400,9 +402,11 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
 
 class RoutingPolicyForm(NetBoxModelForm):
 
+    comments = CommentField()
+
     class Meta:
         model = RoutingPolicy
-        fields = ['name', 'description', 'tags']
+        fields = ['name', 'description', 'tags', 'comments']
 
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
@@ -430,10 +434,11 @@ class BGPPeerGroupForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    comments = CommentField()
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']
+        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags', 'comments']
 
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
@@ -466,13 +471,14 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         help_text='Set statements, e.g., {"as-path prepend": [12345,12345]}',
         required=False
     )
+    comments = CommentField()
 
     class Meta:
         model = RoutingPolicyRule
         fields = [
             'routing_policy', 'index', 'action', 'continue_entry', 'match_community',
             'match_ip_address', 'match_ipv6_address', 'match_custom',
-            'set_actions', 'description', 'tags'
+            'set_actions', 'description', 'tags', 'comments'
         ]
 
 
@@ -488,9 +494,11 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
 
 class PrefixListForm(NetBoxModelForm):
 
+    comments = CommentField()
+
     class Meta:
         model = PrefixList
-        fields = ['name', 'description', 'family', 'tags']
+        fields = ['name', 'description', 'family', 'tags', 'comments']
 
 
 class PrefixListRuleForm(NetBoxModelForm):
@@ -512,11 +520,12 @@ class PrefixListRuleForm(NetBoxModelForm):
         label='Less than or equal to',
         required=False,
     )
+    comments = CommentField()
 
     class Meta:
         model = PrefixListRule
         fields = [
             'prefix_list', 'index',
             'action', 'prefix', 'prefix_custom',
-            'ge', 'le', 'tags'
+            'ge', 'le', 'tags', 'comments'
         ]
