@@ -64,6 +64,7 @@
         </div>
         {% include 'inc/panels/custom_fields.html' %}
         {% include 'inc/panels/tags.html' %}
+        {% include 'inc/panels/comments.html' %}
         {% plugin_left_page object %}
     </div>
     <div class="col-md-8">
@@ -74,8 +75,16 @@
             <div class="card-body">
                 {% render_table rprules_table 'inc/table.html' %}
             </div>
-            {% plugin_right_page object %}
         </div>
+        <div class="card">
+            <h5 class="card-header">
+                Related BGP Sessions
+            </h5>
+            <div class="card-body">
+                {% render_table sess_table 'inc/table.html' %}
+            </div>
+        </div>        
+        {% plugin_right_page object %}
     </div>
 </div>
 <div class="row">

@@ -19,6 +19,9 @@ class RoutingPolicy(NetBoxModel):
         max_length=200,
         blank=True
     )
+    comments = models.TextField(
+        blank=True
+    )
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
@@ -50,6 +53,9 @@ class BGPPeerGroup(NetBoxModel):
         RoutingPolicy,
         blank=True,
         related_name='group_export_policies'
+    )
+    comments = models.TextField(
+        blank=True
     )
 
     class Meta:
@@ -94,6 +100,9 @@ class BGPBase(NetBoxModel):
         max_length=200,
         blank=True
     )
+    comments = models.TextField(
+        blank=True
+    )
 
     class Meta:
         abstract = True
@@ -118,6 +127,168 @@ class Community(BGPBase):
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
+
+
+class CommunityList(NetBoxModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Community Lists'
+        unique_together = ['name', 'description']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:communitylist', args=[self.pk])
+
+
+class CommunityListRule(NetBoxModel):
+    """
+    """
+    community_list = models.ForeignKey(
+        to=CommunityList,
+        on_delete=models.CASCADE,
+        related_name='commlistrules'
+    )
+    action = models.CharField(
+        max_length=30,
+        choices=ActionChoices
+    )
+    community = models.ForeignKey(
+        to=Community,
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    def __str__(self):
+        return f'{self.community_list}: {self.action} {self.community}'
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:communitylistrule', args=[self.pk])
+
+    def get_action_color(self):
+        return ActionChoices.colors.get(self.action)
+
+
+class PrefixList(NetBoxModel):
+    """
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    family = models.CharField(
+        max_length=10,
+        choices=IPAddressFamilyChoices
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Prefix Lists'
+        unique_together = ['name', 'description', 'family']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
+
+
+class PrefixListRule(NetBoxModel):
+    """
+    """
+    prefix_list = models.ForeignKey(
+        to=PrefixList,
+        on_delete=models.CASCADE,
+        related_name='prefrules'
+    )
+    index = models.PositiveIntegerField()
+    action = models.CharField(
+        max_length=30,
+        choices=ActionChoices
+    )
+    prefix = models.ForeignKey(
+        to='ipam.Prefix',
+        blank=True,
+        null=True,
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
+    prefix_custom = IPNetworkField(
+        blank=True,
+        null=True,
+    )
+    ge = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(128)]
+    )
+    le = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(128)]
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        ordering = ('prefix_list', 'index')
+        unique_together = ('prefix_list', 'index')
+
+    @property
+    def network(self):
+        return self.prefix_custom or self.prefix
+
+    def __str__(self):
+        return f'{self.prefix_list}: Rule {self.index}'
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:prefixlistrule', args=[self.pk])
+
+    def get_action_color(self):
+        return ActionChoices.colors.get(self.action)
+
+    def clean(self):
+        super().clean()
+        # make sure that only one field is setted
+        if self.prefix and self.prefix_custom:
+            raise ValidationError(
+                    {'prefix': 'Cannot set both fields'}
+                )
+        # at least one fields must be setted
+        if self.prefix is None and self.prefix_custom is None:
+            raise ValidationError(
+                    {'prefix': 'Cannot set both fields to Null'}
+                )
 
 
 class BGPSession(NetBoxModel):
@@ -189,6 +360,23 @@ class BGPSession(NetBoxModel):
         blank=True,
         related_name='session_export_policies'
     )
+    prefix_list_in = models.ForeignKey(
+        to=PrefixList,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='session_prefix_in'
+    )
+    prefix_list_out = models.ForeignKey(
+        to=PrefixList,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='session_prefix_out'
+    )
+    comments = models.TextField(
+        blank=True
+    )
 
     afi_safi = None  # for future use
 
@@ -204,98 +392,6 @@ class BGPSession(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
-
-
-class PrefixList(NetBoxModel):
-    """
-    """
-    name = models.CharField(
-        max_length=100
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True
-    )
-    family = models.CharField(
-        max_length=10,
-        choices=IPAddressFamilyChoices
-    )
-
-    class Meta:
-        verbose_name_plural = 'Prefix Lists'
-        unique_together = ['name', 'description', 'family']
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:prefixlist', args=[self.pk])
-
-
-class PrefixListRule(NetBoxModel):
-    """
-    """
-    prefix_list = models.ForeignKey(
-        to=PrefixList,
-        on_delete=models.CASCADE,
-        related_name='prefrules'
-    )
-    index = models.PositiveIntegerField()
-    action = models.CharField(
-        max_length=30,
-        choices=ActionChoices
-    )
-    prefix = models.ForeignKey(
-        to='ipam.Prefix',
-        blank=True,
-        null=True,
-        related_name='+',
-        on_delete=models.CASCADE,
-    )
-    prefix_custom = IPNetworkField(
-        blank=True,
-        null=True,
-    )
-    ge = models.PositiveSmallIntegerField(
-        blank=True,
-        null=True,
-        validators=[MinValueValidator(0), MaxValueValidator(128)]
-    )
-    le = models.PositiveSmallIntegerField(
-        blank=True,
-        null=True,
-        validators=[MinValueValidator(0), MaxValueValidator(128)]
-    )
-
-    class Meta:
-        ordering = ('prefix_list', 'index')
-        unique_together = ('prefix_list', 'index')
-
-    @property
-    def network(self):
-        return self.prefix_custom or self.prefix
-
-    def __str__(self):
-        return f'{self.prefix_list}: Rule {self.index}'
-
-    def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:prefixlistrule', args=[self.pk])
-
-    def get_action_color(self):
-        return ActionChoices.colors.get(self.action)
-
-    def clean(self):
-        super().clean()
-        # make sure that only one field is setted
-        if self.prefix and self.prefix_custom:
-            raise ValidationError(
-                    {'prefix': 'Cannot set both fields'}
-                )
-        # at least one fields must be setted
-        if self.prefix is None and self.prefix_custom is None:
-            raise ValidationError(
-                    {'prefix': 'Cannot set both fields to Null'}
-                )
 
 
 class RoutingPolicyRule(NetBoxModel):
@@ -322,6 +418,11 @@ class RoutingPolicyRule(NetBoxModel):
         blank=True,
         related_name='+'
     )
+    match_community_list = models.ManyToManyField(
+        to=CommunityList,
+        blank=True,
+        related_name='cmrules'
+    )
     match_ip_address = models.ManyToManyField(
         to=PrefixList,
         blank=True,
@@ -340,6 +441,9 @@ class RoutingPolicyRule(NetBoxModel):
         blank=True,
         null=True,
     )
+    comments = models.TextField(
+        blank=True
+    )    
 
     class Meta:
         ordering = ('routing_policy', 'index')
@@ -368,6 +472,10 @@ class RoutingPolicyRule(NetBoxModel):
         result.update(
             {'community': list(self.match_community.all().values_list('value', flat=True))}
         )
+        if self.match_community_list.all().exists():
+            result.update(
+                {'community': list(self.match_community_list.all().values_list('name', flat=True))}
+            )
         result.update(
             {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
         )
@@ -382,6 +490,7 @@ class RoutingPolicyRule(NetBoxModel):
         result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
         # remove empty matches
         result = {k: v for k, v in result.items() if v}
+        result.update(custom_match)
         return result
 
     @property

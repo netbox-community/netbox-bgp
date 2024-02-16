@@ -13,7 +13,8 @@ from ipam.api.field_serializers import IPNetworkField
 
 from netbox_bgp.models import (
     BGPSession, RoutingPolicy, BGPPeerGroup,
-    Community, RoutingPolicyRule, PrefixList, PrefixListRule,
+    Community, RoutingPolicyRule, PrefixList,
+    PrefixListRule, CommunityList, CommunityListRule
 )
 
 from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
@@ -32,7 +33,7 @@ class SerializedPKRelatedField(PrimaryKeyRelatedField):
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy        
-        fields = ['id', 'name', 'description', 'tags', 'custom_fields']
+        fields = ['id', 'name', 'description', 'tags', 'custom_fields', 'comments']
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
@@ -42,6 +43,20 @@ class NestedRoutingPolicySerializer(WritableNestedSerializer):
         model = RoutingPolicy
         fields = ['id', 'url', 'name', 'display', 'description']        
         validators = []
+
+
+class NestedPrefixListSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
+
+    class Meta:
+        model = PrefixList
+        fields = ['id', 'url', 'display', 'name']
+
+
+class PrefixListSerializer(NetBoxModelSerializer):
+    class Meta:
+        model = PrefixList
+        fields = ['id', 'name', 'display','description', 'family', 'tags', 'custom_fields', 'comments']
 
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
@@ -62,7 +77,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['id', 'display', 'name', 'description', 'import_policies', 'export_policies']
+        fields = ['id', 'display', 'name', 'description', 'import_policies', 'export_policies', 'comments']
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
@@ -84,6 +99,8 @@ class BGPSessionSerializer(NetBoxModelSerializer):
     local_as = NestedASNSerializer(required=True, allow_null=False)
     remote_as = NestedASNSerializer(required=True, allow_null=False)
     peer_group = NestedBGPPeerGroupSerializer(required=False, allow_null=True)
+    prefix_list_in = NestedPrefixListSerializer(required=False, allow_null=True)
+    prefix_list_out = NestedPrefixListSerializer(required=False, allow_null=True)
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=NestedRoutingPolicySerializer,
@@ -106,8 +123,9 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             'display', 'status', 'site', 'tenant',
             'device', 'local_address', 'remote_address',
             'local_as', 'remote_as', 'peer_group', 'import_policies',
-            'export_policies', 'created', 'last_updated',
-            'name', 'description'
+            'export_policies', 'prefix_list_in','prefix_list_out',
+            'created', 'last_updated',
+            'name', 'description', 'comments'
             ]
 
 
@@ -146,7 +164,7 @@ class CommunitySerializer(NetBoxModelSerializer):
             'id', 'tags', 'custom_fields', 'display',
             'status', 'tenant', 'created', 'last_updated',
             'description',
-            'value', 'site', 'role'
+            'value', 'site', 'role', 'comments'
         ]
 
 class NestedCommunitySerializer(WritableNestedSerializer):
@@ -159,18 +177,31 @@ class NestedCommunitySerializer(WritableNestedSerializer):
         ]
 
 
-class NestedPrefixListSerializer(WritableNestedSerializer):
-    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:prefixlist')
+class CommunityListSerializer(NetBoxModelSerializer):
+    class Meta:
+        model = CommunityList
+        fields = ['id', 'name', 'display','description', 'tags', 'custom_fields', 'comments']
+
+
+class NestedCommunityListSerializer(WritableNestedSerializer):
+    url = HyperlinkedIdentityField(view_name='plugins:netbox_bgp:communitylist')
 
     class Meta:
-        model = PrefixList
+        model = CommunityList
         fields = ['id', 'url', 'display', 'name']
 
 
-class PrefixListSerializer(NetBoxModelSerializer):
+class CommunityListRuleSerializer(NetBoxModelSerializer):
+    community_list = NestedCommunityListSerializer()  
+    community = NestedCommunitySerializer(required=False, allow_null=True)
+
     class Meta:
-        model = PrefixList
-        fields = ['id', 'name', 'display','description', 'family', 'tags', 'custom_fields']
+        model = CommunityListRule
+        fields = [
+            'id', 'tags', 'custom_fields', 'display',
+            'community_list', 'created', 'last_updated',
+            'action', 'community', 'comments'
+        ]
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
@@ -196,7 +227,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         fields = [
             'id', 'index', 'display' ,'action', 'match_ip_address', 
             'routing_policy', 'match_community', 'match_custom', 'set_actions',
-            'match_ipv6_address', 'description', 'tags', 'custom_fields',
+            'match_ipv6_address', 'description', 'tags', 'custom_fields', 'comments'
         ]
 
 
@@ -211,5 +242,5 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
             'id', 'tags', 'custom_fields', 'display',
             'prefix_list', 'created', 'last_updated',
             'index', 'action',
-            'prefix_custom', 'ge', 'le', 'prefix'
+            'prefix_custom', 'ge', 'le', 'prefix', 'comments'
         ]

@@ -10,14 +10,15 @@ from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
     DynamicModelChoiceField, CSVModelChoiceField,
     DynamicModelMultipleChoiceField,
-    TagFilterField, CSVChoiceField,
+    TagFilterField, CSVChoiceField, CommentField
 )
 from utilities.forms.widgets import APISelect, APISelectMultiple
 from netbox.forms import NetBoxModelForm, NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelImportForm  
 
 from .models import (
     Community, BGPSession, RoutingPolicy, BGPPeerGroup,
-    RoutingPolicyRule, PrefixList, PrefixListRule
+    RoutingPolicyRule, PrefixList, PrefixListRule,
+    CommunityList, CommunityListRule
 )
 
 from .choices import SessionStatusChoices, CommunityStatusChoices
@@ -32,11 +33,12 @@ class CommunityForm(NetBoxModelForm):
         queryset=Tenant.objects.all(),
         required=False
     )
+    comments = CommentField()
 
     class Meta:
         model = Community
         fields = [
-            'value', 'description', 'status', 'tenant', 'tags',
+            'value', 'description', 'status', 'tenant', 'tags', 'comments'
         ]
 
 
@@ -86,6 +88,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
        'tenant', 'description',
     ]
 
+
 class CommunityImportForm(NetBoxModelImportForm):
     tenant = CSVModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -102,6 +105,43 @@ class CommunityImportForm(NetBoxModelImportForm):
     class Meta:
         model = Community
         fields = ('value', 'description', 'tags')    
+
+
+class CommunityListFilterForm(NetBoxModelFilterSetForm):
+    model = CommunityList
+    q = forms.CharField(
+        required=False,
+        label='Search'
+    )
+
+    tag = TagFilterField(model)
+
+
+class CommunityListForm(NetBoxModelForm):
+
+    comments = CommentField()
+
+    class Meta:
+        model = CommunityList
+        fields = ['name', 'description', 'tags', 'comments']
+
+
+class CommunityListRuleForm(NetBoxModelForm):
+    community = DynamicModelChoiceField(
+        queryset=Community.objects.all(),
+        required=False,
+        help_text='Community',
+    )
+
+    comments = CommentField()
+
+    class Meta:
+        model = CommunityListRule
+        fields = [
+            'community_list', 
+            'action', 'community',
+            'tags', 'comments'
+        ]
 
 
 class BGPSessionForm(NetBoxModelForm):
@@ -165,19 +205,35 @@ class BGPSessionForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    prefix_list_in = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(
+            api_url='/api/plugins/bgp/prefix-list/',
+        )
+    )
+    prefix_list_out = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(
+            api_url='/api/plugins/bgp/prefix-list/',
+        )
+    )        
+    comments = CommentField()
 
     class Meta:
         model = BGPSession
         fields = [
             'name', 'site', 'device',
             'local_as', 'remote_as', 'local_address', 'remote_address',
-            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies'
+            'description', 'status', 'peer_group', 'tenant', 'tags', 'import_policies', 'export_policies',
+            'prefix_list_in', 'prefix_list_out','comments'
         ]
         fieldsets = (
             ('Session', ('name', 'site', 'device', 'description', 'status', 'peer_group', 'tenant', 'tags')),
             ('Remote', ('remote_as', 'remote_address')),
             ('Local', ('local_as', 'local_address')),
-            ('Policies', ('import_policies', 'export_policies'))
+            ('Policies', ('import_policies', 'export_policies', 'prefix_list_in', 'prefix_list_out'))
         )
         widgets = {
             'status': forms.Select(),
@@ -196,6 +252,78 @@ class BGPSessionAddForm(BGPSessionForm):
             ip = IPAddress.objects.create(address=str(self.cleaned_data['remote_address']))
         self.cleaned_data['remote_address'] = ip
         return self.cleaned_data['remote_address']
+
+
+class BGPSessionImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_('Site'),
+        required=False,
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        help_text=_('Assigned site')
+    )
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Assigned tenant')
+    )
+    device = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        to_field_name='name',
+        help_text=_('Assigned device')
+    )
+    status = CSVChoiceField(
+        choices=SessionStatusChoices,
+        required=False,
+        help_text=_('Operational status')
+    )   
+    local_address = CSVModelChoiceField(
+        queryset=IPAddress.objects.all(),
+        to_field_name='address',
+        help_text=_('Local IP Address'),
+    )
+    remote_address = CSVModelChoiceField(
+        queryset=IPAddress.objects.all(),
+        to_field_name='address',
+        help_text=_('Remote IP Address'),
+    )
+    local_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name='asn',
+        help_text=_('Local ASN'),
+    )
+    remote_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name='asn',
+        help_text=_('Remote ASN'),
+    )
+    peer_group = CSVModelChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Peer Group'),
+    )
+    prefix_list_in = CSVModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Prefix list In'),
+    )    
+    prefix_list_out = CSVModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        to_field_name='name',
+        help_text=_('Prefix List Out'),
+    )
+
+    class Meta:
+        model = BGPSession
+        fields = [
+            'name', 'device', 'site', 'description', 'tenant', 'status', 'peer_group',  
+            'local_address', 'remote_address', 'local_as', 'remote_as', 'tags',
+            'prefix_list_in', 'prefix_list_out'
+        ]
 
 
 class BGPSessionFilterForm(NetBoxModelFilterSetForm):
@@ -257,6 +385,20 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    prefix_list_in = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )
+    prefix_list_out = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/prefix-list/'
+        )
+    )    
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False
@@ -264,6 +406,70 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
 
     tag = TagFilterField(model)
 
+
+class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
+    device = DynamicModelChoiceField(
+        label=_('Device'),
+        queryset=Device.objects.all(),
+        required=False,
+    )
+    site = DynamicModelChoiceField(
+        label=_('Site'),
+        queryset=Site.objects.all(),
+        required=False
+    )
+    status = forms.ChoiceField(
+        label=_('Status'),
+        required=False,
+        choices=SessionStatusChoices,
+    )
+    description = forms.CharField(
+        label=_('Description'),
+        max_length=200,
+        required=False
+    )
+    tenant = DynamicModelChoiceField(
+        label=_('Tenant'),
+        queryset=Tenant.objects.all(),
+        required=False
+    )
+    local_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False
+    )
+    remote_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False
+    )
+    peer_group = DynamicModelChoiceField(
+        queryset=BGPPeerGroup.objects.all(),
+        required=False,
+        widget=APISelect(
+            api_url='/api/plugins/bgp/peer-group/',
+        )
+    )
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(
+            api_url='/api/plugins/bgp/routing-policy/'
+        )
+    )
+
+    model = BGPSession
+    fieldsets = (
+        (('Session'), ('device', 'site', 'description', 'status', 'tenant', 'peer_group')),
+        (('AS'), ('local_as', 'remote_as')),
+        (('Policies'), ('import_policies', 'export_policies')),
+    )
+    nullable_fields = ['tenant', 'description', 'peer_group', 'import_policies', 'export_policies']
 
 class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
     model = RoutingPolicy
@@ -277,9 +483,11 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
 
 class RoutingPolicyForm(NetBoxModelForm):
 
+    comments = CommentField()
+
     class Meta:
         model = RoutingPolicy
-        fields = ['name', 'description', 'tags']
+        fields = ['name', 'description', 'tags', 'comments']
 
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
@@ -307,10 +515,11 @@ class BGPPeerGroupForm(NetBoxModelForm):
             api_url='/api/plugins/bgp/routing-policy/'
         )
     )
+    comments = CommentField()
 
     class Meta:
         model = BGPPeerGroup
-        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags']
+        fields = ['name', 'description', 'import_policies', 'export_policies', 'tags', 'comments']
 
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
@@ -323,6 +532,10 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         queryset=Community.objects.all(),
         required=False,
     )
+    match_community_list = DynamicModelMultipleChoiceField(
+        queryset=CommunityList.objects.all(),
+        required=False,
+    )    
     match_ip_address = DynamicModelMultipleChoiceField(
         queryset=PrefixList.objects.all(),
         required=False,
@@ -343,13 +556,14 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         help_text='Set statements, e.g., {"as-path prepend": [12345,12345]}',
         required=False
     )
+    comments = CommentField()
 
     class Meta:
         model = RoutingPolicyRule
         fields = [
             'routing_policy', 'index', 'action', 'continue_entry', 'match_community',
-            'match_ip_address', 'match_ipv6_address', 'match_custom',
-            'set_actions', 'description', 'tags'
+            'match_community_list','match_ip_address', 'match_ipv6_address', 'match_custom',
+            'set_actions', 'description', 'tags', 'comments'
         ]
 
 
@@ -365,9 +579,11 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
 
 class PrefixListForm(NetBoxModelForm):
 
+    comments = CommentField()
+
     class Meta:
         model = PrefixList
-        fields = ['name', 'description', 'family', 'tags']
+        fields = ['name', 'description', 'family', 'tags', 'comments']
 
 
 class PrefixListRuleForm(NetBoxModelForm):
@@ -389,11 +605,12 @@ class PrefixListRuleForm(NetBoxModelForm):
         label='Less than or equal to',
         required=False,
     )
+    comments = CommentField()
 
     class Meta:
         model = PrefixListRule
         fields = [
             'prefix_list', 'index',
             'action', 'prefix', 'prefix_custom',
-            'ge', 'le', 'tags'
+            'ge', 'le', 'tags', 'comments'
         ]

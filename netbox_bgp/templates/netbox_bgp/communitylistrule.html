@@ -1,0 +1,40 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col col-md-5">
+        <div class="card">
+            <h5 class="card-header">Community List Rule</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <th scope="row">Community List</th>
+                        <td>
+                            <a href="{{ object.community_list.get_absolute_url }}">{{ object.community_list }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Action</th>
+                        <td>{% badge object.get_action_display bg_color=object.get_action_color %}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Community</th>
+                        {% if object.community.get_absolute_url %}
+                        <td>
+                            <a href="{{ object.community.get_absolute_url }}">{{ object.community }}</a>
+                        </td>
+                        {% else %}
+                        <td>{{ object.community|placeholder }}</td>
+                        {% endif %}
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
+        {% include 'inc/panels/comments.html' %}
+    </div>
+</div>
+{% endblock content %}

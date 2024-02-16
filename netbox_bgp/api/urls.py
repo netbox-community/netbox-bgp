@@ -2,7 +2,8 @@ from rest_framework import routers
 
 from .views import (
     BGPSessionViewSet, RoutingPolicyViewSet, BGPPeerGroupViewSet, CommunityViewSet,
-    PrefixListViewSet, PrefixListRuleViewSet, RoutingPolicyRuleViewSet
+    PrefixListViewSet, PrefixListRuleViewSet, RoutingPolicyRuleViewSet,
+    CommunityListViewSet, CommunityListRuleViewSet
 )
 
 router = routers.DefaultRouter()
@@ -15,6 +16,7 @@ router.register('bgppeergroup', BGPPeerGroupViewSet, 'bgppeergroup')
 router.register('community', CommunityViewSet)
 router.register('prefix-list', PrefixListViewSet)
 router.register('prefix-list-rule', PrefixListRuleViewSet)
-
+router.register('community-list', CommunityListViewSet)
+router.register('community-list-rule', CommunityListRuleViewSet)
 
 urlpatterns = router.urls
