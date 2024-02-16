@@ -20,6 +20,20 @@ _menu_items = (
         ),
     ),
     PluginMenuItem(
+        link='plugins:netbox_bgp:communitylist_list',
+        link_text='Community Lists',
+        permissions=['netbox_bgp.view_communitylist'],
+        buttons=(
+            PluginMenuButton(
+                link='plugins:netbox_bgp:communitylist_add',
+                title='Community Lists',
+                icon_class='mdi mdi-plus-thick',
+                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_communitylist'],
+            ),
+        ),
+    ),    
+    PluginMenuItem(
         link='plugins:netbox_bgp:bgpsession_list',
         link_text='Sessions',
         permissions=['netbox_bgp.view_bgpsession'],

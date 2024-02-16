@@ -1,6 +1,10 @@
 from django.urls import path
 from netbox.views.generic import ObjectChangeLogView
-from .models import BGPSession, Community, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
+from .models import (
+    BGPSession, Community, RoutingPolicy,
+    BGPPeerGroup, RoutingPolicyRule, PrefixList,
+    PrefixListRule, CommunityList, CommunityListRule
+)
 
 from . import views
 
@@ -15,6 +19,21 @@ urlpatterns = [
     path('community/<int:pk>/edit/', views.CommunityEditView.as_view(), name='community_edit'),
     path('community/<int:pk>/delete/', views.CommunityDeleteView.as_view(), name='community_delete'),
     path('community/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='community_changelog', kwargs={'model': Community}),
+    # Community Lists
+    path('community-list/', views.CommunityListListView.as_view(), name='communitylist_list'),
+    path('community-list/add/', views.CommunityListEditView.as_view(), name='communitylist_add'),
+    path('community-list/delete/', views.CommunityListBulkDeleteView.as_view(), name='communitylist_bulk_delete'),
+    path('community-list/<int:pk>/', views.CommListView.as_view(), name='communitylist'),
+    path('community-list/<int:pk>/edit/', views.CommunityListEditView.as_view(), name='communitylist_edit'),
+    path('community-list/<int:pk>/delete/', views.CommunityListDeleteView.as_view(), name='communitylist_delete'),
+    path('community-list/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='communitylist_changelog', kwargs={'model': CommunityList}),
+    # Community List Rules
+    path('community-list-rule/', views.CommunityListRuleListView.as_view(), name='communitylistrule_list'),
+    path('community-list-rule/add/', views.CommunityListRuleEditView.as_view(), name='communitylistrule_add'),
+    path('community-list-rule/<int:pk>/', views.CommunityListRuleView.as_view(), name='communitylistrule'),
+    path('community-list-rule/<int:pk>/edit/', views.CommunityListRuleEditView.as_view(), name='communitylistrule_edit'),
+    path('community-list-rule/<int:pk>/delete/', views.CommunityListRuleDeleteView.as_view(), name='communitylistrule_delete'),
+    path('community-list-rule/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='communitylistrule_changelog', kwargs={'model': CommunityListRule}),    
     # Sessions
     path('session/', views.BGPSessionListView.as_view(), name='bgpsession_list'),
     path('session/add/', views.BGPSessionAddView.as_view(), name='bgpsession_add'),

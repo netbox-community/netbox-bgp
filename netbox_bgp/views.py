@@ -10,15 +10,17 @@ from ipam.models import ASN
 from .models import (
     Community, BGPSession, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
-    PrefixListRule
+    PrefixListRule, CommunityList, CommunityListRule
 )
 
-from . import forms, tables, filters
+from . import filtersets, forms, tables
 
+
+# Community
 
 class CommunityListView(generic.ObjectListView):
     queryset = Community.objects.all()
-    filterset = filters.CommunityFilterSet
+    filterset = filtersets.CommunityFilterSet
     filterset_form = forms.CommunityFilterForm
     table = tables.CommunityTable
     action_buttons = ('add',)
@@ -41,7 +43,7 @@ class CommunityBulkDeleteView(generic.BulkDeleteView):
 
 class CommunityBulkEditView(generic.BulkEditView):
     queryset = Community.objects.all()
-    filterset = filters.CommunityFilterSet
+    filterset = filtersets.CommunityFilterSet
     table = tables.CommunityTable
     form = forms.CommunityBulkEditForm
 
@@ -56,12 +58,84 @@ class CommunityBulkImportView(generic.BulkImportView):
     model_form = forms.CommunityImportForm
 
 
+# Community List
+
+
+class CommunityListListView(generic.ObjectListView):
+    queryset = CommunityList.objects.all()
+    filterset = filtersets.CommunityListFilterSet
+    filterset_form = forms.CommunityListFilterForm
+    table = tables.CommunityListTable
+    action_buttons = ('add',)
+
+
+class CommunityListEditView(generic.ObjectEditView):
+    queryset = CommunityList.objects.all()
+    form = forms.CommunityListForm
+
+
+class CommunityListBulkDeleteView(generic.BulkDeleteView):
+    queryset = CommunityList.objects.all()
+    table = tables.CommunityListTable
+
+
+class CommListView(generic.ObjectView):
+    queryset = CommunityList.objects.all()
+    template_name = 'netbox_bgp/communitylist.html'
+
+    def get_extra_context(self, request, instance):
+        rprules = instance.cmrules.all()
+        rprules_table = tables.RoutingPolicyRuleTable(rprules)
+        rules = instance.commlistrules.all()
+        rules_table = tables.CommunityListRuleTable(rules)
+        return {
+            'rules_table': rules_table,
+            'rprules_table': rprules_table
+        }
+
+
+class CommunityListDeleteView(generic.ObjectDeleteView):
+    queryset = CommunityList.objects.all()
+    default_return_url = 'plugins:netbox_bgp:communitylist_list'
+
+
+# Community List Rule
+
+
+class CommunityListRuleListView(generic.ObjectListView):
+    queryset = CommunityListRule.objects.all()
+    # filterset = RoutingPolicyRuleFilterSet
+    # filterset_form = RoutingPolicyRuleFilterForm
+    table = tables.CommunityListRuleTable
+    action_buttons = ('add',)
+
+
+class CommunityListRuleEditView(generic.ObjectEditView):
+    queryset = CommunityListRule.objects.all()
+    form = forms.CommunityListRuleForm
+
+
+class CommunityListRuleBulkDeleteView(generic.BulkDeleteView):
+    queryset = CommunityListRule.objects.all()
+    table = tables.CommunityListRuleTable
+
+
+class CommunityListRuleDeleteView(generic.ObjectDeleteView):
+    queryset = CommunityListRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:communitylistrule_list'
+
+
+class CommunityListRuleView(generic.ObjectView):
+    queryset = CommunityListRule.objects.all()
+    template_name = 'netbox_bgp/communitylistrule.html'
+
+
 # Session
 
 
 class BGPSessionListView(generic.ObjectListView):
     queryset = BGPSession.objects.all()
-    filterset = filters.BGPSessionFilterSet
+    filterset = filtersets.BGPSessionFilterSet
     filterset_form = forms.BGPSessionFilterForm
     table = tables.BGPSessionTable
     action_buttons = ('add',)
@@ -82,7 +156,7 @@ class BGPSessionBulkImportView(generic.BulkImportView):
 
 class BGPSessionBulkEditView(generic.BulkEditView):
     queryset = BGPSession.objects.all()
-    filterset = filters.BGPSessionFilterSet
+    filterset = filtersets.BGPSessionFilterSet
     table = tables.BGPSessionTable
     form = forms.BGPSessionBulkEditForm
 
@@ -122,12 +196,13 @@ class BGPSessionDeleteView(generic.ObjectDeleteView):
     queryset = BGPSession.objects.all()
     default_return_url = 'plugins:netbox_bgp:bgpsession_list'
 
+
 # Routing Policy
 
 
 class RoutingPolicyListView(generic.ObjectListView):
     queryset = RoutingPolicy.objects.all()
-    filterset = filters.RoutingPolicyFilterSet
+    filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
     action_buttons = ('add',)
@@ -169,12 +244,52 @@ class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     default_return_url = 'plugins:netbox_bgp:routingpolicy_list'
 
 
+# Routing Policy Rule
+
+
+class RoutingPolicyRuleEditView(generic.ObjectEditView):
+    queryset = RoutingPolicyRule.objects.all()
+    form = forms.RoutingPolicyRuleForm
+
+
+class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
+    queryset = RoutingPolicyRule.objects.all()
+    default_return_url = 'plugins:netbox_bgp:routingpolicyrule_list'
+
+
+class RoutingPolicyRuleView(generic.ObjectView):
+    queryset = RoutingPolicyRule.objects.all()
+    template_name = 'netbox_bgp/routingpolicyrule.html'
+
+    def get_extra_context(self, request, instance):
+        if request.GET.get('format') in ['json', 'yaml']:
+            format = request.GET.get('format')
+            if request.user.is_authenticated:
+                request.user.config.set('data_format', format, commit=True)
+        elif request.user.is_authenticated:
+            format = request.user.config.get('data_format', 'json')
+        else:
+            format = 'json'
+
+        return {
+            'format': format,
+        }
+
+
+class RoutingPolicyRuleListView(generic.ObjectListView):
+    queryset = RoutingPolicyRule.objects.all()
+    # filterset = RoutingPolicyRuleFilterSet
+    # filterset_form = RoutingPolicyRuleFilterForm
+    table = tables.RoutingPolicyRuleTable
+    action_buttons = ('add',)
+
+
 # Peer Group
 
 
 class BGPPeerGroupListView(generic.ObjectListView):
     queryset = BGPPeerGroup.objects.all()
-    filterset = filters.BGPPeerGroupFilterSet
+    filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
     action_buttons = ('add',)
@@ -219,52 +334,12 @@ class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
     default_return_url = 'plugins:netbox_bgp:bgppeergroup_list'
 
 
-# Routing Policy Rule
-
-
-class RoutingPolicyRuleEditView(generic.ObjectEditView):
-    queryset = RoutingPolicyRule.objects.all()
-    form = forms.RoutingPolicyRuleForm
-
-
-class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
-    queryset = RoutingPolicyRule.objects.all()
-    default_return_url = 'plugins:netbox_bgp:routingpolicyrule_list'
-
-
-class RoutingPolicyRuleView(generic.ObjectView):
-    queryset = RoutingPolicyRule.objects.all()
-    template_name = 'netbox_bgp/routingpolicyrule.html'
-
-    def get_extra_context(self, request, instance):
-        if request.GET.get('format') in ['json', 'yaml']:
-            format = request.GET.get('format')
-            if request.user.is_authenticated:
-                request.user.config.set('data_format', format, commit=True)
-        elif request.user.is_authenticated:
-            format = request.user.config.get('data_format', 'json')
-        else:
-            format = 'json'
-
-        return {
-            'format': format,
-        }
-
-
-class RoutingPolicyRuleListView(generic.ObjectListView):
-    queryset = RoutingPolicyRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
-    # filterset_form = RoutingPolicyRuleFilterForm
-    table = tables.RoutingPolicyRuleTable
-    action_buttons = ('add',)
-
-
 # Prefix List
 
 
 class PrefixListListView(generic.ObjectListView):
     queryset = PrefixList.objects.all()
-    filterset = filters.PrefixListFilterSet
+    filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
     action_buttons = ('add',)
@@ -289,9 +364,13 @@ class PrefixListView(generic.ObjectView):
         rprules_table = tables.RoutingPolicyRuleTable(rprules)
         rules = instance.prefrules.all()
         rules_table = tables.PrefixListRuleTable(rules)
+
+        sess = instance.session_prefix_in.all() | instance.session_prefix_out.all()
+        sess_table = tables.BGPSessionTable(sess)
         return {
             'rules_table': rules_table,
-            'rprules_table': rprules_table
+            'rprules_table': rprules_table,
+            'sess_table': sess_table,
         }
 
 

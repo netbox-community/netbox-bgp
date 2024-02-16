@@ -129,93 +129,64 @@ class Community(BGPBase):
         return reverse('plugins:netbox_bgp:community', args=[self.pk])
 
 
-class BGPSession(NetBoxModel):
+class CommunityList(NetBoxModel):
+    """
+    """
     name = models.CharField(
-        max_length=256,
-        blank=True,
-        null=True
-    )
-    site = models.ForeignKey(
-        to='dcim.Site',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    tenant = models.ForeignKey(
-        to='tenancy.Tenant',
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True
-    )
-    device = models.ForeignKey(
-        to='dcim.Device',
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-    )
-    local_address = models.ForeignKey(
-        to='ipam.IPAddress',
-        on_delete=models.PROTECT,
-        related_name='local_address'
-    )
-    remote_address = models.ForeignKey(
-        to='ipam.IPAddress',
-        on_delete=models.PROTECT,
-        related_name='remote_address'
-    )
-    local_as = models.ForeignKey(
-        to='ipam.ASN',
-        on_delete=models.PROTECT,
-        related_name='local_as'
-    )
-    remote_as = models.ForeignKey(
-        to='ipam.ASN',
-        on_delete=models.PROTECT,
-        related_name='remote_as'
-    )
-    status = models.CharField(
-        max_length=50,
-        choices=SessionStatusChoices,
-        default=SessionStatusChoices.STATUS_ACTIVE
+        max_length=100
     )
     description = models.CharField(
         max_length=200,
         blank=True
     )
-    peer_group = models.ForeignKey(
-        BGPPeerGroup,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
+    comments = models.TextField(
+        blank=True
     )
-    import_policies = models.ManyToManyField(
-        RoutingPolicy,
-        blank=True,
-        related_name='session_import_policies'
+
+    class Meta:
+        verbose_name_plural = 'Community Lists'
+        unique_together = ['name', 'description']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:communitylist', args=[self.pk])
+
+
+class CommunityListRule(NetBoxModel):
+    """
+    """
+    community_list = models.ForeignKey(
+        to=CommunityList,
+        on_delete=models.CASCADE,
+        related_name='commlistrules'
     )
-    export_policies = models.ManyToManyField(
-        RoutingPolicy,
-        blank=True,
-        related_name='session_export_policies'
+    action = models.CharField(
+        max_length=30,
+        choices=ActionChoices
+    )
+    community = models.ForeignKey(
+        to=Community,
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
     )
     comments = models.TextField(
         blank=True
     )
 
-    afi_safi = None  # for future use
-
-    class Meta:
-        verbose_name_plural = 'BGP Sessions'
-        unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
-
     def __str__(self):
-        return f'{self.device}:{self.name}'
-
-    def get_status_color(self):
-        return SessionStatusChoices.colors.get(self.status)
+        return f'{self.community_list}: {self.action} {self.community}'
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
+        return reverse('plugins:netbox_bgp:communitylistrule', args=[self.pk])
+
+    def get_action_color(self):
+        return ActionChoices.colors.get(self.action)
 
 
 class PrefixList(NetBoxModel):
@@ -320,6 +291,109 @@ class PrefixListRule(NetBoxModel):
                 )
 
 
+class BGPSession(NetBoxModel):
+    name = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True
+    )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    tenant = models.ForeignKey(
+        to='tenancy.Tenant',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    device = models.ForeignKey(
+        to='dcim.Device',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    local_address = models.ForeignKey(
+        to='ipam.IPAddress',
+        on_delete=models.PROTECT,
+        related_name='local_address'
+    )
+    remote_address = models.ForeignKey(
+        to='ipam.IPAddress',
+        on_delete=models.PROTECT,
+        related_name='remote_address'
+    )
+    local_as = models.ForeignKey(
+        to='ipam.ASN',
+        on_delete=models.PROTECT,
+        related_name='local_as'
+    )
+    remote_as = models.ForeignKey(
+        to='ipam.ASN',
+        on_delete=models.PROTECT,
+        related_name='remote_as'
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=SessionStatusChoices,
+        default=SessionStatusChoices.STATUS_ACTIVE
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    peer_group = models.ForeignKey(
+        BGPPeerGroup,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    import_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='session_import_policies'
+    )
+    export_policies = models.ManyToManyField(
+        RoutingPolicy,
+        blank=True,
+        related_name='session_export_policies'
+    )
+    prefix_list_in = models.ForeignKey(
+        to=PrefixList,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='session_prefix_in'
+    )
+    prefix_list_out = models.ForeignKey(
+        to=PrefixList,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='session_prefix_out'
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    afi_safi = None  # for future use
+
+    class Meta:
+        verbose_name_plural = 'BGP Sessions'
+        unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
+
+    def __str__(self):
+        return f'{self.device}:{self.name}'
+
+    def get_status_color(self):
+        return SessionStatusChoices.colors.get(self.status)
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
+
+
 class RoutingPolicyRule(NetBoxModel):
     routing_policy = models.ForeignKey(
         to=RoutingPolicy,
@@ -343,6 +417,11 @@ class RoutingPolicyRule(NetBoxModel):
         to=Community,
         blank=True,
         related_name='+'
+    )
+    match_community_list = models.ManyToManyField(
+        to=CommunityList,
+        blank=True,
+        related_name='cmrules'
     )
     match_ip_address = models.ManyToManyField(
         to=PrefixList,
@@ -393,6 +472,10 @@ class RoutingPolicyRule(NetBoxModel):
         result.update(
             {'community': list(self.match_community.all().values_list('value', flat=True))}
         )
+        if self.match_community_list.all().exists():
+            result.update(
+                {'community': list(self.match_community_list.all().values_list('name', flat=True))}
+            )
         result.update(
             {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
         )
@@ -407,6 +490,7 @@ class RoutingPolicyRule(NetBoxModel):
         result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
         # remove empty matches
         result = {k: v for k, v in result.items() if v}
+        result.update(custom_match)
         return result
 
     @property

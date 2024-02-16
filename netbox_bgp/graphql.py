@@ -4,35 +4,35 @@ from netbox.graphql.scalars import BigInt
 from netbox.graphql.types import NetBoxObjectType
 from netbox.graphql.fields import ObjectField, ObjectListField
 
-from . import models, filters
+from . import filtersets, models
 
 
 class CommunityType(NetBoxObjectType):
     class Meta:
         model = models.Community
         fields = '__all__'
-        filterset_class = filters.CommunityFilterSet
+        filterset_class = filtersets.CommunityFilterSet
 
 
 class BgpSessionType(NetBoxObjectType):
     class Meta:
         model = models.BGPSession
         fields = '__all__'
-        filterset_class = filters.BGPSessionFilterSet
+        filterset_class = filtersets.BGPSessionFilterSet
 
 
 class PeerGroupType(NetBoxObjectType):
     class Meta:
         model = models.BGPPeerGroup
         fields = '__all__'
-        filterset_class = filters.BGPPeerGroupFilterSet
+        filterset_class = filtersets.BGPPeerGroupFilterSet
 
 
 class RoutingPolicyType(NetBoxObjectType):
     class Meta:
         model = models.RoutingPolicy
         fields = '__all__'
-        filterset_class = filters.RoutingPolicyFilterSet
+        filterset_class = filtersets.RoutingPolicyFilterSet
 
 
 class BGPQuery(ObjectType):

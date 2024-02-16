@@ -5,7 +5,11 @@ from netaddr.core import AddrFormatError
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
-from .models import Community, BGPSession, RoutingPolicy, RoutingPolicyRule, BGPPeerGroup, PrefixList, PrefixListRule
+from .models import (
+    Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
+    BGPPeerGroup, PrefixList, PrefixListRule, CommunityList,
+    CommunityListRule
+)
 from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
 
@@ -23,6 +27,41 @@ class CommunityFilterSet(NetBoxModelFilterSet):
         qs_filter = (
                 Q(value__icontains=value)
                 | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class CommunityListFilterSet(NetBoxModelFilterSet):
+
+    class Meta:
+        model = CommunityList
+        fields = ['id', 'name', 'description']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(name__icontains=value)
+                | Q(description__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class CommunityListRuleFilterSet(NetBoxModelFilterSet):
+
+    class Meta:
+        model = CommunityListRule
+        fields = ['id', 'action', 'community_list', 'community_list_id']
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(action__icontains=value)
+                | Q(community_list__icontains=value)
+                | Q(community_list_id__icontains=value)
         )
         return queryset.filter(qs_filter)
 

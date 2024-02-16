@@ -5,7 +5,12 @@ from django_tables2.utils import A
 from netbox.tables import NetBoxTable
 from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
-from .models import Community, BGPSession, RoutingPolicy, BGPPeerGroup, RoutingPolicyRule, PrefixList, PrefixListRule
+from .models import (
+    Community, BGPSession, RoutingPolicy,
+    BGPPeerGroup, RoutingPolicyRule, PrefixList,
+    PrefixListRule, CommunityList, CommunityListRule
+)
+
 
 AVAILABLE_LABEL = mark_safe('<span class="label label-success">Available</span>')
 COL_TENANT = """
@@ -42,6 +47,32 @@ class CommunityTable(NetBoxTable):
         fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags')
         default_columns = (
             'pk', 'value', 'description', 'status', 'tenant'
+        )
+
+
+class CommunityListTable(NetBoxTable):
+    name = tables.LinkColumn()
+
+    class Meta(NetBoxTable.Meta):
+        model = CommunityList
+        fields = ('pk', 'name', 'description')    
+
+
+class CommunityListRuleTable(NetBoxTable):
+    community_list = tables.Column(
+        linkify=True
+    )
+    action = ChoiceFieldColumn()
+    community = tables.Column(
+        verbose_name='Community',
+        linkify=True,
+    )
+
+    class Meta(NetBoxTable.Meta):
+        model = CommunityListRule
+        fields = (
+            'pk', 'community_list',
+            'action', 'community',
         )
 
 
