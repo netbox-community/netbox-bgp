@@ -21,7 +21,7 @@ from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
 class RoutingPolicySerializer(NetBoxModelSerializer):
     class Meta:
         model = RoutingPolicy        
-        fields = ['id', 'name', 'display', 'description', 'tags', 'custom_fields']
+        fields = ['id', 'name', 'display', 'description', 'tags', 'custom_fields', 'comments']
 
 
 class NestedRoutingPolicySerializer(WritableNestedSerializer):
@@ -51,10 +51,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = [
-            'id', 'display', 'name', 'description', 'import_policies', 'export_policies', 
-            'tags', 'custom_fields' 
-        ]
+        fields = ['id', 'display', 'name', 'description', 'import_policies', 'export_policies', 'comments', 'tags', 'custom_fields']
 
 
 class NestedBGPPeerGroupSerializer(WritableNestedSerializer):
