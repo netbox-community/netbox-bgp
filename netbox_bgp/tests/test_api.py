@@ -16,7 +16,8 @@ from ipam.models import IPAddress, ASN, RIR
 
 from netbox_bgp.models import (
     Community, BGPPeerGroup, BGPSession, 
-    RoutingPolicy, RoutingPolicyRule, PrefixList, PrefixListRule
+    RoutingPolicy, RoutingPolicyRule, PrefixList, PrefixListRule,
+    CommunityList, CommunityListRule
 )
 
 
@@ -84,6 +85,41 @@ class CommunityTestCase(BaseTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class CommunityListTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.base_url_lookup = 'plugins-api:netbox_bgp-api:communitylist'
+        self.communitylist1 = CommunityList.objects.create(name='CL1', description='test_community_list1', comments='community_list_test')
+
+    def test_list_community(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_community_list(self):
+        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.communitylist1.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.communitylist1.name)
+        self.assertEqual(response.data['description'], self.communitylist1.description)
+
+    def test_create_community(self):
+        url = reverse(f'{self.base_url_lookup}-list')
+        data = {'name': 'CL2', 'description': 'test_community_list2', 'comments': 'community_list_test2'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CommunityList.objects.get(pk=response.data['id']).name, 'CL2')
+        self.assertEqual(CommunityList.objects.get(pk=response.data['id']).description, 'test_community_list2')
+        self.assertEqual(CommunityList.objects.get(pk=response.data['id']).comments, 'community_list_test2')
+
+    def test_update_community_list(self):
+        pass
+
+    def test_delete_community_list(self):
+        pass
 
 
 class PeerGroupTestCase(BaseTestCase):
