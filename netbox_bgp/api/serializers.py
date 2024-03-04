@@ -40,7 +40,7 @@ class NestedPrefixListSerializer(WritableNestedSerializer):
 
     class Meta:
         model = PrefixList
-        fields = ['id', 'url', 'display', 'name']
+        fields = ['id', 'url', 'display', 'name', 'description']
 
 
 class PrefixListSerializer(NetBoxModelSerializer):
@@ -163,7 +163,7 @@ class NestedCommunitySerializer(WritableNestedSerializer):
     class Meta:
         model = Community
         fields = [
-            'id', 'url', 'display', 'value'
+            'id', 'url', 'display', 'value', 'description'
         ]
 
 
@@ -178,7 +178,7 @@ class NestedCommunityListSerializer(WritableNestedSerializer):
 
     class Meta:
         model = CommunityList
-        fields = ['id', 'url', 'display', 'name']
+        fields = ['id', 'url', 'display', 'name', 'description']
 
 
 class CommunityListRuleSerializer(NetBoxModelSerializer):
@@ -190,7 +190,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
         fields = [
             'id', 'tags', 'custom_fields', 'display',
             'community_list', 'created', 'last_updated',
-            'action', 'community', 'comments'
+            'action', 'community', 'comments', 'description',
         ]
 
 
@@ -231,6 +231,6 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
         fields = [
             'id', 'tags', 'custom_fields', 'display',
             'prefix_list', 'created', 'last_updated',
-            'index', 'action',
+            'index', 'action', 'description',
             'prefix_custom', 'ge', 'le', 'prefix', 'comments'
         ]
