@@ -211,6 +211,7 @@ class SessionTestCase(BaseTestCase):
         self.session = BGPSession.objects.create(
             name='session',
             description='session_descr',
+            device=self.device,
             local_as=local_as,
             remote_as=remote_as,
             local_address=local_ip,
@@ -237,6 +238,7 @@ class SessionTestCase(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.session.name)
         self.assertEqual(response.data['description'], self.session.description)
+        self.assertEqual(response.data['device']['name'], self.device.name)
         self.assertEqual(response.data['local_as']['asn'], self.session.local_as.asn)
         self.assertEqual(response.data['remote_as']['asn'], self.session.remote_as.asn)
         self.assertEqual(response.data['local_address']['address'], self.session.local_address.address)
