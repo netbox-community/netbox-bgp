@@ -1,7 +1,6 @@
 from django.conf import settings
 
 from extras.plugins import PluginMenuButton, PluginMenuItem, PluginMenu
-from utilities.choices import ButtonColorChoices
 
 
 _menu_items = (
@@ -14,7 +13,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:community_add',
                 title='Communities',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_community'],
             ),
         ),
@@ -28,7 +26,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:communitylist_add',
                 title='Community Lists',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_communitylist'],
             ),
         ),
@@ -42,7 +39,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:bgpsession_add',
                 title='Sessions',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_bgpsession'],
             ),
         ),
@@ -56,7 +52,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:routingpolicy_add',
                 title='Routing Policies',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_routingpolicy'],
             ),
         ),
@@ -70,7 +65,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:prefixlist_add',
                 title='Prefix Lists',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_prefixlist'],
             ),
         ),
@@ -84,7 +78,6 @@ _menu_items = (
                 link='plugins:netbox_bgp:bgppeergroup_add',
                 title='Peer Groups',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_bgppeergroup'],
             ),
         ),
