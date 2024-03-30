@@ -2,7 +2,6 @@ import django_filters
 import netaddr
 from django.db.models import Q
 from netaddr.core import AddrFormatError
-from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
 from .models import (
