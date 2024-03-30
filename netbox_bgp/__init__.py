@@ -1,4 +1,4 @@
-from extras.plugins import PluginConfig
+from netbox.plugins import PluginConfig
 from .version import __version__
 
 
@@ -11,8 +11,8 @@ class BGPConfig(PluginConfig):
     author_email = 'mgk.kolek@gmail.com'
     base_url = 'bgp'
     required_settings = []
-    min_version = '3.5.0'
-    max_version = '3.7.99'
+    min_version = '3.6.0'
+    max_version = '4.0.99'
     default_settings = {
         'device_ext_page': 'right',
         'top_level_menu' : False,
