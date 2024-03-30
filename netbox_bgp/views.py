@@ -23,8 +23,7 @@ class CommunityListView(generic.ObjectListView):
     filterset = filtersets.CommunityFilterSet
     filterset_form = forms.CommunityFilterForm
     table = tables.CommunityTable
-    action_buttons = ('add',)
-
+    actions = {'add': {'add'}}
 
 class CommunityView(generic.ObjectView):
     queryset = Community.objects.all()
@@ -66,7 +65,7 @@ class CommunityListListView(generic.ObjectListView):
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class CommunityListEditView(generic.ObjectEditView):
@@ -107,7 +106,7 @@ class CommunityListRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.CommunityListRuleTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class CommunityListRuleEditView(generic.ObjectEditView):
@@ -138,7 +137,7 @@ class BGPSessionListView(generic.ObjectListView):
     filterset = filtersets.BGPSessionFilterSet
     filterset_form = forms.BGPSessionFilterForm
     table = tables.BGPSessionTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class BGPSessionEditView(generic.ObjectEditView):
@@ -205,7 +204,7 @@ class RoutingPolicyListView(generic.ObjectListView):
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):
@@ -281,7 +280,7 @@ class RoutingPolicyRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.RoutingPolicyRuleTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 # Peer Group
@@ -292,7 +291,7 @@ class BGPPeerGroupListView(generic.ObjectListView):
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
@@ -342,7 +341,7 @@ class PrefixListListView(generic.ObjectListView):
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class PrefixListEditView(generic.ObjectEditView):
@@ -387,7 +386,7 @@ class PrefixListRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
-    action_buttons = ('add',)
+    actions = {'add': {'add'}}
 
 
 class PrefixListRuleEditView(generic.ObjectEditView):
