@@ -2,10 +2,9 @@ from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from netbox.api.fields import ChoiceField, SerializedPKRelatedField
-from netbox.api.serializers.nested import WritableNestedSerializer
 
 from netbox.api.serializers import NetBoxModelSerializer
-from ipam.api.serializers import IPAddressSerializer
+from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer
 from tenancy.api.serializers import TenantSerializer
 from dcim.api.serializers import SiteSerializer, DeviceSerializer
 
