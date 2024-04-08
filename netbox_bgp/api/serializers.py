@@ -33,6 +33,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
         fields = [
             "id",
             "url",
+            "display",
             "name",
             "description",
             "tags",
@@ -153,6 +154,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "description",
             "comments",
         ]
+        brief_fields = ("id", "url", "display", "name", "description")
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -264,6 +266,14 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         allow_null=True,
         many=True,
     )
+    match_community_list = SerializedPKRelatedField(
+        queryset=CommunityList.objects.all(),
+        serializer=CommunityListSerializer,
+        nested=True,
+        required=False,
+        allow_null=True,
+        many=True,
+    )
 
     class Meta:
         model = RoutingPolicyRule
@@ -275,6 +285,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "match_ip_address",
             "routing_policy",
             "match_community",
+            "match_community_list",
             "match_custom",
             "set_actions",
             "match_ipv6_address",
@@ -283,6 +294,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "custom_fields",
             "comments",
         ]
+        brief_fields = ("id", "display", "description")
 
 
 class PrefixListRuleSerializer(NetBoxModelSerializer):
@@ -294,6 +306,7 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
         model = PrefixListRule
         fields = [
             "id",
+            "description",
             "tags",
             "custom_fields",
             "display",
@@ -308,3 +321,4 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
             "prefix",
             "comments",
         ]
+        brief_fields = ("id", "display", "description")
