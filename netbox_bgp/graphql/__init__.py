@@ -1,3 +1,3 @@
-from .schema import (NetBoxBGPQuery)
+from .schema import NetBoxBGPQuery
 
 schema = [NetBoxBGPQuery]

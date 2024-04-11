@@ -18,7 +18,17 @@ from netbox_bgp.models import (
     CommunityList,
     CommunityListRule,
 )
-from .filters import *
+from .filters import (
+    CommunityFilter,
+    BGPSessionFilter,
+    BGPPeerGroupFilter,
+    RoutingPolicyFilter,
+    RoutingPolicyRuleFilter,
+    PrefixListFilter,
+    PrefixListRuleFilter,
+    CommunityListFilter,
+    CommunityListRuleFilter,
+)
 
 
 @strawberry_django.type(Community, fields="__all__", filters=CommunityFilter)
@@ -26,7 +36,7 @@ class CommunityType(NetBoxObjectType):
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     status: str
-    # role = models.ForeignKey(
+    role: str
     description: str
 
 
@@ -101,8 +111,6 @@ class RoutingPolicyRuleType(NetBoxObjectType):
     match_ipv6_address: List[
         Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
     ]
-    # match_custom = models.JSONField(
-    # set_actions = models.JSONField(
 
 
 @strawberry_django.type(PrefixList, fields="__all__", filters=PrefixListFilter)

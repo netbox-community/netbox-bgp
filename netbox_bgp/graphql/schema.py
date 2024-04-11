@@ -14,7 +14,17 @@ from netbox_bgp.models import (
     CommunityList,
     CommunityListRule,
 )
-from .types import *
+from .types import (
+    CommunityType,
+    BGPSessionType,
+    BGPPeerGroupType,
+    RoutingPolicyType,
+    RoutingPolicyRuleType,
+    PrefixListType,
+    PrefixListRuleType,
+    CommunityListType,
+    CommunityListRuleType,
+)
 
 
 @strawberry.type
