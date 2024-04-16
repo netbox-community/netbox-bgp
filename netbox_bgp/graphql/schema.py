@@ -30,55 +30,55 @@ from .types import (
 @strawberry.type
 class NetBoxBGPQuery:
     @strawberry.field
-    def community(self, id: int) -> CommunityType:
+    def netbox_bgp_community(self, id: int) -> CommunityType:
         return Community.objects.get(pk=id)
 
-    community_list: List[CommunityType] = strawberry_django.field()
+    netbox_bgp_community_list: List[CommunityType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_session(self, id: int) -> BGPSessionType:
+    def netbox_bgp_session(self, id: int) -> BGPSessionType:
         return BGPSession.objects.get(pk=id)
 
-    bgp_session_list: List[BGPSessionType] = strawberry_django.field()
+    netbox_bgp_session_list: List[BGPSessionType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> BGPPeerGroupType:
+    def netbox_bgp_peer_group(self, id: int) -> BGPPeerGroupType:
         return BGPPeerGroup.objects.get(pk=id)
 
-    bgp_peer_group_list: List[BGPPeerGroupType] = strawberry_django.field()
+    netbox_bgp_peer_group_list: List[BGPPeerGroupType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> RoutingPolicyType:
+    def netbox_bgp_routing_policy(self, id: int) -> RoutingPolicyType:
         return RoutingPolicy.objects.get(pk=id)
 
-    routing_policies_list: List[RoutingPolicyType] = strawberry_django.field()
+    netbox_bgp_routing_policy_list: List[RoutingPolicyType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> RoutingPolicyRuleType:
+    def netbox_bgp_routing_policy_rule(self, id: int) -> RoutingPolicyRuleType:
         return RoutingPolicyRule.objects.get(pk=id)
 
-    routing_policies_rules_list: List[RoutingPolicyRuleType] = strawberry_django.field()
+    netbox_bgp_routing_policy_rule_list: List[RoutingPolicyRuleType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> PrefixListType:
+    def netbox_bgp_prefixlist(self, id: int) -> PrefixListType:
         return PrefixList.objects.get(pk=id)
 
-    prefixlist_list: List[PrefixListType] = strawberry_django.field()
+    netbox_bgp_prefixlist_list: List[PrefixListType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> PrefixListRuleType:
+    def netbox_bgp_prefixlist_rule(self, id: int) -> PrefixListRuleType:
         return PrefixListRule.objects.get(pk=id)
 
-    prefixlist_rules_list: List[PrefixListRuleType] = strawberry_django.field()
+    netbox_bgp_prefixlist_rule_list: List[PrefixListRuleType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> CommunityListType:
+    def netbox_bgp_communitylist(self, id: int) -> CommunityListType:
         return CommunityList.objects.get(pk=id)
 
-    communitylist_list: List[CommunityListType] = strawberry_django.field()
+    netbox_bgp_communitylist_list: List[CommunityListType] = strawberry_django.field()
 
     @strawberry.field
-    def bgp_peer_group(self, id: int) -> CommunityListRuleType:
+    def netbox_bgp_communitylist_rule(self, id: int) -> CommunityListRuleType:
         return CommunityListRule.objects.get(pk=id)
 
-    communitylist_rules_list: List[CommunityListRuleType] = strawberry_django.field()
+    netbox_bgp_communitylist_rule_list: List[CommunityListRuleType] = strawberry_django.field()
