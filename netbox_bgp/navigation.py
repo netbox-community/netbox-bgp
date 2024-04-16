@@ -49,7 +49,7 @@ _menu_items = (
             ),
             PluginMenuButton(
                 link='plugins:netbox_bgp:bgpsession_import',
-                title='Add',
+                title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_bgpsession'],
             )
