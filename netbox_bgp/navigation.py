@@ -11,8 +11,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:community_add',
-                title='Communities',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
+                permissions=['netbox_bgp.add_community'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:community_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_community'],
             ),
         ),
@@ -24,7 +30,7 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:communitylist_add',
-                title='Community Lists',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_communitylist'],
             ),
@@ -37,10 +43,16 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:bgpsession_add',
-                title='Sessions',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_bgpsession'],
             ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:bgpsession_import',
+                title='Add',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_bgpsession'],
+            )
         ),
     ),
     PluginMenuItem(
@@ -50,7 +62,7 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:routingpolicy_add',
-                title='Routing Policies',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_routingpolicy'],
             ),
@@ -63,7 +75,7 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:prefixlist_add',
-                title='Prefix Lists',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_prefixlist'],
             ),
@@ -76,7 +88,7 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:bgppeergroup_add',
-                title='Peer Groups',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_bgppeergroup'],
             ),
