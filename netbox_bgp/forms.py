@@ -1,5 +1,5 @@
 from django import forms
-from django.conf import settings
+from utilities.forms.rendering import FieldSet
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
@@ -188,6 +188,24 @@ class BGPSessionForm(NetBoxModelForm):
     )
     comments = CommentField()
 
+    fieldsets = (
+        FieldSet(
+            "name",
+            "description",
+            "site",
+            "device",
+            "status",
+            "peer_group",
+            "tenant",
+            "tags",
+            name="Session",
+        ),
+        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("local_as", "local_address", name="Local"),
+        FieldSet("import_policies", "export_policies", name="Policies"),
+        FieldSet("prefix_list_in", "prefix_list_out", name="Prefixes"),
+    )
+
     class Meta:
         model = BGPSession
         fields = [
@@ -209,32 +227,7 @@ class BGPSessionForm(NetBoxModelForm):
             "prefix_list_out",
             "comments",
         ]
-        fieldsets = (
-            (
-                "Session",
-                (
-                    "name",
-                    "site",
-                    "device",
-                    "description",
-                    "status",
-                    "peer_group",
-                    "tenant",
-                    "tags",
-                ),
-            ),
-            ("Remote", ("remote_as", "remote_address")),
-            ("Local", ("local_as", "local_address")),
-            (
-                "Policies",
-                (
-                    "import_policies",
-                    "export_policies",
-                    "prefix_list_in",
-                    "prefix_list_out",
-                ),
-            ),
-        )
+
         widgets = {
             "status": forms.Select(),
         }
@@ -431,20 +424,33 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = BGPSession
+
     fieldsets = (
-        (
-            ("Session"),
-            ("device", "site", "description", "status", "tenant", "peer_group"),
+        FieldSet(
+            "name",
+            "description",
+            "site",
+            "device",
+            "status",
+            "peer_group",
+            "tenant",
+            "tags",
+            name="Session",
         ),
-        (("AS"), ("local_as", "remote_as")),
-        (("Policies"), ("import_policies", "export_policies")),
+        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("local_as", "local_address", name="Local"),
+        FieldSet("import_policies", "export_policies", name="Policies"),
+        FieldSet("prefix_list_in", "prefix_list_out", name="Prefixes"),
     )
+
     nullable_fields = [
         "tenant",
         "description",
         "peer_group",
         "import_policies",
         "export_policies",
+        "prefix_list_in",
+        "prefix_list_out",
     ]
 
 
