@@ -290,7 +290,7 @@ class BGPPeerGroupListView(generic.ObjectListView):
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
