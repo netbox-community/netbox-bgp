@@ -137,7 +137,6 @@ class BGPSessionListView(generic.ObjectListView):
     filterset = filtersets.BGPSessionFilterSet
     filterset_form = forms.BGPSessionFilterForm
     table = tables.BGPSessionTable
-    actions = {'add': {'add'}}
 
 
 class BGPSessionEditView(generic.ObjectEditView):
