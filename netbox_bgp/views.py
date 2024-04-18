@@ -64,7 +64,7 @@ class CommunityListListView(generic.ObjectListView):
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class CommunityListEditView(generic.ObjectEditView):
@@ -105,7 +105,7 @@ class CommunityListRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.CommunityListRuleTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class CommunityListRuleEditView(generic.ObjectEditView):
