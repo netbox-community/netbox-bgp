@@ -202,7 +202,7 @@ class RoutingPolicyListView(generic.ObjectListView):
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):

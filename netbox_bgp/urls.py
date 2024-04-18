@@ -30,6 +30,7 @@ urlpatterns = [
     # Community List Rules
     path('community-list-rule/', views.CommunityListRuleListView.as_view(), name='communitylistrule_list'),
     path('community-list-rule/add/', views.CommunityListRuleEditView.as_view(), name='communitylistrule_add'),
+    path('community-list-rule/delete/', views.CommunityListRuleBulkDeleteView.as_view(), name='communitylistrule_bulk_delete'),
     path('community-list-rule/<int:pk>/', views.CommunityListRuleView.as_view(), name='communitylistrule'),
     path('community-list-rule/<int:pk>/edit/', views.CommunityListRuleEditView.as_view(), name='communitylistrule_edit'),
     path('community-list-rule/<int:pk>/delete/', views.CommunityListRuleDeleteView.as_view(), name='communitylistrule_delete'),

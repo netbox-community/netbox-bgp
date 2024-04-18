@@ -8,25 +8,15 @@
 {% block breadcrumbs %}
 <li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:routingpolicy_list' %}">Routing Policies</a></li>
 {% endblock %}
-{% block controls %}
+{% block extra_controls %}
 <div class="pull-right noprint">
     {% if perms.netbox_bgp.change_routingpolicy %}
     <a href="{% url 'plugins:netbox_bgp:routingpolicyrule_add' %}?routing_policy={{ object.pk }}" class="btn btn-success">
         <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Rule
     </a>
     {% endif %}
-    {% if perms.netbox_bgp.change_routingpolicy %}
-    <a href="{% url 'plugins:netbox_bgp:routingpolicy_edit' pk=object.pk %}" class="btn btn-warning">
-        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
-    </a>
-    {% endif %}
-    {% if perms.netbox_bgp.delete_routingpolicy %}
-    <a href="{% url 'plugins:netbox_bgp:routingpolicy_delete' pk=object.pk %}" class="btn btn-danger">
-        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
-    </a>
-    {% endif %}
 </div>
-{% endblock controls %}
+{% endblock extra_controls %}
 {% block tabs %}
 <ul class="nav nav-tabs px-3">
     {% block tab_items %}
@@ -52,7 +42,7 @@
             <div class="card-body">
                 <table class="table table-hover attr-table">
                     <tr>
-                        <td>name</td>
+                        <td>Name</td>
                         <td>{{ object.name }}</td>
                     </tr>
                     <tr>
