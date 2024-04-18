@@ -23,7 +23,6 @@ class CommunityListView(generic.ObjectListView):
     filterset = filtersets.CommunityFilterSet
     filterset_form = forms.CommunityFilterForm
     table = tables.CommunityTable
-    actions = {'add': {'add'}}
 
 class CommunityView(generic.ObjectView):
     queryset = Community.objects.all()

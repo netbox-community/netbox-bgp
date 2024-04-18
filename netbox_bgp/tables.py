@@ -44,7 +44,7 @@ class CommunityTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = Community
-        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags')
+        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags', 'actions')
         default_columns = (
             'pk', 'value', 'description', 'status', 'tenant'
         )

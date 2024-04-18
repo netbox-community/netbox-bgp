@@ -8,20 +8,6 @@
 <li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:community_list' %}">Communities</a></li>
 {% endblock %}
 
-{% block controls %}
-<div class="pull-right noprint">
-    {% if perms.netbox_bgp.change_community %}
-    <a href="{% url 'plugins:netbox_bgp:community_edit' pk=object.pk %}" class="btn btn-warning">
-        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
-    </a>
-    {% endif %}
-    {% if perms.netbox_bgp.delete_community %}
-    <a href="{% url 'plugins:netbox_bgp:community_delete' pk=object.pk %}" class="btn btn-danger">
-        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
-    </a>
-    {% endif %}
-</div>
-{% endblock controls %}
 {% block tabs %}
 <ul class="nav nav-tabs px-3">
     {% block tab_items %}
