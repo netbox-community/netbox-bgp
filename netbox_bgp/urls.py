@@ -79,6 +79,7 @@ urlpatterns = [
     # Prefix List Rules
     path('prefix-list-rule/', views.PrefixListRuleListView.as_view(), name='prefixlistrule_list'),
     path('prefix-list-rule/add/', views.PrefixListRuleEditView.as_view(), name='prefixlistrule_add'),
+    path('prefix-list-rule/delete/', views.PrefixListRuleBulkDeleteView.as_view(), name='prefixlistrule_bulk_delete'),
     path('prefix-list-rule/<int:pk>/', views.PrefixListRuleView.as_view(), name='prefixlistrule'),
     path('prefix-list-rule/<int:pk>/edit/', views.PrefixListRuleEditView.as_view(), name='prefixlistrule_edit'),
     path('prefix-list-rule/<int:pk>/delete/', views.PrefixListRuleDeleteView.as_view(), name='prefixlistrule_delete'),

@@ -339,7 +339,7 @@ class PrefixListListView(generic.ObjectListView):
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class PrefixListEditView(generic.ObjectEditView):
@@ -384,7 +384,7 @@ class PrefixListRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 class PrefixListRuleEditView(generic.ObjectEditView):
