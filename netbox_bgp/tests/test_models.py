@@ -136,7 +136,7 @@ class BGPSessionTestCase(TestCase):
         self.device = Device.objects.create(
             name='device',
             site=self.site,
-            device_role=device_role,
+            role=device_role,
             device_type=device_type
         )
         self.rir = RIR.objects.create(
