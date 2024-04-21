@@ -30,7 +30,8 @@ class CommunityAPITestCase(
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = Community
     view_namespace = "plugins-api:netbox_bgp"
@@ -42,9 +43,9 @@ class CommunityAPITestCase(
         {"value": "65003:65002"},
     ]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Community desc",
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -55,35 +56,13 @@ class CommunityAPITestCase(
         )
         Community.objects.bulk_create(communities)
 
-
-#     # def test_graphql(self):
-#     #     url = reverse('graphql')
-#     #     query = 'query community($id: Int!){community(id: $id){value}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query, 'variables': {'id': self.community1.pk}}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-#     #     self.assertEqual(json.loads(response.content)['data']['community']['value'], self.community1.value)
-
-#     # def test_graphql_list(self):
-#     #     url = reverse('graphql')
-#     #     query = '{community_list{value}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-
-
 class BGPPeerGroupAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = BGPPeerGroup
     view_namespace = "plugins-api:netbox_bgp"
@@ -107,9 +86,9 @@ class BGPPeerGroupAPITestCase(
         },
     ]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Community desc",
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -127,42 +106,21 @@ class BGPPeerGroupAPITestCase(
         BGPPeerGroup.objects.bulk_create(peer_groups)
 
 
-#     # def test_graphql(self):
-#     #     url = reverse('graphql')
-#     #     query = 'query peer_group($id: Int!){peer_group(id: $id){name}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query, 'variables': {'id': self.peer_group.pk}}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-#     #     self.assertEqual(json.loads(response.content)['data']['peer_group']['name'], self.peer_group.name)
-
-#     # def test_graphql_list(self):
-#     #     url = reverse('graphql')
-#     #     query = '{peer_group_list{name}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-
-
 class BGPSessionAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = BGPSession
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test BGP session desc",
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -279,34 +237,13 @@ class BGPSessionAPITestCase(
         ]
 
 
-#     # def test_graphql(self):
-#     #     url = reverse('graphql')
-#     #     query = 'query bgp_session($id: Int!){bgp_session(id: $id){name}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query, 'variables': {'id': self.session.pk}}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-#     #     self.assertEqual(json.loads(response.content)['data']['bgp_session']['name'], self.session.name)
-
-#     # def test_graphql_list(self):
-#     #     url = reverse('graphql')
-#     #     query = '{bgp_session_list{name}}'
-#     #     response = self.gql_client.post(
-#     #         url,
-#     #         json.dumps({'query': query}),
-#     #         content_type='application/json'
-#     #     )
-#     #     self.assertEqual(response.status_code, 200)
-
-
 class RoutingPolicyAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = RoutingPolicy
     view_namespace = "plugins-api:netbox_bgp"
@@ -330,9 +267,9 @@ class RoutingPolicyAPITestCase(
         },
     ]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Routing policy desc",
+    } 
 
     @classmethod
     def setUpTestData(cls):
@@ -355,15 +292,17 @@ class RoutingPolicyRuleAPITestCase(
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = RoutingPolicyRule
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Routing policy rules desc",
+        "action": "deny"
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -448,7 +387,8 @@ class PrefixListAPITestCase(
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = PrefixList
     view_namespace = "plugins-api:netbox_bgp"
@@ -475,9 +415,9 @@ class PrefixListAPITestCase(
         },
     ]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Prefix list desc",
+    } 
 
     @classmethod
     def setUpTestData(cls):
@@ -510,15 +450,17 @@ class PrefixListRuleAPITestCase(
     APIViewTestCases.ListObjectsViewTestCase,
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
-    # APIViewTestCases.DeleteObjectViewTestCase,  405 != 204 : Expected HTTP status 204; received 405: {'detail': ErrorDetail(string='Method "DELETE" not allowed.'
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
 ):
     model = PrefixListRule
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
 
-    # bulk_update_data = {
-    #     "description": "Test Community desc",
-    # }  # 405 != 200 : Expected HTTP status 200; received 405: {'detail': ErrorDetail(string='Method "PATCH" not allowed.'
+    bulk_update_data = {
+        "description": "Test Prefix list rules desc",
+        "action": "deny"
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -539,7 +481,7 @@ class PrefixListRuleAPITestCase(
                 prefix=subnet1,
                 ge=24,
                 le=32,
-                description="pl_rule_1",,
+                description="pl_rule_1",
                 comments="pl_rule_1",
             ),
             PrefixListRule(
