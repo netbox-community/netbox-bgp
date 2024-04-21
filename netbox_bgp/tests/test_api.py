@@ -539,7 +539,7 @@ class PrefixListRuleAPITestCase(
                 prefix=subnet1,
                 ge=24,
                 le=32,
-                RoutingPolicyRule="pl_rule_1",
+                description="pl_rule_1",,
                 comments="pl_rule_1",
             ),
             PrefixListRule(
