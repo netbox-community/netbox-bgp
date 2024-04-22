@@ -64,6 +64,7 @@ urlpatterns = [
     # Routing Policy Rules
     path('routing-policy-rule/', views.RoutingPolicyRuleListView.as_view(), name='routingpolicyrule_list'),
     path('routing-policy-rule/add/', views.RoutingPolicyRuleEditView.as_view(), name='routingpolicyrule_add'),
+    path('routing-policy-rule/delete/', views.RoutingPolicyRuleBulkDeleteView.as_view(), name='routingpolicyrule_bulk_delete'),
     path('routing-policy-rule/<int:pk>/', views.RoutingPolicyRuleView.as_view(), name='routingpolicyrule'),
     path('routing-policy-rule/<int:pk>/edit/', views.RoutingPolicyRuleEditView.as_view(), name='routingpolicyrule_edit'),
     path('routing-policy-rule/<int:pk>/delete/', views.RoutingPolicyRuleDeleteView.as_view(), name='routingpolicyrule_delete'),

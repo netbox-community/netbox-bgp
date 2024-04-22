@@ -253,6 +253,9 @@ class RoutingPolicyRuleDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicyRule.objects.all()
     default_return_url = 'plugins:netbox_bgp:routingpolicyrule_list'
 
+class RoutingPolicyRuleBulkDeleteView(generic.BulkDeleteView):
+    queryset = RoutingPolicyRule.objects.all()
+    table = tables.RoutingPolicyRuleTable
 
 class RoutingPolicyRuleView(generic.ObjectView):
     queryset = RoutingPolicyRule.objects.all()
@@ -278,7 +281,7 @@ class RoutingPolicyRuleListView(generic.ObjectListView):
     # filterset = RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.RoutingPolicyRuleTable
-    actions = {'add': {'add'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
 
 
 # Peer Group
