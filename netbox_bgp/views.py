@@ -64,7 +64,7 @@ class CommunityListListView(generic.ObjectListView):
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class CommunityListEditView(generic.ObjectEditView):
@@ -95,6 +95,10 @@ class CommListView(generic.ObjectView):
 class CommunityListDeleteView(generic.ObjectDeleteView):
     queryset = CommunityList.objects.all()
     default_return_url = 'plugins:netbox_bgp:communitylist_list'
+
+class CommunityListBulkImportView(generic.BulkImportView):
+    queryset = CommunityList.objects.all()
+    model_form = forms.CommunityListImportForm
 
 
 # Community List Rule

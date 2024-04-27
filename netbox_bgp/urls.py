@@ -22,6 +22,7 @@ urlpatterns = [
     # Community Lists
     path('community-list/', views.CommunityListListView.as_view(), name='communitylist_list'),
     path('community-list/add/', views.CommunityListEditView.as_view(), name='communitylist_add'),
+    path('community-list/import/', views.CommunityListBulkImportView.as_view(), name='communitylist_import'),
     path('community-list/delete/', views.CommunityListBulkDeleteView.as_view(), name='communitylist_bulk_delete'),
     path('community-list/<int:pk>/', views.CommListView.as_view(), name='communitylist'),
     path('community-list/<int:pk>/edit/', views.CommunityListEditView.as_view(), name='communitylist_edit'),

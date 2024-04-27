@@ -34,6 +34,12 @@ _menu_items = (
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_communitylist'],
             ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:communitylist_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_communitylist'],
+            ),
         ),
     ),    
     PluginMenuItem(

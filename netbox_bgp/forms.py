@@ -120,6 +120,13 @@ class CommunityListForm(NetBoxModelForm):
         fields = ["name", "description", "tags", "comments"]
 
 
+class CommunityListImportForm(NetBoxModelImportForm):
+
+    class Meta:
+        model = CommunityList
+        fields = ("name", "description", "tags")
+
+
 class CommunityListRuleForm(NetBoxModelForm):
     community = DynamicModelChoiceField(
         queryset=Community.objects.all(),
