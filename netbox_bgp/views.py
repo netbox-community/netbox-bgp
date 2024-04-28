@@ -206,7 +206,7 @@ class RoutingPolicyListView(generic.ObjectListView):
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):
@@ -243,6 +243,10 @@ class RoutingPolicyView(generic.ObjectView):
 class RoutingPolicyDeleteView(generic.ObjectDeleteView):
     queryset = RoutingPolicy.objects.all()
     default_return_url = 'plugins:netbox_bgp:routingpolicy_list'
+
+class RoutingPolicyBulkImportView(generic.BulkImportView):
+    queryset = RoutingPolicy.objects.all()
+    model_form = forms.RoutingPolicyImportForm
 
 
 # Routing Policy Rule

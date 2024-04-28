@@ -477,6 +477,13 @@ class RoutingPolicyForm(NetBoxModelForm):
         fields = ["name", "description", "tags", "comments"]
 
 
+class RoutingPolicyImportForm(NetBoxModelImportForm):
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ("name", "description", "tags")
+
+
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
     model = BGPPeerGroup
     q = forms.CharField(required=False, label="Search")
