@@ -14,6 +14,7 @@ from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
     DynamicModelChoiceField,
     CSVModelChoiceField,
+    CSVModelMultipleChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
     CSVChoiceField,
@@ -306,6 +307,18 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         to_field_name="name",
         help_text=_("Peer Group"),
     )
+    import_policies = CSVModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Import policies name"),
+    )
+    export_policies = CSVModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Export policies name"),
+    )
     prefix_list_in = CSVModelChoiceField(
         queryset=PrefixList.objects.all(),
         required=False,
@@ -329,6 +342,8 @@ class BGPSessionImportForm(NetBoxModelImportForm):
             "tenant",
             "status",
             "peer_group",
+            "import_policies",
+            "export_policies",
             "local_address",
             "remote_address",
             "local_as",
@@ -515,6 +530,24 @@ class BGPPeerGroupForm(NetBoxModelForm):
             "comments",
         ]
 
+class BGPPeerGroupImportForm(NetBoxModelImportForm):
+
+    import_policies = CSVModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Import policies name"),
+    )
+    export_policies = CSVModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Export policies name"),
+    )
+
+    class Meta:
+        model = BGPPeerGroup
+        fields = ("name", "description", "import_policies", "export_policies", "tags")
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
     continue_entry = forms.IntegerField(

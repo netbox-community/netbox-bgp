@@ -300,7 +300,7 @@ class BGPPeerGroupListView(generic.ObjectListView):
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
@@ -340,6 +340,10 @@ class BGPPeerGroupView(generic.ObjectView):
 class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
     queryset = BGPPeerGroup.objects.all()
     default_return_url = 'plugins:netbox_bgp:bgppeergroup_list'
+
+class BGPPeerGroupBulkImportView(generic.BulkImportView):
+    queryset = BGPPeerGroup.objects.all()
+    model_form = forms.BGPPeerGroupImportForm
 
 
 # Prefix List

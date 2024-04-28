@@ -58,6 +58,7 @@ urlpatterns = [
     # Peer Groups
     path('peer-group/', views.BGPPeerGroupListView.as_view(), name='bgppeergroup_list'),
     path('peer-group/add/', views.BGPPeerGroupEditView.as_view(), name='bgppeergroup_add'),
+    path('peer-group/import/', views.BGPPeerGroupBulkImportView.as_view(), name='bgppeergroup_import'),
     path('peer-group/delete/', views.BGPPeerGroupBulkDeleteView.as_view(), name='bgppeergroup_bulk_delete'),
     path('peer-group/<int:pk>/', views.BGPPeerGroupView.as_view(), name='bgppeergroup'),
     path('peer-group/<int:pk>/edit/', views.BGPPeerGroupEditView.as_view(), name='bgppeergroup_edit'),
