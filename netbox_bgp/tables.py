@@ -158,10 +158,11 @@ class RoutingPolicyRuleTable(NetBoxTable):
 
 class PrefixListTable(NetBoxTable):
     name = tables.LinkColumn()
+    family = ChoiceFieldColumn()
 
     class Meta(NetBoxTable.Meta):
         model = PrefixList
-        fields = ('pk', 'name', 'description')
+        fields = ('pk', 'name', 'description', 'family')
 
 
 class PrefixListRuleTable(NetBoxTable):

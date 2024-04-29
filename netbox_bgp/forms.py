@@ -40,7 +40,11 @@ from .models import (
     CommunityListRule,
 )
 
-from .choices import SessionStatusChoices, CommunityStatusChoices
+from .choices import (
+    SessionStatusChoices,
+    CommunityStatusChoices,
+    IPAddressFamilyChoices,
+)
 
 
 class CommunityForm(NetBoxModelForm):
@@ -530,6 +534,7 @@ class BGPPeerGroupForm(NetBoxModelForm):
             "comments",
         ]
 
+
 class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
     import_policies = CSVModelMultipleChoiceField(
@@ -548,6 +553,7 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
     class Meta:
         model = BGPPeerGroup
         fields = ("name", "description", "import_policies", "export_policies", "tags")
+
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
     continue_entry = forms.IntegerField(
@@ -627,6 +633,16 @@ class PrefixListForm(NetBoxModelForm):
     class Meta:
         model = PrefixList
         fields = ["name", "description", "family", "tags", "comments"]
+
+
+class PrefixListImportForm(NetBoxModelImportForm):
+    family = CSVChoiceField(
+        choices=IPAddressFamilyChoices, required=True, help_text=_("Family address")
+    )
+
+    class Meta:
+        model = PrefixList
+        fields = ("name", "description", "family", "tags")
 
 
 class PrefixListRuleForm(NetBoxModelForm):

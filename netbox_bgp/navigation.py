@@ -91,6 +91,12 @@ _menu_items = (
                 icon_class='mdi mdi-plus-thick',
                 permissions=['netbox_bgp.add_prefixlist'],
             ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:prefixlist_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_prefixlist'],
+            ),
         ),
     ),
     PluginMenuItem(

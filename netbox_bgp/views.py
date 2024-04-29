@@ -354,7 +354,7 @@ class PrefixListListView(generic.ObjectListView):
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
+    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class PrefixListEditView(generic.ObjectEditView):
@@ -390,6 +390,9 @@ class PrefixListDeleteView(generic.ObjectDeleteView):
     queryset = PrefixList.objects.all()
     default_return_url = 'plugins:netbox_bgp:prefixlist_list'
 
+class PrefixListBulkImportView(generic.BulkImportView):
+    queryset = PrefixList.objects.all()
+    model_form = forms.PrefixListImportForm
 
 # Prefix List Rule
 
