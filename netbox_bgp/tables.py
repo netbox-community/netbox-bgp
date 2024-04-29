@@ -55,7 +55,7 @@ class CommunityListTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = CommunityList
-        fields = ('pk', 'name', 'description')    
+        fields = ('pk', 'name', 'description', 'actions')
 
 
 class CommunityListRuleTable(NetBoxTable):

@@ -64,7 +64,6 @@ class CommunityListListView(generic.ObjectListView):
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class CommunityListEditView(generic.ObjectEditView):
@@ -75,6 +74,12 @@ class CommunityListEditView(generic.ObjectEditView):
 class CommunityListBulkDeleteView(generic.BulkDeleteView):
     queryset = CommunityList.objects.all()
     table = tables.CommunityListTable
+
+class CommunityListBulkEditView(generic.BulkEditView):
+    queryset = CommunityList.objects.all()
+    filterset = filtersets.CommunityListFilterSet
+    table = tables.CommunityListTable
+    form = forms.CommunityListBulkEditForm
 
 
 class CommListView(generic.ObjectView):

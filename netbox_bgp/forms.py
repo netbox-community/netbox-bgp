@@ -125,6 +125,18 @@ class CommunityListForm(NetBoxModelForm):
         fields = ["name", "description", "tags", "comments"]
 
 
+class CommunityListBulkEditForm(NetBoxModelBulkEditForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=CommunityList.objects.all(), widget=forms.MultipleHiddenInput
+    )
+    description = forms.CharField(max_length=200, required=False)
+
+    model = CommunityList
+    nullable_fields = [
+        "description",
+    ]
+
+
 class CommunityListImportForm(NetBoxModelImportForm):
 
     class Meta:
