@@ -75,9 +75,6 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
 
 
 class CommunityBulkEditForm(NetBoxModelBulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=Community.objects.all(), widget=forms.MultipleHiddenInput
-    )
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
     description = forms.CharField(max_length=200, required=False)
     status = forms.ChoiceField(
@@ -126,9 +123,6 @@ class CommunityListForm(NetBoxModelForm):
 
 
 class CommunityListBulkEditForm(NetBoxModelBulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=CommunityList.objects.all(), widget=forms.MultipleHiddenInput
-    )
     description = forms.CharField(max_length=200, required=False)
 
     model = CommunityList
@@ -513,6 +507,15 @@ class RoutingPolicyImportForm(NetBoxModelImportForm):
     class Meta:
         model = RoutingPolicy
         fields = ("name", "description", "tags")
+
+
+class RoutingPolicyBulkEditForm(NetBoxModelBulkEditForm):
+    description = forms.CharField(max_length=200, required=False)
+
+    model = RoutingPolicy
+    nullable_fields = [
+        "description",
+    ]
 
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):

@@ -211,7 +211,6 @@ class RoutingPolicyListView(generic.ObjectListView):
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class RoutingPolicyEditView(generic.ObjectEditView):
@@ -222,6 +221,12 @@ class RoutingPolicyEditView(generic.ObjectEditView):
 class RoutingPolicyBulkDeleteView(generic.BulkDeleteView):
     queryset = RoutingPolicy.objects.all()
     table = tables.RoutingPolicyTable
+
+class RoutingPolicyBulkEditView(generic.BulkEditView):
+    queryset = RoutingPolicy.objects.all()
+    filterset = filtersets.RoutingPolicyFilterSet
+    table = tables.RoutingPolicyTable
+    form = forms.RoutingPolicyBulkEditForm
 
 
 class RoutingPolicyView(generic.ObjectView):
