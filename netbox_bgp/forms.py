@@ -570,6 +570,26 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
         fields = ("name", "description", "import_policies", "export_policies", "tags")
 
 
+class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
+    description = forms.CharField(max_length=200, required=False)
+
+    import_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+    )
+    export_policies = DynamicModelMultipleChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+    )
+
+    model = BGPPeerGroup
+    nullable_fields = [
+        "description", "import_policies", "export_policies"
+    ]
+
+
 class RoutingPolicyRuleForm(NetBoxModelForm):
     continue_entry = forms.IntegerField(
         required=False,

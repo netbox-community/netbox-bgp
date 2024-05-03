@@ -132,7 +132,7 @@ class BGPPeerGroupTable(NetBoxTable):
         model = BGPPeerGroup
         fields = (
             'pk', 'name', 'description', 'tags',
-            'import_policies', 'export_policies'
+            'import_policies', 'export_policies', 'actions'
         )
         default_columns = (
             'pk', 'name', 'description'

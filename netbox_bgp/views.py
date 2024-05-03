@@ -310,7 +310,6 @@ class BGPPeerGroupListView(generic.ObjectListView):
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class BGPPeerGroupEditView(generic.ObjectEditView):
@@ -354,6 +353,12 @@ class BGPPeerGroupDeleteView(generic.ObjectDeleteView):
 class BGPPeerGroupBulkImportView(generic.BulkImportView):
     queryset = BGPPeerGroup.objects.all()
     model_form = forms.BGPPeerGroupImportForm
+
+class BGPPeerGroupBulkEditView(generic.BulkEditView):
+    queryset = BGPPeerGroup.objects.all()
+    filterset = filtersets.BGPPeerGroupFilterSet
+    table = tables.BGPPeerGroupTable
+    form = forms.BGPPeerGroupBulkEditForm    
 
 
 # Prefix List
