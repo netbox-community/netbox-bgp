@@ -364,7 +364,6 @@ class PrefixListListView(generic.ObjectListView):
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}, 'import': {'add'},}
 
 
 class PrefixListEditView(generic.ObjectEditView):
@@ -375,6 +374,12 @@ class PrefixListEditView(generic.ObjectEditView):
 class PrefixListBulkDeleteView(generic.BulkDeleteView):
     queryset = PrefixList.objects.all()
     table = tables.PrefixListTable
+
+class PrefixListBulkEditView(generic.BulkEditView):
+    queryset = PrefixList.objects.all()
+    filterset = filtersets.PrefixListFilterSet
+    table = tables.PrefixListTable
+    form = forms.PrefixListBulkEditForm
 
 
 class PrefixListView(generic.ObjectView):

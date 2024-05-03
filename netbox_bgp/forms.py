@@ -660,6 +660,21 @@ class PrefixListImportForm(NetBoxModelImportForm):
         fields = ("name", "description", "family", "tags")
 
 
+class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
+    description = forms.CharField(max_length=200, required=False)
+
+    family = forms.ChoiceField(
+        label=_("Family"),
+        required=False,
+        choices=IPAddressFamilyChoices,
+    )
+
+    model = PrefixList
+    nullable_fields = [
+        "description",
+    ]
+
+
 class PrefixListRuleForm(NetBoxModelForm):
     prefix = DynamicModelChoiceField(
         queryset=Prefix.objects.all(),
