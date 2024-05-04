@@ -78,6 +78,7 @@ class IPAddressFamilyChoices(ChoiceSet):
 
     FAMILY_4 = 'ipv4'
     FAMILY_6 = 'ipv6'
+    
 
     CHOICES = (
         (FAMILY_4, 'IPv4'),
