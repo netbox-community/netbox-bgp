@@ -239,6 +239,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "display",
+            "description",
             "community_list",
             "created",
             "last_updated",
@@ -246,6 +247,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
             "community",
             "comments",
         ]
+        brief_fields = ("id", "display", "description")
 
 
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):

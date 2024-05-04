@@ -10,6 +10,7 @@ from ipam.models import IPAddress, ASN, RIR, Prefix
 from netbox_bgp.models import (
     Community,
     CommunityList,
+    CommunityListRule,
     BGPPeerGroup,
     BGPSession,
     RoutingPolicy,
@@ -55,6 +56,115 @@ class CommunityAPITestCase(
             Community(value="65000:65002"),
         )
         Community.objects.bulk_create(communities)
+
+
+class CommunityListAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = CommunityList
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+
+    create_data = [
+        {"name": "CL1", "description": "cl1_api"},
+        {"name": "CL2", "description": "cl2_api"},
+        {"name": "CL3", "description": "cl3_api"},
+    ]
+
+    bulk_update_data = {
+        "description": "Test Community List desc",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        communitylists = (
+            CommunityList(name="CL4", description="cl4"),
+            CommunityList(name="CL5", description="cl5"),
+            CommunityList(name="CL6", description="cl6"),
+        )
+        CommunityList.objects.bulk_create(communitylists)
+
+
+class CommunityListRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = CommunityListRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
+
+    bulk_update_data = {
+        "description": "Test Community List rules desc",
+        "action": "deny",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        com_list1 = CommunityList.objects.create(
+            name="community list 1", description="community list 1"
+        )
+        com_list2 = CommunityList.objects.create(
+            name="community list 2", description="community list 2"
+        )
+        com1 = Community.objects.create(value="65001:65004", description="community1")
+        com2 = Community.objects.create(value="65002:65005", description="community2")
+        com3 = Community.objects.create(value="65003:65006", description="community3")
+
+        communitylistrules = (
+            CommunityListRule(
+                community_list=com_list1,
+                community=com1,
+                action=ActionChoices._choices[0][0],
+                description="rule1",
+            ),
+            CommunityListRule(
+                community_list=com_list1,
+                community=com2,
+                action=ActionChoices._choices[0][0],
+                description="rule2",
+            ),
+            CommunityListRule(
+                community_list=com_list1,
+                community=com3,
+                action=ActionChoices._choices[0][1],
+                description="rule3",
+            ),
+        )
+        CommunityListRule.objects.bulk_create(communitylistrules)
+
+        cls.create_data = [
+            {
+                "community_list": com_list2.id,
+                "description": "rule4",
+                "community": com1.id,
+                "action": "permit",
+                "comments": "rule4",
+            },
+            {
+                "community_list": com_list2.id,
+                "description": "rule5",
+                "community": com2.id,
+                "action": "permit",
+                "comments": "rule5",
+            },
+            {
+                "community_list": com_list2.id,
+                "description": "rule6",
+                "community": com3.id,
+                "action": "deny",
+                "comments": "rule6",
+            },
+        ]
+
 
 class BGPPeerGroupAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
@@ -269,7 +379,7 @@ class RoutingPolicyAPITestCase(
 
     bulk_update_data = {
         "description": "Test Routing policy desc",
-    } 
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -301,7 +411,7 @@ class RoutingPolicyRuleAPITestCase(
 
     bulk_update_data = {
         "description": "Test Routing policy rules desc",
-        "action": "deny"
+        "action": "deny",
     }
 
     @classmethod
@@ -417,7 +527,7 @@ class PrefixListAPITestCase(
 
     bulk_update_data = {
         "description": "Test Prefix list desc",
-    } 
+    }
 
     @classmethod
     def setUpTestData(cls):
@@ -457,10 +567,7 @@ class PrefixListRuleAPITestCase(
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
 
-    bulk_update_data = {
-        "description": "Test Prefix list rules desc",
-        "action": "deny"
-    }
+    bulk_update_data = {"description": "Test Prefix list rules desc", "action": "deny"}
 
     @classmethod
     def setUpTestData(cls):
