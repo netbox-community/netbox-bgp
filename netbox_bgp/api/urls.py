@@ -1,4 +1,4 @@
-from rest_framework import routers
+from netbox.api.routers import NetBoxRouter
 
 from .views import (
     BGPSessionViewSet, RoutingPolicyViewSet, BGPPeerGroupViewSet, CommunityViewSet,
@@ -6,7 +6,7 @@ from .views import (
     CommunityListViewSet, CommunityListRuleViewSet
 )
 
-router = routers.DefaultRouter()
+router = NetBoxRouter()
 router.register('session', BGPSessionViewSet, 'session')
 router.register('bgpsession', BGPSessionViewSet, 'bgpsession')
 router.register('routing-policy', RoutingPolicyViewSet)

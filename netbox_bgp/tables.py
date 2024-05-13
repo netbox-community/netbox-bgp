@@ -44,7 +44,7 @@ class CommunityTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = Community
-        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags')
+        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags', 'actions')
         default_columns = (
             'pk', 'value', 'description', 'status', 'tenant'
         )
@@ -55,7 +55,7 @@ class CommunityListTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = CommunityList
-        fields = ('pk', 'name', 'description')    
+        fields = ('pk', 'name', 'description', 'actions')
 
 
 class CommunityListRuleTable(NetBoxTable):
@@ -97,7 +97,7 @@ class BGPSessionTable(NetBoxTable):
         fields = (
             'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status', 'tenant'
+            'site', 'status', 'tenant', 'actions'
         )
         default_columns = (
             'pk', 'name', 'device', 'local_address', 'local_as',
@@ -111,7 +111,7 @@ class RoutingPolicyTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
-        fields = ('pk', 'name', 'description')
+        fields = ('pk', 'name', 'description', 'actions')
 
 
 class BGPPeerGroupTable(NetBoxTable):
@@ -132,7 +132,7 @@ class BGPPeerGroupTable(NetBoxTable):
         model = BGPPeerGroup
         fields = (
             'pk', 'name', 'description', 'tags',
-            'import_policies', 'export_policies'
+            'import_policies', 'export_policies', 'actions'
         )
         default_columns = (
             'pk', 'name', 'description'
@@ -158,10 +158,11 @@ class RoutingPolicyRuleTable(NetBoxTable):
 
 class PrefixListTable(NetBoxTable):
     name = tables.LinkColumn()
+    family = ChoiceFieldColumn()
 
     class Meta(NetBoxTable.Meta):
         model = PrefixList
-        fields = ('pk', 'name', 'description')
+        fields = ('pk', 'name', 'description', 'family', 'actions')
 
 
 class PrefixListRuleTable(NetBoxTable):

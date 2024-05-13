@@ -6,27 +6,17 @@
 {% load render_table from django_tables2 %}
 
 {% block breadcrumbs %}
-<li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:community_list' %}">Community Lists</a></li>
+<li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:communitylist_list' %}">Community Lists</a></li>
 {% endblock %}
-{% block controls %}
+{% block extra_controls %}
 <div class="pull-right noprint">
     {% if perms.netbox_bgp.change_communitylist %}
     <a href="{% url 'plugins:netbox_bgp:communitylistrule_add' %}?community_list={{ object.pk }}" class="btn btn-success">
         <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Rule
     </a>
     {% endif %}
-    {% if perms.netbox_bgp.change_communitylist %}
-    <a href="{% url 'plugins:netbox_bgp:communitylist_edit' pk=object.pk %}" class="btn btn-warning">
-        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
-    </a>
-    {% endif %}
-    {% if perms.netbox_bgp.delete_communitylist %}
-    <a href="{% url 'plugins:netbox_bgp:community_delete' pk=object.pk %}" class="btn btn-danger">
-        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
-    </a>
-    {% endif %}
 </div>
-{% endblock controls %}
+{% endblock extra_controls %}
 {% block tabs %}
 <ul class="nav nav-tabs px-3">
     {% block tab_items %}
@@ -52,7 +42,7 @@
             <div class="card-body">
                 <table class="table table-hover attr-table">
                     <tr>
-                        <td>name</td>
+                        <td>Name</td>
                         <td>{{ object.name }}</td>
                     </tr>
                     <tr>
