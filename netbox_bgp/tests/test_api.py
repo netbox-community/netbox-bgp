@@ -24,7 +24,7 @@ from netbox_bgp.choices import (
     IPAddressFamilyChoices,
     ActionChoices,
 )
-
+from netbox_bgp.choices import IPAddressFamilyChoices, SessionStatusChoices
 
 class CommunityAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
@@ -269,6 +269,9 @@ class BGPSessionAPITestCase(
             family=IPAddressFamilyChoices.FAMILY_4,
             comments="comments_pl",
         )
+        self.session.save()
+        self.session.import_policies.add(import_pol)
+        self.session.export_policies.add(export_pol)
 
         sessions = (
             BGPSession(

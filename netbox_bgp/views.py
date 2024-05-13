@@ -111,7 +111,7 @@ class CommunityListBulkImportView(generic.BulkImportView):
 
 class CommunityListRuleListView(generic.ObjectListView):
     queryset = CommunityListRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
+    filterset = filtersets.CommunityListRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.CommunityListRuleTable
     actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
@@ -296,7 +296,7 @@ class RoutingPolicyRuleView(generic.ObjectView):
 
 class RoutingPolicyRuleListView(generic.ObjectListView):
     queryset = RoutingPolicyRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
+    filterset = filtersets.RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.RoutingPolicyRuleTable
     actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
@@ -419,7 +419,7 @@ class PrefixListBulkImportView(generic.BulkImportView):
 
 class PrefixListRuleListView(generic.ObjectListView):
     queryset = PrefixListRule.objects.all()
-    # filterset = RoutingPolicyRuleFilterSet
+    filterset = filtersets.PrefixListRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
     actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
