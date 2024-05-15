@@ -8,20 +8,7 @@
 {% block breadcrumbs %}
 <li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:bgpsession_list' %}">BGP Sessions</a></li>
 {% endblock %}
-{% block controls %}
-<div class="pull-right noprint">
-    {% if perms.netbox_bgp.change_session %}
-    <a href="{% url 'plugins:netbox_bgp:bgpsession_edit' pk=object.pk %}" class="btn btn-sm btn-warning">
-        <span class="mdi mdi-pencil" aria-hidden="true"></span> Edit
-    </a>
-    {% endif %}
-    {% if perms.netbox_bgp.delete_session %}
-    <a href="{% url 'plugins:netbox_bgp:bgpsession_delete' pk=object.pk %}" class="btn btn-sm btn-danger">
-        <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Delete
-    </a>
-    {% endif %}
-</div>
-{% endblock controls %}
+
 {% block tabs %}
 <ul class="nav nav-tabs px-3">
     {% block tab_items %}

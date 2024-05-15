@@ -2,7 +2,6 @@ import django_filters
 import netaddr
 from django.db.models import Q
 from netaddr.core import AddrFormatError
-from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
 from .models import (
@@ -251,7 +250,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = PrefixList
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'family']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

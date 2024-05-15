@@ -1,7 +1,6 @@
 from django.conf import settings
 
-from extras.plugins import PluginMenuButton, PluginMenuItem, PluginMenu
-from utilities.choices import ButtonColorChoices
+from netbox.plugins import PluginMenuButton, PluginMenuItem, PluginMenu
 
 
 _menu_items = (
@@ -12,9 +11,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:community_add',
-                title='Communities',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_community'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:community_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_community'],
             ),
         ),
@@ -26,9 +30,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:communitylist_add',
-                title='Community Lists',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_communitylist'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:communitylist_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_communitylist'],
             ),
         ),
@@ -40,11 +49,16 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:bgpsession_add',
-                title='Sessions',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
                 permissions=['netbox_bgp.add_bgpsession'],
             ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:bgpsession_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_bgpsession'],
+            )
         ),
     ),
     PluginMenuItem(
@@ -54,9 +68,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:routingpolicy_add',
-                title='Routing Policies',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_routingpolicy'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:routingpolicy_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_routingpolicy'],
             ),
         ),
@@ -68,9 +87,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:prefixlist_add',
-                title='Prefix Lists',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_prefixlist'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:prefixlist_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_prefixlist'],
             ),
         ),
@@ -82,9 +106,14 @@ _menu_items = (
         buttons=(
             PluginMenuButton(
                 link='plugins:netbox_bgp:bgppeergroup_add',
-                title='Peer Groups',
+                title='Add',
                 icon_class='mdi mdi-plus-thick',
-                color=ButtonColorChoices.GREEN,
+                permissions=['netbox_bgp.add_bgppeergroup'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:bgppeergroup_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_bgppeergroup'],
             ),
         ),

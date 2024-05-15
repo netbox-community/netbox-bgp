@@ -1,372 +1,657 @@
 import json
 
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.test.client import Client
 from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
-
-
-from users.models import Token
+from utilities.testing import APITestCase, APIViewTestCases
 
 from tenancy.models import Tenant
 from dcim.models import Site, DeviceRole, DeviceType, Manufacturer, Device, Interface
-from ipam.models import IPAddress, ASN, RIR
+from ipam.models import IPAddress, ASN, RIR, Prefix
 
 from netbox_bgp.models import (
-    Community, BGPPeerGroup, BGPSession, 
-    RoutingPolicy, RoutingPolicyRule, PrefixList, PrefixListRule
+    Community,
+    CommunityList,
+    CommunityListRule,
+    BGPPeerGroup,
+    BGPSession,
+    RoutingPolicy,
+    RoutingPolicyRule,
+    PrefixList,
+    PrefixListRule,
 )
 
+from netbox_bgp.choices import (
+    SessionStatusChoices,
+    IPAddressFamilyChoices,
+    ActionChoices,
+)
+from netbox_bgp.choices import IPAddressFamilyChoices, SessionStatusChoices
 
-class BaseTestCase(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(username='testuser', is_superuser=True)
-        self.token = Token.objects.create(user=self.user)
-        # todo change to Client
-        self.client = APIClient()
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
-        self.gql_client = Client(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+class CommunityAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = Community
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "url", "value"]
 
+    create_data = [
+        {"value": "65001:65000"},
+        {"value": "65002:65001"},
+        {"value": "65003:65002"},
+    ]
 
-class CommunityTestCase(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:community'
-        self.community1 = Community.objects.create(value='65000:65000', description='test_community', comments='community_test')
+    bulk_update_data = {
+        "description": "Test Community desc",
+    }
 
-    def test_list_community(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-
-    def test_get_community(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.community1.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['value'], self.community1.value)
-        self.assertEqual(response.data['description'], self.community1.description)
-
-    def test_create_community(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {'value': '65001:65001', 'description': 'test_community1', 'comments': 'community_test1'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Community.objects.get(pk=response.data['id']).value, '65001:65001')
-        self.assertEqual(Community.objects.get(pk=response.data['id']).description, 'test_community1')
-        self.assertEqual(Community.objects.get(pk=response.data['id']).comments, 'community_test1')
-
-    def test_update_community(self):
-        pass
-
-    def test_delete_community(self):
-        pass
-
-    def test_graphql(self):
-        url = reverse('graphql')
-        query = 'query community($id: Int!){community(id: $id){value}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query, 'variables': {'id': self.community1.pk}}),
-            content_type='application/json'
+    @classmethod
+    def setUpTestData(cls):
+        communities = (
+            Community(value="65000:65000"),
+            Community(value="65000:65001"),
+            Community(value="65000:65002"),
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)['data']['community']['value'], self.community1.value)
+        Community.objects.bulk_create(communities)
 
-    def test_graphql_list(self):
-        url = reverse('graphql')
-        query = '{community_list{value}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query}),
-            content_type='application/json'
+
+class CommunityListAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = CommunityList
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+
+    create_data = [
+        {"name": "CL1", "description": "cl1_api"},
+        {"name": "CL2", "description": "cl2_api"},
+        {"name": "CL3", "description": "cl3_api"},
+    ]
+
+    bulk_update_data = {
+        "description": "Test Community List desc",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        communitylists = (
+            CommunityList(name="CL4", description="cl4"),
+            CommunityList(name="CL5", description="cl5"),
+            CommunityList(name="CL6", description="cl6"),
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        CommunityList.objects.bulk_create(communitylists)
 
 
-class PeerGroupTestCase(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:peergroup'
-        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description', comments='peer_group_comment')
+class CommunityListRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = CommunityListRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
 
-    def test_list_peer_group(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+    bulk_update_data = {
+        "description": "Test Community List rules desc",
+        "action": "deny",
+    }
 
-    def test_get_peer_group(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.peer_group.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.peer_group.name)
-        self.assertEqual(response.data['description'], self.peer_group.description)
-
-    def test_create_peer_group(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'test_peer_group', 'description': 'peer_group_desc', 'comments': 'peer_group_comment1'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).name, 'test_peer_group')
-        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).description, 'peer_group_desc')
-        self.assertEqual(BGPPeerGroup.objects.get(pk=response.data['id']).comments, 'peer_group_comment1')
-
-    def test_update_peer_group(self):
-        pass
-
-    def test_delete_peer_group(self):
-        pass
-
-    def test_graphql(self):
-        url = reverse('graphql')
-        query = 'query peer_group($id: Int!){peer_group(id: $id){name}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query, 'variables': {'id': self.peer_group.pk}}),
-            content_type='application/json'
+    @classmethod
+    def setUpTestData(cls):
+        com_list1 = CommunityList.objects.create(
+            name="community list 1", description="community list 1"
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)['data']['peer_group']['name'], self.peer_group.name)
-
-    def test_graphql_list(self):
-        url = reverse('graphql')
-        query = '{peer_group_list{name}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query}),
-            content_type='application/json'
+        com_list2 = CommunityList.objects.create(
+            name="community list 2", description="community list 2"
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        com1 = Community.objects.create(value="65001:65004", description="community1")
+        com2 = Community.objects.create(value="65002:65005", description="community2")
+        com3 = Community.objects.create(value="65003:65006", description="community3")
 
-
-class SessionTestCase(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:session'
-        site = Site.objects.create(name='test', slug='test')
-        manufacturer = Manufacturer.objects.create(name='Juniper', slug='juniper')
-        device_role = DeviceRole.objects.create(name='Firewall', slug='firewall')
-        device_type = DeviceType.objects.create(slug='srx3600', model='SRX3600', manufacturer=manufacturer)
-        self.device = Device.objects.create(
-            device_type=device_type, name='device1', device_role=device_role, site=site,
+        communitylistrules = (
+            CommunityListRule(
+                community_list=com_list1,
+                community=com1,
+                action=ActionChoices._choices[0][0],
+                description="rule1",
+            ),
+            CommunityListRule(
+                community_list=com_list1,
+                community=com2,
+                action=ActionChoices._choices[0][0],
+                description="rule2",
+            ),
+            CommunityListRule(
+                community_list=com_list1,
+                community=com3,
+                action=ActionChoices._choices[0][1],
+                description="rule3",
+            ),
         )
-        intf = Interface.objects.create(name='test_intf', device=self.device)
-        local_ip = IPAddress.objects.create(address='1.1.1.1/32')
-        remote_ip = IPAddress.objects.create(address='2.2.2.2/32')
-        self.local_ip = IPAddress.objects.create(address='3.3.3.3/32')
-        self.remote_ip = IPAddress.objects.create(address='4.4.4.4/32')
+        CommunityListRule.objects.bulk_create(communitylistrules)
+
+        cls.create_data = [
+            {
+                "community_list": com_list2.id,
+                "description": "rule4",
+                "community": com1.id,
+                "action": "permit",
+                "comments": "rule4",
+            },
+            {
+                "community_list": com_list2.id,
+                "description": "rule5",
+                "community": com2.id,
+                "action": "permit",
+                "comments": "rule5",
+            },
+            {
+                "community_list": com_list2.id,
+                "description": "rule6",
+                "community": com3.id,
+                "action": "deny",
+                "comments": "rule6",
+            },
+        ]
+
+
+class BGPPeerGroupAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = BGPPeerGroup
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+
+    create_data = [
+        {
+            "name": "test_peer_group",
+            "description": "peer_group_desc",
+            "comments": "peer_group_comment1",
+        },
+        {
+            "name": "test_peer_group2",
+            "description": "peer_group_desc2",
+            "comments": "peer_group_comment2",
+        },
+        {
+            "name": "test_peer_group3",
+            "description": "peer_group_desc3",
+            "comments": "peer_group_comment3",
+        },
+    ]
+
+    bulk_update_data = {
+        "description": "Test Community desc",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        peer_groups = (
+            BGPPeerGroup(
+                name="peer group 1", description="peer group 1", comments="peer group 1"
+            ),
+            BGPPeerGroup(
+                name="peer group 2", description="peer group 2", comments="peer group 2"
+            ),
+            BGPPeerGroup(
+                name="peer group 3", description="peer group 3", comments="peer group 3"
+            ),
+        )
+        BGPPeerGroup.objects.bulk_create(peer_groups)
+
+
+class BGPSessionAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = BGPSession
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+
+    bulk_update_data = {
+        "description": "Test BGP session desc",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        site = Site.objects.create(name="test", slug="test")
+        manufacturer = Manufacturer.objects.create(name="Juniper", slug="juniper")
+        device_role = DeviceRole.objects.create(name="Firewall", slug="firewall")
+        device_type = DeviceType.objects.create(
+            slug="srx3600", model="SRX3600", manufacturer=manufacturer
+        )
+        device = Device.objects.create(
+            device_type=device_type, name="device1", role=device_role, site=site
+        )
+        device2 = Device.objects.create(
+            device_type=device_type, name="device2", role=device_role, site=site
+        )
+        intf = Interface.objects.create(name="test_intf1", device=device)
+        intf2 = Interface.objects.create(name="test_intf2", device=device)
+        intf3 = Interface.objects.create(name="test_intf3", device=device)
+        local_ip = IPAddress.objects.create(address="1.1.1.1/32")
+        remote_ip1 = IPAddress.objects.create(address="2.2.2.2/32")
+        remote_ip2 = IPAddress.objects.create(address="3.3.3.3/32")
+        remote_ip3 = IPAddress.objects.create(address="4.4.4.4/32")
         intf.ip_addresses.add(local_ip)
-        self.device.save()
-        self.rir = RIR.objects.create(name="rir")
-        self.local_as = ASN.objects.create(asn=65000, rir=self.rir, description='local_as')
-        self.remote_as = ASN.objects.create(asn=65001, rir=self.rir, description='remote_as')
-        local_as = ASN.objects.create(asn=65002, rir=self.rir, description='local_as')
-        remote_as = ASN.objects.create(asn=65003, rir=self.rir, description='remote_as')
-        self.peer_group = BGPPeerGroup.objects.create(name='peer_group', description='peer_group_description')
-        self.session = BGPSession.objects.create(
-            name='session',
-            description='session_descr',
-            local_as=local_as,
-            remote_as=remote_as,
-            local_address=local_ip,
-            remote_address=remote_ip,
-            status='active',
-            peer_group=self.peer_group,
-            comments="comment_session_test"
+        rir = RIR.objects.create(name="rir")
+        local_as = ASN.objects.create(asn=65002, rir=rir, description="local_as")
+        remote_as = ASN.objects.create(asn=65003, rir=rir, description="remote_as")
+        peer_group = BGPPeerGroup.objects.create(
+            name="peer_group", description="peer_group_description"
+        )
+        rp = RoutingPolicy.objects.create(
+            name="rp1", description="test_rp", comments="comments_routing_policy"
+        )
+        pl1 = PrefixList.objects.create(
+            name="pl1",
+            description="test_pl",
+            family=IPAddressFamilyChoices.FAMILY_4,
+            comments="comments_pl",
         )
 
-    def test_list_session(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-
-    def test_get_session(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.session.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.session.name)
-        self.assertEqual(response.data['description'], self.session.description)
-        self.assertEqual(response.data['local_as']['asn'], self.session.local_as.asn)
-        self.assertEqual(response.data['remote_as']['asn'], self.session.remote_as.asn)
-        self.assertEqual(response.data['local_address']['address'], self.session.local_address.address)
-        self.assertEqual(response.data['remote_address']['address'], self.session.remote_address.address)
-        self.assertEqual(response.data['status']['value'], self.session.status)
-        self.assertEqual(response.data['peer_group']['name'], self.session.peer_group.name)
-        self.assertEqual(response.data['peer_group']['description'], self.session.peer_group.description)
-        self.assertEqual(response.data['comments'], self.session.comments)
-
-
-    def test_create_session(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {
-            'name': 'test_session',
-            'description': 'session_descr',
-            'local_as': self.local_as.pk,
-            'remote_as': self.remote_as.pk,
-            'local_address': self.local_ip.pk,
-            'remote_address': self.remote_ip.pk,
-            'status': 'active',
-            'device': self.device.pk,
-            'peer_group': self.peer_group.pk,
-            'comments': 'comment_session_test1'
-
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).comments, 'comment_session_test1')
-
-
-    def test_update_session(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.session.pk})
-        data = {'description': 'new_description2', 'comments': 'comment_session_test2'}
-
-        response = self.client.patch(url, data, format='json')
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_204_NO_CONTENT])
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'new_description2')
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).comments, 'comment_session_test2')
-
-
-    def test_duplicate_session(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {
-            'name': 'test_session',
-            'description': 'session_descr',
-            'local_as': self.local_as.pk,
-            'remote_as': self.remote_as.pk,
-            'local_address': self.local_ip.pk,
-            'remote_address': self.remote_ip.pk,
-            'status': 'active',
-            'device': self.device.pk,
-            'peer_group': self.peer_group.pk
-
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_session_no_device(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {
-            'name': 'test_session',
-            'description': 'session_descr',
-            'local_as': self.local_as.pk,
-            'remote_as': self.remote_as.pk,
-            'local_address': self.local_ip.pk,
-            'remote_address': self.remote_ip.pk,
-            'status': 'active',
-            'peer_group': self.peer_group.pk,
-            'device': None
-
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).name, 'test_session')
-        self.assertEqual(BGPSession.objects.get(pk=response.data['id']).description, 'session_descr')
-
-    def test_graphql(self):
-        url = reverse('graphql')
-        query = 'query bgp_session($id: Int!){bgp_session(id: $id){name}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query, 'variables': {'id': self.session.pk}}),
-            content_type='application/json'
+        sessions = (
+            BGPSession(
+                name="Session1",
+                description="Session1",
+                comments="Session1",
+                local_as=local_as,
+                remote_as=remote_as,
+                local_address=local_ip,
+                remote_address=remote_ip1,
+                peer_group=peer_group,
+                status=SessionStatusChoices.STATUS_ACTIVE,
+            ),
+            BGPSession(
+                name="Session2",
+                description="Session2",
+                comments="Session2",
+                local_as=local_as,
+                remote_as=remote_as,
+                local_address=local_ip,
+                remote_address=remote_ip1,
+                peer_group=peer_group,
+                status=SessionStatusChoices.STATUS_ACTIVE,
+            ),
+            BGPSession(
+                name="Session3",
+                description="Session3",
+                comments="Session3",
+                local_as=local_as,
+                remote_as=remote_as,
+                local_address=local_ip,
+                remote_address=remote_ip1,
+                peer_group=peer_group,
+                status=SessionStatusChoices.STATUS_ACTIVE,
+                prefix_list_in=pl1,
+            ),
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)['data']['bgp_session']['name'], self.session.name)
+        BGPSession.objects.bulk_create(sessions)
 
-    def test_graphql_list(self):
-        url = reverse('graphql')
-        query = '{bgp_session_list{name}}'
-        response = self.gql_client.post(
-            url,
-            json.dumps({'query': query}),
-            content_type='application/json'
+        # sessions[0].import_policies.add(rp)
+
+        cls.create_data = [
+            {
+                "name": "test_session1",
+                "description": "test_session1",
+                "comments": "test_session1",
+                "local_as": local_as.id,
+                "remote_as": remote_as.id,
+                "device": device2.id,
+                "local_address": local_ip.id,
+                "remote_address": remote_ip1.id,
+                "export_policies": [rp.id],
+            },
+            {
+                "name": "test_session2",
+                "description": "test_session2",
+                "comments": "test_session2",
+                "local_as": local_as.id,
+                "remote_as": remote_as.id,
+                "device": device2.id,
+                "local_address": local_ip.id,
+                "remote_address": remote_ip2.id,
+                "import_policies": [rp.id],
+            },
+            {
+                "name": "test_session3",
+                "description": "test_session3",
+                "comments": "test_session3",
+                "local_as": local_as.id,
+                "remote_as": remote_as.id,
+                "device": device2.id,
+                "local_address": local_ip.id,
+                "remote_address": remote_ip3.id,
+                "prefix_list_in": pl1.id,
+            },
+        ]
+
+
+class RoutingPolicyAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = RoutingPolicy
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+
+    create_data = [
+        {
+            "name": "test_routing_policy",
+            "description": "routing_policy_desc",
+            "comments": "routing_policy_comment1",
+        },
+        {
+            "name": "test_routing_policy2",
+            "description": "routing_policy_desc2",
+            "comments": "routing_policy_comment2",
+        },
+        {
+            "name": "test_routing_policy3",
+            "description": "routing_policy_desc3",
+            "comments": "routing_policy_comment3",
+        },
+    ]
+
+    bulk_update_data = {
+        "description": "Test Routing policy desc",
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        routing_policies = (
+            RoutingPolicy(
+                name="Route-map 1", description="Route-map 1", comments="Route-map 1"
+            ),
+            RoutingPolicy(
+                name="Route-map 2", description="Route-map 2", comments="Route-map 2"
+            ),
+            RoutingPolicy(
+                name="Route-map 3", description="Route-map 3", comments="Route-map 3"
+            ),
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        RoutingPolicy.objects.bulk_create(routing_policies)
 
 
-class RoutingPolicyTestCase(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:routingpolicy'
-        self.rp = RoutingPolicy.objects.create(name='rp1', description='test_rp', comments='comments_routing_policy')
+class RoutingPolicyRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = RoutingPolicyRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
 
-    def test_list_routing_policy(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+    bulk_update_data = {
+        "description": "Test Routing policy rules desc",
+        "action": "deny",
+    }
 
-    def test_get_routing_policy(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.rp.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.rp.name)
-        self.assertEqual(response.data['description'], self.rp.description)
-        self.assertEqual(response.data['comments'], self.rp.comments)
+    @classmethod
+    def setUpTestData(cls):
+        rp1 = RoutingPolicy.objects.create(
+            name="rp1", description="test_rp1", comments="comments_routing_policy1"
+        )
+        rp2 = RoutingPolicy.objects.create(
+            name="rp2", description="test_rp2", comments="comments_routing_policy2"
+        )
+        pl1 = PrefixList.objects.create(
+            name="pl1", description="test_pl", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        pl2 = PrefixList.objects.create(
+            name="pl1", description="test_pl", family=IPAddressFamilyChoices.FAMILY_6
+        )
+        com1 = Community.objects.create(value="65000:65000")
+        com_list1 = CommunityList.objects.create(
+            name="community list 1", description="community list 1"
+        )
 
-    def test_create_routing_policy(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'testrp', 'description': 'test_rp1', 'comments': 'comment_rp1'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).name, 'testrp')
-        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).description, 'test_rp1')  
-        self.assertEqual(RoutingPolicy.objects.get(pk=response.data['id']).comments, 'comment_rp1')  
+        routing_policies_rules = (
+            RoutingPolicyRule(
+                routing_policy=rp1,
+                index=10,
+                action=ActionChoices._choices[0][0],
+                description="Rule1",
+            ),
+            RoutingPolicyRule(
+                routing_policy=rp1,
+                index=20,
+                action=ActionChoices._choices[0][0],
+                description="Rule2",
+            ),
+            RoutingPolicyRule(
+                routing_policy=rp1,
+                index=30,
+                action=ActionChoices._choices[0][1],
+                description="Rule3",
+            ),
+        )
+        RoutingPolicyRule.objects.bulk_create(routing_policies_rules)
+
+        cls.create_data = [
+            {
+                "routing_policy": rp2.id,
+                "description": "rule4",
+                "index": 10,
+                "action": "permit",
+                "comments": "rule4",
+                "match_ip_address": [pl1.id],
+            },
+            {
+                "routing_policy": rp2.id,
+                "description": "rule5",
+                "index": 20,
+                "action": "permit",
+                "comments": "rule5",
+                "match_ipv6_address": [pl2.id],
+                "set_actions": "{'set': 'origin incomplete'",
+            },
+            {
+                "routing_policy": rp2.id,
+                "description": "rule6",
+                "index": 30,
+                "action": "deny",
+                "comments": "rule6",
+                "match_community": [com1.id],
+            },
+            {
+                "routing_policy": rp2.id,
+                "description": "rule7",
+                "index": 40,
+                "action": "deny",
+                "comments": "rule6",
+                "match_community_list": [com_list1.id],
+            },
+        ]
 
 
-class PrefixListTestCase(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'plugins-api:netbox_bgp-api:prefixlist'
-        self.obj = PrefixList.objects.create(name='pl1', description='test_pl', family='ipv4', comments='comments_pl')
+class PrefixListAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = PrefixList
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
 
-    def test_list_prefix_list(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+    create_data = [
+        {
+            "name": "test_prefix_list",
+            "description": "prefix_list_desc",
+            "comments": "prefix_list_comment1",
+            "family": "ipv4",
+        },
+        {
+            "name": "test_prefix_list2",
+            "description": "prefix_list_desc2",
+            "comments": "prefix_list_comment2",
+            "family": "ipv4",
+        },
+        {
+            "name": "test_prefix_list3",
+            "description": "prefix_list_desc3",
+            "comments": "prefix_list_comment3",
+            "family": "ipv6",
+        },
+    ]
 
-    def test_get_prefix_list(self):
-        url = reverse(f'{self.base_url_lookup}-detail', kwargs={'pk': self.obj.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.obj.name)
-        self.assertEqual(response.data['description'], self.obj.description)
-        self.assertEqual(response.data['comments'], self.obj.comments)
+    bulk_update_data = {
+        "description": "Test Prefix list desc",
+    }
 
-    def test_create_prefix_list(self):
-        url = reverse(f'{self.base_url_lookup}-list')
-        data = {'name': 'testrp', 'description': 'test_rp1', 'family': 'ipv4', 'comments': 'comment_rp1'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).name, 'testrp')
-        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).description, 'test_rp1')  
-        self.assertEqual(PrefixList.objects.get(pk=response.data['id']).comments, 'comment_rp1')  
+    @classmethod
+    def setUpTestData(cls):
+
+        prefix_lists = (
+            PrefixList(
+                name="prefix_list 1",
+                description="prefix_list 1",
+                comments="prefix_list 1",
+                family=IPAddressFamilyChoices.FAMILY_4,
+            ),
+            PrefixList(
+                name="prefix_list 2",
+                description="prefix_list 2",
+                comments="prefix_list 2",
+                family=IPAddressFamilyChoices.FAMILY_6,
+            ),
+            PrefixList(
+                name="prefix_list 3",
+                description="prefix_list 3",
+                comments="prefix_list 3",
+                family=IPAddressFamilyChoices.FAMILY_4,
+            ),
+        )
+        PrefixList.objects.bulk_create(prefix_lists)
 
 
-class RoutingPolicyRuleTestCase(BaseTestCase):
-    pass
+class PrefixListRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    # APIViewTestCases.GraphQLTestCase,
+):
+    model = PrefixListRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
+
+    bulk_update_data = {"description": "Test Prefix list rules desc", "action": "deny"}
+
+    @classmethod
+    def setUpTestData(cls):
+        pl1 = PrefixList.objects.create(
+            name="pl1", description="test_pl1", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        pl2 = PrefixList.objects.create(
+            name="pl2", description="test_pl2", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        subnet1 = Prefix.objects.create(prefix="10.0.0.0/24")
+        subnet2 = Prefix.objects.create(prefix="10.0.0.0/24")
+
+        prefix_list_rules = (
+            PrefixListRule(
+                prefix_list=pl1,
+                index=10,
+                action=ActionChoices._choices[0][0],
+                prefix=subnet1,
+                ge=24,
+                le=32,
+                description="pl_rule_1",
+                comments="pl_rule_1",
+            ),
+            PrefixListRule(
+                prefix_list=pl1,
+                index=20,
+                action=ActionChoices._choices[0][0],
+                prefix=subnet2,
+                ge=24,
+                le=32,
+                description="pl_rule_2",
+                comments="pl_rule_2",
+            ),
+            PrefixListRule(
+                prefix_list=pl1,
+                index=30,
+                action=ActionChoices._choices[0][1],
+                prefix_custom="0.0.0.0/0",
+                ge=8,
+                le=32,
+                description="pl_rule_3",
+                comments="pl_rule_3",
+            ),
+        )
+        PrefixListRule.objects.bulk_create(prefix_list_rules)
+
+        cls.create_data = [
+            {
+                "prefix_list": pl2.id,
+                "description": "rule4",
+                "index": 10,
+                "action": "permit",
+                "comments": "rule4",
+                "prefix": subnet1.id,
+                "ge": 25,
+                "le": 32,
+            },
+            {
+                "prefix_list": pl2.id,
+                "description": "rule5",
+                "index": 20,
+                "action": "permit",
+                "comments": "rule5",
+                "prefix": subnet2.id,
+                "ge": 26,
+                "le": 32,
+            },
+            {
+                "prefix_list": pl2.id,
+                "description": "rule6",
+                "index": 30,
+                "action": "deny",
+                "comments": "rule6",
+                "prefix_custom": "0.0.0.0/0",
+            },
+        ]
 
 
-class PrefixListRuleTestCase(BaseTestCase):
-    pass
+# class TestAPISchema(APITestCase):
+#     def setUp(self):
+#         super().setUp()
+#         self.base_url_lookup = 'schema'
 
-
-class TestAPISchema(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.base_url_lookup = 'schema'
-
-    def test_api_schema(self):
-        url = reverse(f'{self.base_url_lookup}')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_api_schema(self):
+#         url = reverse(f'{self.base_url_lookup}')
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, 200)
