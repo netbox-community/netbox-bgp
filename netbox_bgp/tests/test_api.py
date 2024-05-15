@@ -269,9 +269,6 @@ class BGPSessionAPITestCase(
             family=IPAddressFamilyChoices.FAMILY_4,
             comments="comments_pl",
         )
-        self.session.save()
-        self.session.import_policies.add(import_pol)
-        self.session.export_policies.add(export_pol)
 
         sessions = (
             BGPSession(
