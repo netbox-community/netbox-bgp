@@ -2,6 +2,7 @@ from utilities.choices import ChoiceSet
 
 
 class CommunityStatusChoices(ChoiceSet):
+    key = "Community.status"
 
     STATUS_ACTIVE = 'active'
     STATUS_RESERVED = 'reserved'
@@ -15,6 +16,7 @@ class CommunityStatusChoices(ChoiceSet):
 
 
 class SessionStatusChoices(ChoiceSet):
+    key = "Session.status"
 
     STATUS_OFFLINE = 'offline'
     STATUS_ACTIVE = 'active'
@@ -30,6 +32,7 @@ class SessionStatusChoices(ChoiceSet):
 
 
 class ActionChoices(ChoiceSet):
+    key = "Action.status"
 
     CHOICES = [
         ('permit', 'Permit', 'green'),
@@ -38,6 +41,8 @@ class ActionChoices(ChoiceSet):
 
 
 class AFISAFIChoices(ChoiceSet):
+    key = "AFISAFI.options"
+
     AFISAFI_IPV4_UNICAST = 'ipv4-unicast'
     AFISAFI_IPV4_MULTICAST = 'ipv4-multicast'
     AFISAFI_IPV4_FLOWSPEC = 'ipv4-flowspec'
