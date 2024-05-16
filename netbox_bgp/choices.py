@@ -8,11 +8,11 @@ class CommunityStatusChoices(ChoiceSet):
     STATUS_RESERVED = 'reserved'
     STATUS_DEPRECATED = 'deprecated'
 
-    CHOICES = (
+    CHOICES = [
         (STATUS_ACTIVE, 'Active', 'blue'),
         (STATUS_RESERVED, 'Reserved', 'cyan'),
         (STATUS_DEPRECATED, 'Deprecated', 'red'),
-     )
+    ]
 
 
 class SessionStatusChoices(ChoiceSet):
@@ -23,12 +23,12 @@ class SessionStatusChoices(ChoiceSet):
     STATUS_PLANNED = 'planned'
     STATUS_FAILED = 'failed'
 
-    CHOICES = (
+    CHOICES = [
         (STATUS_OFFLINE, 'Offline', 'orange'),
         (STATUS_ACTIVE, 'Active', 'green'),
         (STATUS_PLANNED, 'Planned', 'cyan'),
         (STATUS_FAILED, 'Failed', 'red'),
-    )
+    ]
 
 
 class ActionChoices(ChoiceSet):
@@ -62,7 +62,7 @@ class AFISAFIChoices(ChoiceSet):
     AFISAFI_VPNV6_MULTICAST = 'vpnv6-multicast'
     AFISAFI_VPNV6_FLOWSPEC = 'vpnv6-flowspec'
 
-    CHOICES = (
+    CHOICES = [
         (AFISAFI_IPV4_UNICAST, 'IPv4 Unicast'),
         (AFISAFI_IPV4_MULTICAST, 'IPv4 Multicast'),
         (AFISAFI_IPV4_FLOWSPEC, 'IPv4 Flowspec'),
@@ -76,7 +76,7 @@ class AFISAFIChoices(ChoiceSet):
         (AFISAFI_VPNV6_UNICAST, 'VPNv6 Unicast'),
         (AFISAFI_VPNV6_MULTICAST, 'VPNv6 Multicast'),
         (AFISAFI_VPNV6_FLOWSPEC, 'VPNv6 Flowspec')
-    )
+    ]
 
 
 class IPAddressFamilyChoices(ChoiceSet):
