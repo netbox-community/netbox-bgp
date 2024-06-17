@@ -14,7 +14,6 @@ from .models import (
 from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
 
-
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
