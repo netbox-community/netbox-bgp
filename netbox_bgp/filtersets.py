@@ -4,6 +4,7 @@ from django.db.models import Q
 from netaddr.core import AddrFormatError
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from tenancy.filtersets import TenancyFilterSet
 
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
@@ -14,7 +15,7 @@ from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
 
 
-class CommunityFilterSet(NetBoxModelFilterSet):
+class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = Community
@@ -66,7 +67,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
         return queryset.filter(qs_filter)
 
 
-class BGPSessionFilterSet(NetBoxModelFilterSet):
+class BGPSessionFilterSet(NetBoxModelFilterSet,TenancyFilterSet):
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
         field_name='remote_as__asn',
