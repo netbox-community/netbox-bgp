@@ -36,7 +36,7 @@ class CommunityType(NetBoxObjectType):
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     status: str
-    role: str
+    role: Annotated["RoleType", strawberry.lazy("ipam.graphql.types")] | None
     description: str
 
 
@@ -45,7 +45,7 @@ class BGPSessionType(NetBoxObjectType):
     name: str
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
-    device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")]
+    device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")] | None
     local_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
     remote_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
     local_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")]
@@ -62,12 +62,8 @@ class BGPSessionType(NetBoxObjectType):
     export_policies: List[
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
-    prefix_list_in: List[
-        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
-    ]
-    prefix_list_out: List[
-        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
-    ]
+    prefix_list_in: Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")] | None
+    prefix_list_out: Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")] | None
 
 
 @strawberry_django.type(BGPPeerGroup, fields="__all__", filters=BGPPeerGroupFilter)
@@ -98,7 +94,7 @@ class RoutingPolicyRuleType(NetBoxObjectType):
     index: BigInt
     action: str
     description: str
-    continue_entry: BigInt
+    continue_entry: BigInt | None
     match_community: List[
         Annotated["CommunityType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -127,8 +123,8 @@ class PrefixListRuleType(NetBoxObjectType):
     ]
     index: BigInt
     action: str
-    prefix: Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
-    prefix_custom: str
+    prefix: Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")] | None
+    prefix_custom: str | None
     ge: BigInt
     le: BigInt
     description: str
