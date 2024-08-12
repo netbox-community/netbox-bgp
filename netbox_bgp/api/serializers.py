@@ -93,6 +93,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "import_policies",
             "export_policies",
             "comments",
+            "custom_fields",
         ]
         brief_fields = ("id", "url", "display", "name", "description")
 
