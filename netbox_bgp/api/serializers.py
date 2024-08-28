@@ -26,7 +26,7 @@ from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
 
 
 class RoutingPolicySerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:routingpolicy")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:routingpolicy-detail")
 
     class Meta:
         model = RoutingPolicy
@@ -44,7 +44,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
 
 
 class PrefixListSerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:prefixlist")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:prefixlist-detail")
 
     class Meta:
         model = PrefixList
@@ -63,7 +63,7 @@ class PrefixListSerializer(NetBoxModelSerializer):
 
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:bgppeergroup")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgppeergroup-detail")
 
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
@@ -99,7 +99,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
 
 class BGPSessionSerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:bgpsession")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgpsession-detail")
     status = ChoiceField(choices=SessionStatusChoices, required=False)
     site = SiteSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
@@ -188,7 +188,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
 class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=CommunityStatusChoices, required=False)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:community")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:community-detail")
 
     class Meta:
         model = Community
@@ -212,7 +212,7 @@ class CommunitySerializer(NetBoxModelSerializer):
 
 
 class CommunityListSerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins:netbox_bgp:communitylist")
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:communitylist-detail")
 
     class Meta:
         model = CommunityList
