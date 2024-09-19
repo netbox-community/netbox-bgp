@@ -23,6 +23,6 @@ WORKDIR /source
 COPY . /source
 
 #RUN pip install -r requirements.txt
-RUN python setup.py develop
+RUN python -m pip install --editable .
 
 WORKDIR /opt/netbox/netbox/
