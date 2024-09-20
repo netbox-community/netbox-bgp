@@ -16,7 +16,7 @@ This plugin provide following Models:
 | NetBox 3.5  | >= 0.10.0 |
 | NetBox 3.6  | >= 0.11.0 |
 | NetBox 3.7  | >= 0.12.0 |
-| NetBox 4.0  | >= 0.13.0 |
+| NetBox 4.0  | >= 0.13.2 |
 
 ## Installation
 
