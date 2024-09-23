@@ -1,4 +1,5 @@
 from netbox.api.viewsets import NetBoxModelViewSet
+from rest_framework.routers import APIRootView
 
 from .serializers import (
     BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer,
@@ -16,6 +17,10 @@ from netbox_bgp.filtersets import (
     RoutingPolicyRuleFilterSet, CommunityListFilterSet, CommunityListRuleFilterSet
 )
 
+class RootView(APIRootView):
+    def get_view_name(self):
+        return 'BGP'
+    
 
 class BGPSessionViewSet(NetBoxModelViewSet):
     queryset = BGPSession.objects.all()
@@ -66,7 +71,6 @@ class PrefixListViewSet(NetBoxModelViewSet):
 
 
 class PrefixListRuleViewSet(NetBoxModelViewSet):
-  
     queryset = PrefixListRule.objects.all()
     serializer_class = PrefixListRuleSerializer
     filterset_class = PrefixListRuleFilterSet
