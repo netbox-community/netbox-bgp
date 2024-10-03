@@ -3,10 +3,12 @@ from netbox.api.routers import NetBoxRouter
 from .views import (
     BGPSessionViewSet, RoutingPolicyViewSet, BGPPeerGroupViewSet, CommunityViewSet,
     PrefixListViewSet, PrefixListRuleViewSet, RoutingPolicyRuleViewSet,
-    CommunityListViewSet, CommunityListRuleViewSet
+    CommunityListViewSet, CommunityListRuleViewSet, RootView
 )
 
+
 router = NetBoxRouter()
+router.APIRootView = RootView
 router.register('session', BGPSessionViewSet, 'session')
 router.register('bgpsession', BGPSessionViewSet, 'bgpsession')
 router.register('routing-policy', RoutingPolicyViewSet)
