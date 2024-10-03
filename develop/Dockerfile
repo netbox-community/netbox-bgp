@@ -1,7 +1,7 @@
 ARG python_ver=3.12
 FROM python:${python_ver}
 
-ARG netbox_ver=master
+ARG netbox_ver=v4.0.11
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p /opt
@@ -23,6 +23,6 @@ WORKDIR /source
 COPY . /source
 
 #RUN pip install -r requirements.txt
-RUN python setup.py develop
+RUN pip install --editable .  
 
 WORKDIR /opt/netbox/netbox/
