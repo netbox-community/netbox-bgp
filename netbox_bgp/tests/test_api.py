@@ -24,7 +24,7 @@ from netbox_bgp.choices import (
     IPAddressFamilyChoices,
     ActionChoices,
 )
-from netbox_bgp.choices import IPAddressFamilyChoices, SessionStatusChoices
+
 
 class CommunityAPITestCase(
     APIViewTestCases.GetObjectViewTestCase,
@@ -32,11 +32,12 @@ class CommunityAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = Community
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "url", "value"]
+    graphql_base_name = "netbox_bgp_community"
 
     create_data = [
         {"value": "65001:65000"},
@@ -64,11 +65,12 @@ class CommunityListAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = CommunityList
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_communitylist"
 
     create_data = [
         {"name": "CL1", "description": "cl1_api"},
@@ -96,11 +98,12 @@ class CommunityListRuleAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = CommunityListRule
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
+    graphql_base_name = "netbox_bgp_communitylist_rule"
 
     bulk_update_data = {
         "description": "Test Community List rules desc",
@@ -172,11 +175,12 @@ class BGPPeerGroupAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = BGPPeerGroup
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_peer_group"
 
     create_data = [
         {
@@ -222,11 +226,12 @@ class BGPSessionAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = BGPSession
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_session"
 
     bulk_update_data = {
         "description": "Test BGP session desc",
@@ -353,11 +358,12 @@ class RoutingPolicyAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = RoutingPolicy
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_routing_policy"
 
     create_data = [
         {
@@ -403,11 +409,12 @@ class RoutingPolicyRuleAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = RoutingPolicyRule
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
+    graphql_base_name = "netbox_bgp_routing_policy_rule"
 
     bulk_update_data = {
         "description": "Test Routing policy rules desc",
@@ -498,11 +505,12 @@ class PrefixListAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = PrefixList
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_prefixlist"
 
     create_data = [
         {
@@ -561,11 +569,12 @@ class PrefixListRuleAPITestCase(
     APIViewTestCases.CreateObjectViewTestCase,
     APIViewTestCases.UpdateObjectViewTestCase,
     APIViewTestCases.DeleteObjectViewTestCase,
-    # APIViewTestCases.GraphQLTestCase,
+    APIViewTestCases.GraphQLTestCase,
 ):
     model = PrefixListRule
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
+    graphql_base_name = "netbox_bgp_prefixlist_rule"
 
     bulk_update_data = {"description": "Test Prefix list rules desc", "action": "deny"}
 
@@ -646,12 +655,9 @@ class PrefixListRuleAPITestCase(
         ]
 
 
-# class TestAPISchema(APITestCase):
-#     def setUp(self):
-#         super().setUp()
-#         self.base_url_lookup = 'schema'
+class TestAPISchema(APITestCase):
+    def test_api_schema(self):
+        url = reverse("plugins-api:netbox_bgp-api:api-root")
+        response = self.client.get(f"{url}?format=api", **self.header)
 
-#     def test_api_schema(self):
-#         url = reverse(f'{self.base_url_lookup}')
-#         response = self.client.get(url)
-#         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
