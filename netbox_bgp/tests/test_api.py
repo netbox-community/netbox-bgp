@@ -81,6 +81,9 @@ class CommunityListAPITestCase(
     bulk_update_data = {
         "description": "Test Community List desc",
     }
+    user_permissions = [
+        "netbox_bgp.view_community",
+    ]
 
     @classmethod
     def setUpTestData(cls):
@@ -109,6 +112,12 @@ class CommunityListRuleAPITestCase(
         "description": "Test Community List rules desc",
         "action": "deny",
     }
+
+    user_permissions = [
+        "netbox_bgp.view_communitylist",
+        "netbox_bgp.view_community",
+    ]
+
 
     @classmethod
     def setUpTestData(cls):
@@ -236,6 +245,11 @@ class BGPSessionAPITestCase(
     bulk_update_data = {
         "description": "Test BGP session desc",
     }
+    user_permissions = [
+        "ipam.view_ipaddress",
+        "ipam.view_asn"
+    ]
+
 
     @classmethod
     def setUpTestData(cls):
@@ -421,6 +435,11 @@ class RoutingPolicyRuleAPITestCase(
         "action": "deny",
     }
 
+    user_permissions = [
+        "netbox_bgp.view_routingpolicy",
+    ]
+
+
     @classmethod
     def setUpTestData(cls):
         rp1 = RoutingPolicy.objects.create(
@@ -575,6 +594,10 @@ class PrefixListRuleAPITestCase(
     view_namespace = "plugins-api:netbox_bgp"
     brief_fields = ["description", "display", "id"]
     graphql_base_name = "netbox_bgp_prefixlist_rule"
+
+    user_permissions = [
+        "netbox_bgp.view_prefixlist",
+    ]
 
     bulk_update_data = {"description": "Test Prefix list rules desc", "action": "deny"}
 
