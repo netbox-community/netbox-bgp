@@ -10,13 +10,13 @@ This plugin provide following Models:
 
 ## Compatibility
 
-|             |           |
-|-------------|-----------|
-| NetBox 3.4  | >= 0.9.0  |
-| NetBox 3.5  | >= 0.10.0 |
-| NetBox 3.6  | >= 0.11.0 |
-| NetBox 3.7  | >= 0.12.0 |
-| NetBox 4.0  | >= 0.13.2 |
+|               |           |
+|---------------|-----------|
+| NetBox 3.4.x  | >= 0.9.0  |
+| NetBox 3.5.x  | >= 0.10.0 |
+| NetBox 3.6.x  | >= 0.11.0 |
+| NetBox 3.7.x  | >= 0.12.0 |
+| NetBox 4.0.x  | >= 0.13.3 |
 
 ## Installation
 
