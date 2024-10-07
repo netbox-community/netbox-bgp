@@ -474,7 +474,7 @@ class RoutingPolicyRule(NetBoxModel):
         )
         if self.match_community_list.all().exists():
             result.update(
-                {'community': list(self.match_community_list.all().values_list('name', flat=True))}
+                {'community-list': list(self.match_community_list.all().values_list('name', flat=True))}
             )
         result.update(
             {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
@@ -486,6 +486,7 @@ class RoutingPolicyRule(NetBoxModel):
         custom_match = self.get_match_custom()
         # update community from custom
         result['community'].extend(custom_match.get('community', []))
+        result['community-list'].extend(custom_match.get('community-list', []))
         result['ip address'].extend(custom_match.get('ip address', []))
         result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
         # remove empty matches
