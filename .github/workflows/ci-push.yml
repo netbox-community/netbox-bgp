@@ -23,7 +23,7 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter/slim@v7
         env:
-          DEFAULT_BRANCH: dev
+          DEFAULT_BRANCH: develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SUPPRESS_POSSUM: true
           LINTER_RULES_PATH: /
