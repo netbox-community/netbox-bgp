@@ -1,0 +1,86 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: name-tests-test
+        args:
+          - "--django"
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args:
+          - "--profile=black"
+        exclude: ^.devcontainer/
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        language_version: python3
+        exclude: ^develop/
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v3.1.0
+    hooks:
+      - id: add-trailing-comma
+        args:
+          - "--py36-plus"
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        exclude: ^develop/
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - "--py39-plus"
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        args: [--fail-under=90, --verbose]
+        exclude: (^develop/|^netbox_bgp/migrations/)
+  #- repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
+  #  rev: v1.1.2
+  #  hooks:
+  #    - id: htmlhint
+  #      args: [--config, .htmlhintrc]
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.292
+    hooks:
+      - id: ruff
+  #- repo: local
+  #  hooks:
+  #    - id: wily
+  #      name: wily
+  #      entry: wily diff
+  #      verbose: true
+  #      language: python
+  #      additional_dependencies: [wily]
+  #- repo: https://github.com/sourcery-ai/sourcery
+  #  rev: v1.0.4b23
+  #  hooks:
+  #    - id: sourcery
+  #      # The best way to use Sourcery in a pre-commit hook:
+  #      # * review only changed lines:
+  #      # * omit the summary
+  #      args:
+  #        - --diff=git diff HEAD
+  #        - --no-summary
