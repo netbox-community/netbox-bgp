@@ -1,0 +1,33 @@
+---
+name: CI
+
+on:
+  push:
+
+# This ensures that previous jobs for the workflow are canceled when the ref is
+# updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter/slim@v7
+        env:
+          DEFAULT_BRANCH: dev
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUPPRESS_POSSUM: true
+          LINTER_RULES_PATH: /
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_DOCKERFILE: false
+          VALIDATE_JSCPD: true
+          FILTER_REGEX_EXCLUDE: (.*/)?(develop/.*)
