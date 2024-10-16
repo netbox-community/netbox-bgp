@@ -82,6 +82,9 @@ class BGPPeerGroupType(NetBoxObjectType):
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
+    rules: List[
+         Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(
