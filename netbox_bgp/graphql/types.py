@@ -117,6 +117,9 @@ class PrefixListType(NetBoxObjectType):
     name: str
     description: str
     family: str
+    rules: List[
+         Annotated["PrefixListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(PrefixListRule, fields="__all__", filters=PrefixListRuleFilter)
@@ -137,6 +140,9 @@ class PrefixListRuleType(NetBoxObjectType):
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
+    rules: List[
+         Annotated["CommunityListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(
