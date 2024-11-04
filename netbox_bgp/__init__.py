@@ -1,12 +1,12 @@
 from netbox.plugins import PluginConfig
-from .version import __version__
+from .version import version_semver
 
 
 class BGPConfig(PluginConfig):
     name = 'netbox_bgp'
     verbose_name = 'BGP'
     description = 'Subsystem for tracking bgp related objects'
-    version = __version__
+    version = version_semver()
     author = 'Nikolay Yuzefovich'
     author_email = 'mgk.kolek@gmail.com'
     base_url = 'bgp'
