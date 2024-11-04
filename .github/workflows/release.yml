@@ -1,0 +1,17 @@
+name: Release
+on:
+  push:
+    branches: [ release ]
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: netboxlabs/public-workflows/.github/workflows/reusable-plugin-release.yml@develop
+    with:
+      plugin_package_name: netbox-bgp
+      plugin_package_dir: netbox_bgp
+      release_notes_from_pr_body: false
+    secrets: inherit
