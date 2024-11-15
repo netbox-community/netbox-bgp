@@ -105,10 +105,10 @@ class RoutingPolicyRuleType(NetBoxObjectType):
         Annotated["CommunityListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     match_ip_address: List[
-        Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
+        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     match_ipv6_address: List[
-        Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
+        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
 
@@ -117,7 +117,7 @@ class PrefixListType(NetBoxObjectType):
     name: str
     description: str
     family: str
-    rules: List[
+    prefrules: List[
          Annotated["PrefixListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
