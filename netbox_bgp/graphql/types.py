@@ -140,7 +140,7 @@ class PrefixListRuleType(NetBoxObjectType):
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
-    rules: List[
+    commlistrules: List[
          Annotated["CommunityListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
