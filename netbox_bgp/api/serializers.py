@@ -261,6 +261,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         many=True,
     )
     routing_policy = RoutingPolicySerializer(nested=True)
+
     match_community = SerializedPKRelatedField(
         queryset=Community.objects.all(),
         serializer=CommunitySerializer,
