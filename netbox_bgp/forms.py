@@ -604,12 +604,21 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         queryset=CommunityList.objects.all(),
         required=False,
     )
-    match_ip_address = forms.MultipleChoiceField(
-        choices=[], required=False, label="Match IPv4 address Prefix lists"
+    
+    match_ip_address = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        query_params={
+            'family': 'ipv4'
+        }
     )
 
-    match_ipv6_address = forms.MultipleChoiceField(
-        choices=[], required=False, label="Match IPv6 address Prefix lists"
+    match_ipv6_address = DynamicModelMultipleChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        query_params={
+            'family': 'ipv6'
+        }
     )
 
     match_custom = forms.JSONField(
@@ -627,6 +636,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         instance = kwargs.get("instance", {})
+        '''
         if instance:
             _prefix_v4 = PrefixList.objects.filter(family="ipv4")
             _prefix_v6 = PrefixList.objects.filter(family="ipv6")
@@ -634,6 +644,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
             prefix_v6 = list(set([(prefix.id, prefix.name) for prefix in _prefix_v6]))
             self.fields["match_ip_address"].choices = prefix_v4
             self.fields["match_ipv6_address"].choices = prefix_v6
+        '''
 
     class Meta:
         model = RoutingPolicyRule
