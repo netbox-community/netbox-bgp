@@ -51,27 +51,6 @@ pbuild:
 	python3 -m pip install --upgrade build
 	python3 -m build
 
-pypipub:
-	python3 -m pip install --upgrade twine
-	python3 -m twine upload dist/*
-
-relpatch:
-	$(eval GSTATUS := $(shell git status --porcelain))
-ifneq ($(GSTATUS),)
-	$(error Git status is not clean. $(GSTATUS))
-endif
-	git checkout develop
-	git remote update
-	git pull origin develop
-	$(eval CURVER := $(shell cat $(VERFILE) | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'))
-	$(eval NEWVER := $(shell pysemver bump patch $(CURVER)))
-	$(eval RDATE := $(shell date '+%Y-%m-%d'))
-	git checkout -b release-$(NEWVER) origin/develop
-	echo '__version__ = "$(NEWVER)"' > $(VERFILE)
-	git commit -am 'bump ver'
-	git push origin release-$(NEWVER)
-	git checkout develop
-
 
 test:
 	docker-compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run netbox python manage.py test ${BUILD_NAME}

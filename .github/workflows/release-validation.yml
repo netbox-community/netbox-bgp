@@ -1,0 +1,17 @@
+name: Release validation
+on:
+  pull_request:
+    branches: release
+    types: [ opened, edited ]
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: netboxlabs/public-workflows/.github/workflows/reusable-plugin-release-validation.yml@develop
+    with:
+      plugin_package_name: netbox-bgp
+      plugin_package_dir: netbox_bgp
+    secrets: inherit
