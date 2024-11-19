@@ -33,5 +33,34 @@ class DeviceBGPSession(PluginTemplateExtension):
             }
         )
 
+class VirtualMachineBGPSession(PluginTemplateExtension):
+    model = 'virtualization.VirtualMachine'
 
-template_extensions = [DeviceBGPSession]
+    def left_page(self):
+        if self.context['config'].get('device_ext_page') == 'left':
+            return self.x_page()
+        return ''
+
+    def right_page(self):
+        if self.context['config'].get('device_ext_page') == 'right':
+            return self.x_page()
+        return ''
+
+    def full_width_page(self):
+        if self.context['config'].get('device_ext_page') == 'full_width':
+            return self.x_page()
+        return ''
+
+    def x_page(self):
+        obj = self.context['object']
+        sess = BGPSession.objects.filter(virtualmachine=obj)
+        sess_table = BGPSessionTable(sess)
+        return self.render(
+            'netbox_bgp/device_extend.html',
+            extra_context={
+                'related_session_table': sess_table
+            }
+        )
+
+
+template_extensions = [DeviceBGPSession, VirtualMachineBGPSession]

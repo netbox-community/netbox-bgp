@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
 from dcim.models import Device, Site
+from virtualization.models import VirtualMachine
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
@@ -158,6 +159,9 @@ class BGPSessionForm(NetBoxModelForm):
     device = DynamicModelChoiceField(
         queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}
     )
+    virtualmachine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, query_params={"site_id": "$site"}
+    )
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
     local_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(),
@@ -212,6 +216,7 @@ class BGPSessionForm(NetBoxModelForm):
             "description",
             "site",
             "device",
+            "virtualmachine",
             "status",
             "peer_group",
             "tenant",
@@ -230,6 +235,7 @@ class BGPSessionForm(NetBoxModelForm):
             "name",
             "site",
             "device",
+            "virtualmachine",
             "local_as",
             "remote_as",
             "local_address",
@@ -287,6 +293,11 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         queryset=Device.objects.all(),
         to_field_name="name",
         help_text=_("Assigned device"),
+    )
+    virtualmachine = CSVModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned virtual machine"),
     )
     status = CSVChoiceField(
         choices=SessionStatusChoices, required=False, help_text=_("Operational status")
@@ -347,6 +358,7 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         fields = [
             "name",
             "device",
+            "virtualmachine",
             "site",
             "description",
             "tenant",
@@ -377,6 +389,9 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     by_remote_address = forms.CharField(required=False, label="Remote Address")
     device_id = DynamicModelMultipleChoiceField(
         queryset=Device.objects.all(), required=False, label=_("Device")
+    )
+    virtualmachine_id = DynamicModelMultipleChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, label=_("VirtualMachine")
     )
     site_id = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(), required=False, label=_("Site")
@@ -421,6 +436,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
         queryset=Device.objects.all(),
         required=False,
     )
+    virtualmachine = DynamicModelChoiceField(
+        label=_("VirtualMachine"),
+        queryset=VirtualMachine.objects.all(),
+        required=False,
+    )
     site = DynamicModelChoiceField(
         label=_("Site"), queryset=Site.objects.all(), required=False
     )
@@ -463,6 +483,7 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
             "description",
             "site",
             "device",
+            "virtualmachine",
             "status",
             "peer_group",
             "tenant",

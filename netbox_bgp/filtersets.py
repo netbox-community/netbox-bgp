@@ -12,6 +12,7 @@ from .models import (
 )
 from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
+from virtualization.models import VirtualMachine
 
 
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
@@ -136,6 +137,18 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         queryset=Device.objects.all(),
         to_field_name='name',
         label='Device (name)',
+    )
+    virtualmachine_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='virtualmachine__id',
+        queryset=VirtualMachine.objects.all(),
+        to_field_name='id',
+        label='VirtualMachine (ID)',
+    )
+    virtualmachine = django_filters.ModelMultipleChoiceFilter(
+        field_name='virtualmachine__name',
+        queryset=VirtualMachine.objects.all(),
+        to_field_name='name',
+        label='VirtualMachine (name)',
     )
     site_id = django_filters.ModelMultipleChoiceFilter(
         field_name='site__id',

@@ -7,6 +7,7 @@ from netbox.api.serializers import NetBoxModelSerializer
 from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer
 from tenancy.api.serializers import TenantSerializer
 from dcim.api.serializers import SiteSerializer, DeviceSerializer
+from virtualization.api.serializers import VirtualMachineSerializer
 
 from ipam.api.field_serializers import IPNetworkField
 
@@ -104,6 +105,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
     site = SiteSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
+    virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     local_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
     remote_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
     local_as = ASNSerializer(nested=True, required=True, allow_null=False)
@@ -140,6 +142,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "site",
             "tenant",
             "device",
+            "virtualmachine",
             "local_address",
             "remote_address",
             "local_as",
