@@ -20,6 +20,7 @@ from utilities.forms.fields import (
     CSVChoiceField,
     CommentField,
 )
+from utilities.forms import add_blank_choice
 from utilities.forms.widgets import APISelect, APISelectMultiple
 from netbox.forms import (
     NetBoxModelForm,
@@ -27,6 +28,7 @@ from netbox.forms import (
     NetBoxModelFilterSetForm,
     NetBoxModelImportForm,
 )
+from .choices import SessionStatusChoices
 
 from .models import (
     Community,
@@ -205,6 +207,7 @@ class BGPSessionForm(NetBoxModelForm):
         ),
     )
     comments = CommentField()
+
 
     fieldsets = (
         FieldSet(
@@ -424,10 +427,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     site = DynamicModelChoiceField(
         label=_("Site"), queryset=Site.objects.all(), required=False
     )
+
     status = forms.ChoiceField(
-        label=_("Status"),
-        required=False,
-        choices=SessionStatusChoices,
+        label=_('Status'),
+        choices=add_blank_choice(SessionStatusChoices),
+        required=False
     )
     description = forms.CharField(
         label=_("Description"), max_length=200, required=False
