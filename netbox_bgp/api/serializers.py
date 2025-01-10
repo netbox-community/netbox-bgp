@@ -294,6 +294,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "set_actions",
             "match_ipv6_address",
             "description",
+            "continue_entry",
             "tags",
             "custom_fields",
             "comments",
