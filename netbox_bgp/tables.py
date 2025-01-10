@@ -152,7 +152,7 @@ class RoutingPolicyRuleTable(NetBoxTable):
         model = RoutingPolicyRule
         fields = (
             'pk', 'routing_policy', 'index', 'match_statements',
-            'set_statements', 'action', 'description'
+            'set_statements', 'action', 'description', 'continue_entry'
         )
 
 

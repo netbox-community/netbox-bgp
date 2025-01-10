@@ -82,6 +82,9 @@ class BGPPeerGroupType(NetBoxObjectType):
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
+    rules: List[
+         Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(
@@ -102,10 +105,10 @@ class RoutingPolicyRuleType(NetBoxObjectType):
         Annotated["CommunityListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     match_ip_address: List[
-        Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
+        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     match_ipv6_address: List[
-        Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")]
+        Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
 
@@ -114,6 +117,9 @@ class PrefixListType(NetBoxObjectType):
     name: str
     description: str
     family: str
+    prefrules: List[
+         Annotated["PrefixListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(PrefixListRule, fields="__all__", filters=PrefixListRuleFilter)
@@ -134,6 +140,9 @@ class PrefixListRuleType(NetBoxObjectType):
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
+    commlistrules: List[
+         Annotated["CommunityListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
 
 
 @strawberry_django.type(
