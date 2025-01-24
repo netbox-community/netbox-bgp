@@ -260,6 +260,14 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         allow_null=True,
         many=True,
     )
+    match_ipv6_address = SerializedPKRelatedField(
+        queryset=PrefixList.objects.all(),
+        serializer=PrefixListSerializer,
+        nested=True,
+        required=False,
+        allow_null=True,
+        many=True,
+    )
     routing_policy = RoutingPolicySerializer(nested=True)
 
     match_community = SerializedPKRelatedField(
