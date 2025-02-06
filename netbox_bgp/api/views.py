@@ -4,17 +4,20 @@ from rest_framework.routers import APIRootView
 from .serializers import (
     BGPSessionSerializer, RoutingPolicySerializer, BGPPeerGroupSerializer,
     CommunitySerializer, PrefixListSerializer, PrefixListRuleSerializer,
-    RoutingPolicyRuleSerializer, CommunityListSerializer, CommunityListRuleSerializer
+    RoutingPolicyRuleSerializer, CommunityListSerializer, CommunityListRuleSerializer,
+    ASPathListSerializer, ASPathListRuleSerializer
 )
 from netbox_bgp.models import (
     BGPSession, RoutingPolicy, BGPPeerGroup,
     Community, PrefixList, PrefixListRule,
-    RoutingPolicyRule, CommunityList, CommunityListRule
+    RoutingPolicyRule, CommunityList, CommunityListRule,
+    ASPathList, ASPathListRule
 )
 from netbox_bgp.filtersets import (
     BGPSessionFilterSet, RoutingPolicyFilterSet, BGPPeerGroupFilterSet,
     CommunityFilterSet, PrefixListFilterSet, PrefixListRuleFilterSet,
-    RoutingPolicyRuleFilterSet, CommunityListFilterSet, CommunityListRuleFilterSet
+    RoutingPolicyRuleFilterSet, CommunityListFilterSet, CommunityListRuleFilterSet,
+    ASPathListFilterSet, ASPathListRuleFilterSet
 )
 
 class RootView(APIRootView):
@@ -74,3 +77,15 @@ class PrefixListRuleViewSet(NetBoxModelViewSet):
     queryset = PrefixListRule.objects.all()
     serializer_class = PrefixListRuleSerializer
     filterset_class = PrefixListRuleFilterSet
+
+
+class ASPathListViewSet(NetBoxModelViewSet):
+    queryset = ASPathList.objects.all()
+    serializer_class = ASPathListSerializer
+    filterset_class = ASPathListFilterSet
+
+
+class ASPathListRuleViewSet(NetBoxModelViewSet):
+    queryset = ASPathListRule.objects.all()
+    serializer_class = ASPathListRuleSerializer
+    filterset_class = ASPathListRuleFilterSet

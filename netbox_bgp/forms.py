@@ -40,6 +40,8 @@ from .models import (
     PrefixListRule,
     CommunityList,
     CommunityListRule,
+    ASPathList,
+    ASPathListRule
 )
 
 from .choices import (
@@ -744,3 +746,41 @@ class PrefixListRuleForm(NetBoxModelForm):
             "tags",
             "comments",
         ]
+
+
+class ASPathListFilterForm(NetBoxModelFilterSetForm):
+    model = ASPathList
+    q = forms.CharField(required=False, label="Search")
+
+    tag = TagFilterField(model)
+
+
+class ASPathListForm(NetBoxModelForm):
+
+    comments = CommentField()
+
+    class Meta:
+        model = ASPathList
+        fields = ["name", "description", "tags", "comments"]
+
+
+class ASPathListBulkEditForm(NetBoxModelBulkEditForm):
+    description = forms.CharField(max_length=200, required=False)
+
+    model = ASPathList
+    nullable_fields = [
+        "description",
+    ]
+
+class ASPathListImportForm(NetBoxModelImportForm):
+
+    class Meta:
+        model = ASPathList
+        fields = ("name", "description", "tags")
+
+class ASPathListRuleForm(NetBoxModelForm):
+    comments = CommentField()
+
+    class Meta:
+        model = ASPathListRule
+        fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]

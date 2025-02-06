@@ -1,0 +1,42 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col col-md-5">
+        <div class="card">
+            <h5 class="card-header">AS Path List Rule</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <th scope="row">AS Path List</th>
+                        <td>
+                            <a href="{{ object.aspath_list.get_absolute_url }}">{{ object.aspath_list }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Index</th>
+                        <td>{{ object.index }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Action</th>
+                        <td>{% badge object.get_action_display bg_color=object.get_action_color %}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Pattern</th>
+                        <td>{{ object.pattern }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td>{{ object.description|placeholder }}</td>
+                    </tr>                    
+                </table>
+            </div>
+        </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
+        {% include 'inc/panels/comments.html' %}
+    </div>
+</div>
+{% endblock content %}

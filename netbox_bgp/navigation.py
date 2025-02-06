@@ -100,6 +100,25 @@ _menu_items = (
         ),
     ),
     PluginMenuItem(
+        link='plugins:netbox_bgp:aspathlist_list',
+        link_text='AS Path Lists',
+        permissions=['netbox_bgp.view_aspathlist'],
+        buttons=(
+            PluginMenuButton(
+                link='plugins:netbox_bgp:aspathlist_add',
+                title='Add',
+                icon_class='mdi mdi-plus-thick',
+                permissions=['netbox_bgp.add_aspathlist'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:aspathlist_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_aspathlist'],
+            ),
+        ),
+    ),    
+    PluginMenuItem(
         link='plugins:netbox_bgp:bgppeergroup_list',
         link_text='Peer Groups',
         permissions=['netbox_bgp.view_bgppeergroup'],

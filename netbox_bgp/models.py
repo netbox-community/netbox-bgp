@@ -394,6 +394,67 @@ class BGPSession(NetBoxModel):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
 
 
+class ASPathList(NetBoxModel):
+    """
+    as-path access list, as-path filter
+    """
+    name = models.CharField(
+        max_length=100
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'AS Path Lists'
+        unique_together = ['name', 'description']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:aspathlist', args=[self.pk])
+
+
+class ASPathListRule(NetBoxModel):
+    """
+    Rules for AS Path List
+    """
+    aspath_list = models.ForeignKey(
+        to=ASPathList,
+        on_delete=models.CASCADE,
+        related_name='aspathlistrules'
+    )
+    index = models.PositiveIntegerField()
+    action = models.CharField(
+        max_length=30,
+        choices=ActionChoices
+    )
+    pattern = models.CharField(
+        max_length=200,
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    def __str__(self):
+        return f'{self.aspath_list}: {self.action} {self.pattern}'
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:aspathlistrule', args=[self.pk])
+
+    def get_action_color(self):
+        return ActionChoices.colors.get(self.action)
+
+
 class RoutingPolicyRule(NetBoxModel):
     routing_policy = models.ForeignKey(
         to=RoutingPolicy,
@@ -422,6 +483,11 @@ class RoutingPolicyRule(NetBoxModel):
         to=CommunityList,
         blank=True,
         related_name='cmrules'
+    )
+    match_aspath_list = models.ManyToManyField(
+        to=ASPathList,
+        blank=True,
+        related_name='aspathrules'
     )
     match_ip_address = models.ManyToManyField(
         to=PrefixList,
@@ -482,12 +548,16 @@ class RoutingPolicyRule(NetBoxModel):
         result.update(
             {'ipv6 address': [str(prefix_list) for prefix_list in self.match_ipv6_address.all().values_list('name', flat=True)]}
         )
+        result.update(
+            {'as-path': list(self.match_aspath_list.all().values_list('name', flat=True))}
+        )
 
         custom_match = self.get_match_custom()
         # update community from custom
         result['community'].extend(custom_match.get('community', []))
         result['ip address'].extend(custom_match.get('ip address', []))
         result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
+        result['as-path'].extend(custom_match.get('as-path', []))
         # remove empty matches
         result = {k: v for k, v in result.items() if v}
         result.update(custom_match)

@@ -1,0 +1,71 @@
+{% extends 'generic/object.html' %}
+{% load buttons %}
+{% load custom_links %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'plugins:netbox_bgp:aspathlist_list' %}">AS Path Lists</a></li>
+{% endblock %}
+{% block extra_controls %}
+<div class="pull-right noprint">
+    {% if perms.netbox_bgp.change_aspathlist %}
+    <a href="{% url 'plugins:netbox_bgp:aspathlistrule_add' %}?aspath_list={{ object.pk }}" class="btn btn-success">
+        <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Rule
+    </a>
+    {% endif %}
+</div>
+{% endblock extra_controls %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card">
+            <h5 class="card-header">
+                AS Path List
+            </h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <td>Name</td>
+                        <td>{{ object.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Description</td>
+                        <td>{{ object.description|placeholder }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% include 'inc/panels/custom_fields.html' %}
+        {% include 'inc/panels/tags.html' %}
+        {% include 'inc/panels/comments.html' %}
+        {% plugin_left_page object %}
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <h5 class="card-header">
+                Related Routing Policy Rules
+            </h5>
+            <div class="card-body">
+                {% render_table rprules_table 'inc/table.html' %}
+            </div>
+        </div>     
+        {% plugin_right_page object %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">
+                Rules
+            </h5>
+            <div class="card-body">
+                {% render_table rules_table 'inc/table.html' %}
+            </div>
+            {% plugin_full_width_page object %}
+        </div>
+    </div>
+</div>
+{% endblock %}

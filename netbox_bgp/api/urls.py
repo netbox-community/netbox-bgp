@@ -3,7 +3,7 @@ from netbox.api.routers import NetBoxRouter
 from .views import (
     BGPSessionViewSet, RoutingPolicyViewSet, BGPPeerGroupViewSet, CommunityViewSet,
     PrefixListViewSet, PrefixListRuleViewSet, RoutingPolicyRuleViewSet,
-    CommunityListViewSet, CommunityListRuleViewSet, RootView
+    CommunityListViewSet, CommunityListRuleViewSet, RootView, ASPathListViewSet, ASPathListRuleViewSet
 )
 
 
@@ -20,5 +20,7 @@ router.register('prefix-list', PrefixListViewSet)
 router.register('prefix-list-rule', PrefixListRuleViewSet)
 router.register('community-list', CommunityListViewSet)
 router.register('community-list-rule', CommunityListRuleViewSet)
+router.register('aspath-list', ASPathListViewSet)
+router.register('aspath-list-rule', ASPathListRuleViewSet)
 
 urlpatterns = router.urls

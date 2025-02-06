@@ -95,4 +95,22 @@ urlpatterns = [
     path('prefix-list-rule/<int:pk>/edit/', views.PrefixListRuleEditView.as_view(), name='prefixlistrule_edit'),
     path('prefix-list-rule/<int:pk>/delete/', views.PrefixListRuleDeleteView.as_view(), name='prefixlistrule_delete'),
     path('prefix-list-rule/<int:pk>/', include(get_model_urls('netbox_bgp', 'prefixlistrule'))),
+    # AS path Lists
+    path('as-path-list/', views.ASPathListListView.as_view(), name='aspathlist_list'),
+    path('as-path-list/add/', views.ASPathListEditView.as_view(), name='aspathlist_add'),
+    path('as-path-list/import/', views.ASPathListBulkImportView.as_view(), name='aspathlist_import'),
+    path('as-path-list/edit/', views.ASPathListBulkEditView.as_view(), name='aspathlist_bulk_edit'),
+    path('as-path-list/delete/', views.ASPathListBulkDeleteView.as_view(), name='aspathlist_bulk_delete'),
+    path('as-path-list/<int:pk>/', views.ASPathListView.as_view(), name='aspathlist'),
+    path('as-path-list/<int:pk>/edit/', views.ASPathListEditView.as_view(), name='aspathlist_edit'),
+    path('as-path-list/<int:pk>/delete/', views.ASPathListDeleteView.as_view(), name='aspathlist_delete'),
+    path('as-path-list/<int:pk>/', include(get_model_urls('netbox_bgp', 'aspathlist'))),
+    # AS Path List Rules
+    path('as-path-list-rule/', views.ASPathListRuleListView.as_view(), name='aspathlistrule_list'),
+    path('as-path-list-rule/add/', views.ASPathListRuleEditView.as_view(), name='aspathlistrule_add'),
+    path('as-path-list-rule/delete/', views.ASPathListRuleBulkDeleteView.as_view(), name='aspathlistrule_bulk_delete'),
+    path('as-path-list-rule/<int:pk>/', views.ASPathListRuleView.as_view(), name='aspathlistrule'),
+    path('as-path-list-rule/<int:pk>/edit/', views.ASPathListRuleEditView.as_view(), name='aspathlistrule_edit'),
+    path('as-path-list-rule/<int:pk>/delete/', views.ASPathListRuleDeleteView.as_view(), name='aspathlistrule_delete'),
+    path('as-path-list-rule/<int:pk>/', include(get_model_urls('netbox_bgp', 'aspathlistrule'))),    
 ]
