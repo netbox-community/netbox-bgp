@@ -610,7 +610,10 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         queryset=CommunityList.objects.all(),
         required=False,
     )
-    
+    match_aspath_list = DynamicModelMultipleChoiceField(
+        queryset=ASPathList.objects.all(),
+        required=False,
+    )    
     match_ip_address = DynamicModelMultipleChoiceField(
         queryset=PrefixList.objects.all(),
         required=False,
@@ -661,6 +664,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
             "continue_entry",
             "match_community",
             "match_community_list",
+            "match_aspath_list",
             "match_ip_address",
             "match_ipv6_address",
             "match_custom",

@@ -11,6 +11,8 @@ from netbox_bgp.models import (
     PrefixListRule,
     CommunityList,
     CommunityListRule,
+    ASPathList,
+    ASPathListRule
 )
 
 from netbox_bgp.filtersets import (
@@ -23,6 +25,8 @@ from netbox_bgp.filtersets import (
     PrefixListRuleFilterSet,
     CommunityListFilterSet,
     CommunityListRuleFilterSet,
+    ASPathListFilterSet,
+    ASPathListRuleFilterSet
 )
 
 
@@ -90,4 +94,15 @@ class CommunityListFilter(BaseFilterMixin):
 @strawberry_django.filter(CommunityListRule, lookups=True)
 @autotype_decorator(CommunityListRuleFilterSet)
 class CommunityListRuleFilter(BaseFilterMixin):
+    pass
+
+@strawberry_django.filter(ASPathList, lookups=True)
+@autotype_decorator(ASPathListFilterSet)
+class ASPathListFilter(BaseFilterMixin):
+    pass
+
+
+@strawberry_django.filter(ASPathListRule, lookups=True)
+@autotype_decorator(ASPathListRuleFilterSet)
+class ASPathListRuleFilter(BaseFilterMixin):
     pass

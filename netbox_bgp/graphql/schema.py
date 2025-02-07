@@ -13,6 +13,8 @@ from netbox_bgp.models import (
     PrefixListRule,
     CommunityList,
     CommunityListRule,
+    ASPathList,
+    ASPathListRule
 )
 from .types import (
     CommunityType,
@@ -24,6 +26,8 @@ from .types import (
     PrefixListRuleType,
     CommunityListType,
     CommunityListRuleType,
+    ASPathListType,
+    ASPathListRuleType
 )
 
 
@@ -56,3 +60,9 @@ class NetBoxBGPQuery:
 
     netbox_bgp_communitylist_rule: CommunityListRuleType = strawberry_django.field()
     netbox_bgp_communitylist_rule_list: List[CommunityListRuleType] = strawberry_django.field()
+
+    netbox_bgp_aspathlist: ASPathListType = strawberry_django.field()
+    netbox_bgp_aspathlist_list: List[ASPathListType] = strawberry_django.field()
+
+    netbox_bgp_aspathlist_rule: ASPathListRuleType = strawberry_django.field()
+    netbox_bgp_aspathlist_rule_list: List[ASPathListRuleType] = strawberry_django.field()

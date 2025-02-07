@@ -17,6 +17,8 @@ from netbox_bgp.models import (
     PrefixListRule,
     CommunityList,
     CommunityListRule,
+    ASPathList,
+    ASPathListRule
 )
 from .filters import (
     CommunityFilter,
@@ -28,6 +30,8 @@ from .filters import (
     PrefixListRuleFilter,
     CommunityListFilter,
     CommunityListRuleFilter,
+    ASPathListFilter,
+    ASPathListRuleFilter
 )
 
 
@@ -104,6 +108,9 @@ class RoutingPolicyRuleType(NetBoxObjectType):
     match_community_list: List[
         Annotated["CommunityListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+    match_aspath_list: List[
+        Annotated["ASPathListType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]    
     match_ip_address: List[
         Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -154,4 +161,26 @@ class CommunityListRuleType(NetBoxObjectType):
     ]
     action: str
     community: Annotated["CommunityType", strawberry.lazy("netbox_bgp.graphql.types")]
+    description: str
+
+
+@strawberry_django.type(ASPathList, fields="__all__", filters=ASPathListFilter)
+class ASPathListType(NetBoxObjectType):
+    name: str
+    description: str
+    aspathlistrules: List[
+         Annotated["ASPathListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
+
+
+@strawberry_django.type(
+    ASPathListRule, fields="__all__", filters=ASPathListRuleFilter
+)
+class ASPathListRuleType(NetBoxObjectType):
+    aspath_list: Annotated[
+        "ASPathListType", strawberry.lazy("netbox_bgp.graphql.types")
+    ]
+    index: BigInt
+    action: str
+    pattern: str
     description: str

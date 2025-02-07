@@ -253,6 +253,45 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
         brief_fields = ("id", "display", "description")
 
 
+class ASPathListSerializer(NetBoxModelSerializer):
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:aspathlist-detail")
+
+    class Meta:
+        model = ASPathList
+        fields = [
+            "id",
+            "url",
+            "name",
+            "display",
+            "description",
+            "tags",
+            "custom_fields",
+            "comments",
+        ]
+        brief_fields = ("id", "url", "display", "name", "description")    
+
+
+class ASPathListRuleSerializer(NetBoxModelSerializer):
+    aspath_list = ASPathListSerializer(nested=True)
+
+    class Meta:
+        model = ASPathListRule
+        fields = [
+            "id",
+            "description",
+            "tags",
+            "custom_fields",
+            "display",
+            "aspath_list",
+            "created",
+            "last_updated",
+            "index",
+            "action",
+            "pattern",
+            "comments",
+        ]
+        brief_fields = ("id", "display", "description")
+
 class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
     match_ip_address = SerializedPKRelatedField(
         queryset=PrefixList.objects.all(),
@@ -288,6 +327,14 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         allow_null=True,
         many=True,
     )
+    match_aspath_list = SerializedPKRelatedField(
+        queryset=ASPathList.objects.all(),
+        serializer=ASPathListSerializer,
+        nested=True,
+        required=False,
+        allow_null=True,
+        many=True,
+    )    
 
     class Meta:
         model = RoutingPolicyRule
@@ -300,6 +347,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "routing_policy",
             "match_community",
             "match_community_list",
+            "match_aspath_list",
             "match_custom",
             "set_actions",
             "match_ipv6_address",
@@ -338,42 +386,3 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
         ]
         brief_fields = ("id", "display", "description")
 
-
-class ASPathListSerializer(NetBoxModelSerializer):
-    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:aspathlist-detail")
-
-    class Meta:
-        model = ASPathList
-        fields = [
-            "id",
-            "url",
-            "name",
-            "display",
-            "description",
-            "tags",
-            "custom_fields",
-            "comments",
-        ]
-        brief_fields = ("id", "url", "display", "name", "description")    
-
-
-class ASPathListRuleSerializer(NetBoxModelSerializer):
-    aspath_list = ASPathListSerializer(nested=True)
-
-    class Meta:
-        model = ASPathListRule
-        fields = [
-            "id",
-            "description",
-            "tags",
-            "custom_fields",
-            "display",
-            "aspath_list",
-            "created",
-            "last_updated",
-            "index",
-            "action",
-            "patter",
-            "comments",
-        ]
-        brief_fields = ("id", "display", "description")
