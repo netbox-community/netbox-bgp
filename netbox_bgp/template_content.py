@@ -5,7 +5,7 @@ from .tables import BGPSessionTable
 
 
 class DeviceBGPSession(PluginTemplateExtension):
-    model = 'dcim.device'
+    models = ('dcim.device')
 
     def left_page(self):
         if self.context['config'].get('device_ext_page') == 'left':

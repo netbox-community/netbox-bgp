@@ -30,7 +30,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicy
-        fields = [
+        fields = (
             "id",
             "url",
             "display",
@@ -39,7 +39,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "comments",
-        ]
+        )
         brief_fields = ("id", "url", "display", "name", "description")
 
 
@@ -48,7 +48,7 @@ class PrefixListSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = PrefixList
-        fields = [
+        fields = (
             "id",
             "url",
             "name",
@@ -58,7 +58,7 @@ class PrefixListSerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "comments",
-        ]
+        )
         brief_fields = ("id", "url", "display", "name", "description")
 
 
@@ -84,7 +84,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPPeerGroup
-        fields = [
+        fields = (
             "id",
             "url",
             "display",
@@ -94,7 +94,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "export_policies",
             "comments",
             "custom_fields",
-        ]
+        )
         brief_fields = ("id", "url", "display", "name", "description")
 
 
@@ -130,7 +130,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = BGPSession
-        fields = [
+        fields = (
             "id",
             "url",
             "tags",
@@ -154,7 +154,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "name",
             "description",
             "comments",
-        ]
+        )
         brief_fields = ("id", "url", "display", "name", "description")
 
     def to_representation(self, instance):
@@ -192,7 +192,7 @@ class CommunitySerializer(NetBoxModelSerializer):
 
     class Meta:
         model = Community
-        fields = [
+        fields = (
             "id",
             "url",
             "tags",
@@ -207,7 +207,7 @@ class CommunitySerializer(NetBoxModelSerializer):
             "site",
             "role",
             "comments",
-        ]
+        )
         brief_fields = ("id", "url", "display", "value", "description")
 
 
@@ -216,7 +216,7 @@ class CommunityListSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = CommunityList
-        fields = [
+        fields = (
             "id",
             "url",
             "name",
@@ -225,7 +225,7 @@ class CommunityListSerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "comments",
-        ]
+        )
         brief_fields = ("id", "url", "display", "name", "description")
 
 
@@ -235,7 +235,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = CommunityListRule
-        fields = [
+        fields = (
             "id",
             "tags",
             "custom_fields",
@@ -247,7 +247,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
             "action",
             "community",
             "comments",
-        ]
+        )
         brief_fields = ("id", "display", "description")
 
 
@@ -281,7 +281,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = [
+        fields = (
             "id",
             "index",
             "display",
@@ -298,7 +298,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "comments",
-        ]
+        )
         brief_fields = ("id", "display", "description")
 
 
@@ -309,7 +309,7 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
 
     class Meta:
         model = PrefixListRule
-        fields = [
+        fields = (
             "id",
             "description",
             "tags",
@@ -325,5 +325,5 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
             "le",
             "prefix",
             "comments",
-        ]
+        )
         brief_fields = ("id", "display", "description")

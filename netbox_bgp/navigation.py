@@ -16,7 +16,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_community'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:community_import',
+                link='plugins:netbox_bgp:community_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_community'],
@@ -35,7 +35,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_communitylist'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:communitylist_import',
+                link='plugins:netbox_bgp:communitylist_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_communitylist'],
@@ -54,7 +54,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_bgpsession'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:bgpsession_import',
+                link='plugins:netbox_bgp:bgpsession_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_bgpsession'],
@@ -73,7 +73,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_routingpolicy'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:routingpolicy_import',
+                link='plugins:netbox_bgp:routingpolicy_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_routingpolicy'],
@@ -92,7 +92,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_prefixlist'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:prefixlist_import',
+                link='plugins:netbox_bgp:prefixlist_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_prefixlist'],
@@ -111,7 +111,7 @@ _menu_items = (
                 permissions=['netbox_bgp.add_bgppeergroup'],
             ),
             PluginMenuButton(
-                link='plugins:netbox_bgp:bgppeergroup_import',
+                link='plugins:netbox_bgp:bgppeergroup_bulk_import',
                 title='Import',
                 icon_class='mdi mdi-upload',
                 permissions=['netbox_bgp.add_bgppeergroup'],
