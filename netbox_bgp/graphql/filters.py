@@ -5,10 +5,9 @@ from strawberry_django import FilterLookup
 
 from typing import Annotated
 from netbox.graphql.filter_mixins import NetBoxModelFilterMixin
-from tenancy.graphql.filter_mixins import ContactFilterMixin, TenancyFilterMixin
+from tenancy.graphql.filter_mixins import TenancyFilterMixin
 
-# old
-from netbox.graphql.filter_mixins import BaseFilterMixin
+
 
 from netbox_bgp.models import (
     Community,
