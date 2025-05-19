@@ -317,6 +317,11 @@ class RoutingPolicyRuleView(generic.ObjectView):
         }
 
 
+@register_model_view(RoutingPolicyRule, "bulk_import", path="import", detail=False)
+class RoutingPolicyRuleImportView(generic.BulkImportView):
+    queryset = RoutingPolicyRule.objects.all()
+    model_form = forms.RoutingPolicyRuleImportForm
+
 # Peer Group
 
 @register_model_view(BGPPeerGroup, "list", path="", detail=False)
@@ -467,3 +472,8 @@ class PrefixListRuleView(generic.ObjectView):
     queryset = PrefixListRule.objects.all()
     template_name = 'netbox_bgp/prefixlistrule.html'
 
+
+@register_model_view(PrefixListRule, "bulk_import", path="import", detail=False)
+class PrefixListRuleViewImportView(generic.BulkImportView):
+    queryset = PrefixListRule.objects.all()
+    model_form = forms.PrefixListRuleImportForm

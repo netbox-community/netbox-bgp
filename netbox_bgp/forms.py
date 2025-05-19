@@ -640,15 +640,6 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         instance = kwargs.get("instance", {})
-        '''
-        if instance:
-            _prefix_v4 = PrefixList.objects.filter(family="ipv4")
-            _prefix_v6 = PrefixList.objects.filter(family="ipv6")
-            prefix_v4 = list(set([(prefix.id, prefix.name) for prefix in _prefix_v4]))
-            prefix_v6 = list(set([(prefix.id, prefix.name) for prefix in _prefix_v6]))
-            self.fields["match_ip_address"].choices = prefix_v4
-            self.fields["match_ipv6_address"].choices = prefix_v6
-        '''
 
     class Meta:
         model = RoutingPolicyRule
@@ -667,6 +658,27 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
             "tags",
             "comments",
         ]
+
+class RoutingPolicyRuleImportForm(NetBoxModelImportForm):
+
+    class Meta:
+        model = RoutingPolicyRule
+        fields = (
+            "routing_policy",
+            "index",
+            "action",
+            "continue_entry",
+            "match_community",
+            "match_community_list",
+            "match_ip_address",
+            "match_ipv6_address",
+            "match_custom",
+            "set_actions",
+            "description",
+            "tags",
+            "comments",
+        )
+
 
 
 class PrefixListFilterForm(NetBoxModelFilterSetForm):
@@ -709,7 +721,22 @@ class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
         "description",
     ]
 
+class PrefixListRuleImportForm(NetBoxModelImportForm):
 
+    class Meta:
+        model = PrefixListRule
+        fields = (
+            "prefix_list",
+            "index",
+            "action",
+            "prefix",
+            "prefix_custom",
+            "ge",
+            "le",
+            "tags",
+            "comments",
+        )
+        
 class PrefixListRuleForm(NetBoxModelForm):
     prefix = DynamicModelChoiceField(
         queryset=Prefix.objects.all(),
