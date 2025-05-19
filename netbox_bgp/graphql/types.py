@@ -19,19 +19,19 @@ from netbox_bgp.models import (
     CommunityListRule,
 )
 from .filters import (
-    CommunityFilter,
-    BGPSessionFilter,
-    BGPPeerGroupFilter,
-    RoutingPolicyFilter,
-    RoutingPolicyRuleFilter,
-    PrefixListFilter,
-    PrefixListRuleFilter,
-    CommunityListFilter,
-    CommunityListRuleFilter,
+    NetBoxBGPCommunityFilter,
+    NetBoxBGPSessionFilter,
+    NetBoxBGPBGPPeerGroupFilter,
+    NetBoxBGPRoutingPolicyFilter,
+    NetBoxBGPRoutingPolicyRuleFilter,
+    NetBoxBGPPrefixListFilter,
+    NetBoxBGPPrefixListRuleFilter,
+    NetBoxBGPCommunityListFilter,
+    NetBoxBGPCommunityListRuleFilter,
 )
 
 
-@strawberry_django.type(Community, fields="__all__", filters=CommunityFilter)
+@strawberry_django.type(Community, fields="__all__", filters=NetBoxBGPCommunityFilter)
 class CommunityType(NetBoxObjectType):
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
@@ -40,7 +40,7 @@ class CommunityType(NetBoxObjectType):
     description: str
 
 
-@strawberry_django.type(BGPSession, fields="__all__", filters=BGPSessionFilter)
+@strawberry_django.type(BGPSession, fields="__all__", filters=NetBoxBGPSessionFilter)
 class BGPSessionType(NetBoxObjectType):
     name: str
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
@@ -66,7 +66,7 @@ class BGPSessionType(NetBoxObjectType):
     prefix_list_out: Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")] | None
 
 
-@strawberry_django.type(BGPPeerGroup, fields="__all__", filters=BGPPeerGroupFilter)
+@strawberry_django.type(BGPPeerGroup, fields="__all__", filters=NetBoxBGPBGPPeerGroupFilter)
 class BGPPeerGroupType(NetBoxObjectType):
     name: str
     description: str
@@ -78,7 +78,7 @@ class BGPPeerGroupType(NetBoxObjectType):
     ]
 
 
-@strawberry_django.type(RoutingPolicy, fields="__all__", filters=RoutingPolicyFilter)
+@strawberry_django.type(RoutingPolicy, fields="__all__", filters=NetBoxBGPRoutingPolicyFilter)
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
@@ -88,7 +88,7 @@ class RoutingPolicyType(NetBoxObjectType):
 
 
 @strawberry_django.type(
-    RoutingPolicyRule, fields="__all__", filters=RoutingPolicyRuleFilter
+    RoutingPolicyRule, fields="__all__", filters=NetBoxBGPRoutingPolicyRuleFilter
 )
 class RoutingPolicyRuleType(NetBoxObjectType):
     routing_policy: Annotated[
@@ -112,7 +112,7 @@ class RoutingPolicyRuleType(NetBoxObjectType):
     ]
 
 
-@strawberry_django.type(PrefixList, fields="__all__", filters=PrefixListFilter)
+@strawberry_django.type(PrefixList, fields="__all__", filters=NetBoxBGPPrefixListFilter)
 class PrefixListType(NetBoxObjectType):
     name: str
     description: str
@@ -122,7 +122,7 @@ class PrefixListType(NetBoxObjectType):
     ]
 
 
-@strawberry_django.type(PrefixListRule, fields="__all__", filters=PrefixListRuleFilter)
+@strawberry_django.type(PrefixListRule, fields="__all__", filters=NetBoxBGPPrefixListRuleFilter)
 class PrefixListRuleType(NetBoxObjectType):
     prefix_list: Annotated[
         "PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")
@@ -136,7 +136,7 @@ class PrefixListRuleType(NetBoxObjectType):
     description: str
 
 
-@strawberry_django.type(CommunityList, fields="__all__", filters=CommunityListFilter)
+@strawberry_django.type(CommunityList, fields="__all__", filters=NetBoxBGPCommunityListFilter)
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
@@ -146,7 +146,7 @@ class CommunityListType(NetBoxObjectType):
 
 
 @strawberry_django.type(
-    CommunityListRule, fields="__all__", filters=CommunityListRuleFilter
+    CommunityListRule, fields="__all__", filters=NetBoxBGPCommunityListRuleFilter
 )
 class CommunityListRuleType(NetBoxObjectType):
     community_list: Annotated[
