@@ -184,7 +184,7 @@ class NetBoxBGPCommunityListFilter(NetBoxModelFilterMixin):
 
 
 @strawberry_django.filter(CommunityListRule, lookups=True)
-class NetBoxBGPCommunityListRuleFilter(BaseFilterMixin):
+class NetBoxBGPCommunityListRuleFilter(NetBoxModelFilterMixin):
     action: (
         Annotated[
             "NetBoxBGPActionEnum", strawberry.lazy("netbox_bgp.graphql.enums")
