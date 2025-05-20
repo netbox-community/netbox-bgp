@@ -1,9 +1,6 @@
 from typing import Annotated, List
-
 import strawberry
 import strawberry_django
-
-
 from netbox.graphql.types import NetBoxObjectType
 from netbox.graphql.scalars import BigInt
 
@@ -46,6 +43,7 @@ class BGPSessionType(NetBoxObjectType):
     site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")] | None
+    virtualmachine: Annotated["VirtualMachineType", strawberry.lazy("virtualization.graphql.types")] | None
     local_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
     remote_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
     local_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")]

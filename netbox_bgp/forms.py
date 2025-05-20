@@ -48,6 +48,7 @@ from .choices import (
     IPAddressFamilyChoices,
 )
 
+from virtualization.models import VirtualMachine
 
 class CommunityForm(NetBoxModelForm):
     status = forms.ChoiceField(
@@ -160,6 +161,10 @@ class BGPSessionForm(NetBoxModelForm):
     device = DynamicModelChoiceField(
         queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}
     )
+    virtualmachine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, query_params={"site_id": "$site"}
+    )
+
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
     local_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(),
@@ -215,6 +220,7 @@ class BGPSessionForm(NetBoxModelForm):
             "description",
             "site",
             "device",
+            "virtualmachine",
             "status",
             "peer_group",
             "tenant",
@@ -233,6 +239,7 @@ class BGPSessionForm(NetBoxModelForm):
             "name",
             "site",
             "device",
+            "virtualmachine",
             "local_as",
             "remote_as",
             "local_address",
@@ -290,6 +297,11 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         queryset=Device.objects.all(),
         to_field_name="name",
         help_text=_("Assigned device"),
+    )
+    virtualmachine = CSVModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned virtual machine"),
     )
     status = CSVChoiceField(
         choices=SessionStatusChoices, required=False, help_text=_("Operational status")
@@ -350,6 +362,7 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         fields = [
             "name",
             "device",
+            "virtualmachine",
             "site",
             "description",
             "tenant",
@@ -380,6 +393,9 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     by_remote_address = forms.CharField(required=False, label="Remote Address")
     device_id = DynamicModelMultipleChoiceField(
         queryset=Device.objects.all(), required=False, label=_("Device")
+    )
+    virtualmachine_id = DynamicModelMultipleChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, label=_("VirtualMachine")
     )
     site_id = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(), required=False, label=_("Site")
@@ -422,6 +438,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     device = DynamicModelChoiceField(
         label=_("Device"),
         queryset=Device.objects.all(),
+        required=False,
+    )
+    virtualmachine = DynamicModelChoiceField(
+        label=_("Virtual Machine"),
+        queryset=VirtualMachine.objects.all(),
         required=False,
     )
     site = DynamicModelChoiceField(
@@ -467,6 +488,7 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
             "description",
             "site",
             "device",
+            "virtualmachine",
             "status",
             "peer_group",
             "tenant",

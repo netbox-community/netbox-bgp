@@ -1,14 +1,12 @@
 from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
-
 from netbox.api.fields import ChoiceField, SerializedPKRelatedField
-
 from netbox.api.serializers import NetBoxModelSerializer
 from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer
 from tenancy.api.serializers import TenantSerializer
 from dcim.api.serializers import SiteSerializer, DeviceSerializer
-
 from ipam.api.field_serializers import IPNetworkField
+from virtualization.api.serializers import VirtualMachineSerializer
 
 from netbox_bgp.models import (
     BGPSession,
@@ -104,6 +102,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
     site = SiteSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
+    virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     local_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
     remote_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
     local_as = ASNSerializer(nested=True, required=True, allow_null=False)
@@ -140,6 +139,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "site",
             "tenant",
             "device",
+            "virtualmachine",
             "local_address",
             "remote_address",
             "local_as",
