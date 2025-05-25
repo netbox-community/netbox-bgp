@@ -2,9 +2,10 @@ from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils.text import slugify
-from utilities.views import register_model_view
+from utilities.views import register_model_view, ViewTab
 from netbox.views import generic
 from ipam.models import ASN
+from virtualization.models import VirtualMachine
 
 from .models import (
     Community, BGPSession, RoutingPolicy,
@@ -477,3 +478,21 @@ class PrefixListRuleView(generic.ObjectView):
 class PrefixListRuleViewImportView(generic.BulkImportView):
     queryset = PrefixListRule.objects.all()
     model_form = forms.PrefixListRuleImportForm
+
+
+# Viewtab for Virtual Machine
+
+@register_model_view(VirtualMachine, name='bgpsessions', path='bgpsessions')
+class VMBGPSessionView(generic.ObjectChildrenView):
+    queryset = VirtualMachine.objects.all().prefetch_related('bgpsession_set')
+    child_model = BGPSession
+    table = tables.BGPSessionTable
+    template_name = "generic/object_children.html"
+    tab = ViewTab(
+        label='BGP Sessions',
+        badge=lambda obj:  obj.bgpsession_set.count(),
+        hide_if_empty = True
+    )
+
+    def get_children(self, request, parent):
+        return parent.bgpsession_set.all()

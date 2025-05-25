@@ -33,22 +33,4 @@ class DeviceBGPSession(PluginTemplateExtension):
             }
         )
 
-class VirtualMachineBGPSession(PluginTemplateExtension):
-    models = ('virtualization.VirtualMachine',)
-
-   
-    def right_page(self):
-        return self.x_page()
-
-    def x_page(self):
-        obj = self.context['object']
-        sess = BGPSession.objects.filter(virtualmachine=obj)
-        sess_table = BGPSessionTable(sess)
-        return self.render(
-            'netbox_bgp/device_extend.html',
-            extra_context={
-                'related_session_table': sess_table
-            }
-        )
-
-template_extensions = [DeviceBGPSession, VirtualMachineBGPSession]
+template_extensions = [DeviceBGPSession]
