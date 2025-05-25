@@ -5,6 +5,7 @@
 This plugin provide following Models:
 * BGP Communities
 * BGP Sessions
+* BGP Peer Groups
 * Routing Policy
 * Prefix Lists 
 
