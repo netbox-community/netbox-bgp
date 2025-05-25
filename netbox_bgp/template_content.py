@@ -5,7 +5,7 @@ from .tables import BGPSessionTable
 
 
 class DeviceBGPSession(PluginTemplateExtension):
-    model = 'dcim.device'
+    models = ('dcim.device',)
 
     def left_page(self):
         if self.context['config'].get('device_ext_page') == 'left':
@@ -32,6 +32,5 @@ class DeviceBGPSession(PluginTemplateExtension):
                 'related_session_table': sess_table
             }
         )
-
 
 template_extensions = [DeviceBGPSession]
