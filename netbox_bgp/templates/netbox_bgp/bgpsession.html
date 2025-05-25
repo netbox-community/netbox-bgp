@@ -40,16 +40,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Virtual Machine</td>
-                        <td>
-                            {% if object.virtualmachine %}
-                            <a href="{{ object.virtualmachine.get_absolute_url }}">{{ object.virtualmachine }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
                         <td>Site</td>
                         <td>
                             {% if object.site %}
