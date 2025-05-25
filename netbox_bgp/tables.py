@@ -79,7 +79,6 @@ class CommunityListRuleTable(NetBoxTable):
 class BGPSessionTable(NetBoxTable):
     name = tables.LinkColumn()
     device = tables.LinkColumn()
-    virtualmachine = tables.LinkColumn()
     local_address = tables.LinkColumn()
     local_as = tables.LinkColumn()
     remote_address = tables.LinkColumn()
@@ -96,12 +95,12 @@ class BGPSessionTable(NetBoxTable):
     class Meta(NetBoxTable.Meta):
         model = BGPSession
         fields = (
-            'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
+            'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
             'site', 'status', 'tenant', 'actions'
         )
         default_columns = (
-            'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
+            'pk', 'name', 'device', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description',
             'site', 'status', 'tenant'
         )

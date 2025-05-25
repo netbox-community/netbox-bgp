@@ -315,14 +315,6 @@ class BGPSession(NetBoxModel):
         null=True,
         blank=True,
     )
-
-    virtualmachine = models.ForeignKey(
-        to='virtualization.VirtualMachine',
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,        
-    )
-
     local_address = models.ForeignKey(
         to='ipam.IPAddress',
         on_delete=models.PROTECT,
@@ -390,24 +382,10 @@ class BGPSession(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'BGP Sessions'
-        unique_together = [['device', 'local_address', 'local_as', 'remote_address', 'remote_as'], ['virtualmachine', 'local_address', 'local_as', 'remote_address', 'remote_as']]
-    
+        unique_together = ['device', 'local_address', 'local_as', 'remote_address', 'remote_as']
+
     def __str__(self):
-        if self.device:
-            return f'{self.device}:{self.name}'
-        elif self.virtualmachine:
-            return f'{self.virtualmachine}:{self.name}'
-        else:
-            return f':{self.name}'
-
-    #def clean(self, *args, new_session=None, **kwargs):
-    #    if not self.device and not self.virtualmachine:
-    #        raise ValidationError(_("Either a Device or a VirtualMachine should be selected"))
-    #    super().clean(*args, **kwargs)
-
-    #def save(self, *args, **kwargs):
-    #    self.clean()
-    #    super().save(*args, **kwargs)
+        return f'{self.device}:{self.name}'
 
     def get_status_color(self):
         return SessionStatusChoices.colors.get(self.status)
