@@ -92,13 +92,16 @@ class BGPSessionTable(NetBoxTable):
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
     )
+    tags = TagColumn(
+        url_name='plugins:netbox_bgp:bgpsession_list'
+    )
 
     class Meta(NetBoxTable.Meta):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status', 'tenant', 'actions'
+            'site', 'status', 'tenant', 'tags', 'actions'
         )
         default_columns = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
