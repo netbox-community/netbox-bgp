@@ -138,6 +138,7 @@ class PrefixListType(NetBoxObjectType):
     name: str
     description: str
     family: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     prefrules: List[
          Annotated["PrefixListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]

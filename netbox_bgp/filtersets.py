@@ -299,7 +299,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = PrefixList
-        fields = ('id', 'name', 'description', 'family',)
+        fields = ('id', 'name', 'description', 'family', 'site',)
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

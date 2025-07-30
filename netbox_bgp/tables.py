@@ -189,7 +189,7 @@ class PrefixListTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = PrefixList
-        fields = ('pk', 'name', 'description', 'family', 'actions')
+        fields = ('pk', 'name', 'description', 'family', 'site', 'actions')
 
 
 class PrefixListRuleTable(NetBoxTable):

@@ -7,7 +7,7 @@ from typing import Annotated
 from netbox.graphql.filter_mixins import NetBoxModelFilterMixin
 from tenancy.graphql.filter_mixins import TenancyFilterMixin
 from ipam.graphql.filters import IPAddressFilter, ASNFilter
-from dcim.graphql.filters import DeviceFilter
+from dcim.graphql.filters import DeviceFilter, SiteFilter
 
 from netbox_bgp.models import (
     Community,
@@ -198,6 +198,7 @@ class NetBoxBGPPrefixListFilter(NetBoxModelFilterMixin):
         ]
         | None
     ) = strawberry_django.filter_field()
+    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(PrefixListRule, lookups=True)

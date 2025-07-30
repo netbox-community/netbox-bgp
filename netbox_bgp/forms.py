@@ -769,6 +769,11 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
     q = forms.CharField(required=False, label="Search")
 
     tag = TagFilterField(model)
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
 
 
 class PrefixListForm(NetBoxModelForm):
@@ -777,17 +782,22 @@ class PrefixListForm(NetBoxModelForm):
 
     class Meta:
         model = PrefixList
-        fields = ["name", "description", "family", "tags", "comments"]
+        fields = ["name", "description", "family", "site", "tags", "comments"]
 
 
 class PrefixListImportForm(NetBoxModelImportForm):
     family = CSVChoiceField(
         choices=IPAddressFamilyChoices, required=True, help_text=_("Family address")
     )
-
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site")
+    )
     class Meta:
         model = PrefixList
-        fields = ("name", "description", "family", "tags")
+        fields = ("name", "description", "family", "site", "tags")
 
 
 class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
@@ -799,9 +809,16 @@ class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
         choices=IPAddressFamilyChoices,
     )
 
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
+
     model = PrefixList
     nullable_fields = [
         "description",
+        "site",
     ]
 
 class PrefixListRuleImportForm(NetBoxModelImportForm):

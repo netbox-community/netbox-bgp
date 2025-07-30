@@ -265,13 +265,20 @@ class PrefixList(NetBoxModel):
         max_length=10,
         choices=IPAddressFamilyChoices
     )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        blank=True,
+        null=True,
+        related_name='Site',
+        on_delete=models.CASCADE,
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'Prefix Lists'
-        unique_together = ['name', 'description', 'family']
+        unique_together = ['name', 'description', 'family', 'site']
 
     def __str__(self):
         return self.name
