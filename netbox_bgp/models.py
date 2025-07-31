@@ -20,13 +20,20 @@ class ASPathList(NetBoxModel):
         max_length=200,
         blank=True
     )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        blank=True,
+        null=True,
+        related_name='ASPathList',
+        on_delete=models.CASCADE,
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'AS Path Lists'
-        unique_together = ['name', 'description']
+        unique_together = ['name', 'description', 'site']
 
     def __str__(self):
         return self.name
@@ -81,13 +88,20 @@ class RoutingPolicy(NetBoxModel):
         max_length=200,
         blank=True
     )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        blank=True,
+        null=True,
+        related_name='RoutingPolicy',
+        on_delete=models.CASCADE,
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
-        unique_together = ['name', 'description']
+        unique_together = ['name', 'description', 'site']
 
     def __str__(self):
         return self.name
@@ -106,6 +120,13 @@ class BGPPeerGroup(NetBoxModel):
         max_length=200,
         blank=True
     )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        blank=True,
+        null=True,
+        related_name='BGPPeerGroup',
+        on_delete=models.CASCADE,
+    )
     import_policies = models.ManyToManyField(
         RoutingPolicy,
         blank=True,
@@ -122,7 +143,7 @@ class BGPPeerGroup(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Peer Groups'
-        unique_together = ['name', 'description']
+        unique_together = ['name', 'description', 'site']
 
     def __str__(self):
         return self.name
@@ -201,13 +222,20 @@ class CommunityList(NetBoxModel):
         max_length=200,
         blank=True
     )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        blank=True,
+        null=True,
+        related_name='CommunityList',
+        on_delete=models.CASCADE,
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'Community Lists'
-        unique_together = ['name', 'description']
+        unique_together = ['name', 'description', 'site']
 
     def __str__(self):
         return self.name
@@ -269,7 +297,7 @@ class PrefixList(NetBoxModel):
         to='dcim.Site',
         blank=True,
         null=True,
-        related_name='Site',
+        related_name='PrefixList',
         on_delete=models.CASCADE,
     )
     comments = models.TextField(

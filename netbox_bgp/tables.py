@@ -36,7 +36,7 @@ class ASPathListTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = ASPathList
-        fields = ('pk', 'name', 'description', 'actions')
+        fields = ('pk', 'name', 'description', 'site', 'actions')
 
 
 class ASPathListRuleTable(NetBoxTable):
@@ -81,7 +81,7 @@ class CommunityListTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = CommunityList
-        fields = ('pk', 'name', 'description', 'actions')
+        fields = ('pk', 'name', 'description', 'site', 'actions')
 
 
 class CommunityListRuleTable(NetBoxTable):
@@ -138,7 +138,7 @@ class RoutingPolicyTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
-        fields = ('pk', 'name', 'description', 'actions')
+        fields = ('pk', 'name', 'description', 'site', 'actions')
 
 
 class BGPPeerGroupTable(NetBoxTable):
@@ -158,7 +158,7 @@ class BGPPeerGroupTable(NetBoxTable):
     class Meta(NetBoxTable.Meta):
         model = BGPPeerGroup
         fields = (
-            'pk', 'name', 'description', 'tags',
+            'pk', 'name', 'description', 'site', 'tags',
             'import_policies', 'export_policies', 'actions'
         )
         default_columns = (

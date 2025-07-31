@@ -19,7 +19,7 @@ class ASPathListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = ASPathList
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'site']
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -71,7 +71,7 @@ class CommunityListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = CommunityList
-        fields = ('id', 'name', 'description',)
+        fields = ('id', 'name', 'description', 'site')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -245,7 +245,7 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = RoutingPolicy
-        fields = ('id', 'name', 'description',)
+        fields = ('id', 'name', 'description', 'site')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -282,7 +282,7 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ('id', 'name', 'description',)
+        fields = ('id', 'name', 'description', 'site')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -299,7 +299,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = PrefixList
-        fields = ('id', 'name', 'description', 'family', 'site',)
+        fields = ('id', 'name', 'description', 'family', 'site')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

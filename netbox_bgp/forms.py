@@ -56,7 +56,13 @@ class ASPathListFilterForm(NetBoxModelFilterSetForm):
     model = ASPathList
     q = forms.CharField(required=False, label="Search")
 
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
     tag = TagFilterField(model)
+
 
 class ASPathListRuleFilterForm(NetBoxModelFilterSetForm):
     model = ASPathListRule
@@ -71,23 +77,35 @@ class ASPathListForm(NetBoxModelForm):
 
     class Meta:
         model = ASPathList
-        fields = ["name", "description", "tags", "comments"]
+        fields = ["name", "description", "site", "tags", "comments"]
 
 
 class ASPathListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
 
     model = ASPathList
     nullable_fields = [
         "description",
+        "site",
     ]
 
 
 class ASPathListImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site")
+    )
 
     class Meta:
         model = ASPathList
-        fields = ["name", "description", "tags"]
+        fields = ["name", "description", "site", "tags"]
 
 
 class ASPathListRuleImportForm(NetBoxModelImportForm):
@@ -168,6 +186,11 @@ class CommunityListFilterForm(NetBoxModelFilterSetForm):
     model = CommunityList
     q = forms.CharField(required=False, label="Search")
 
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
     tag = TagFilterField(model)
 
 
@@ -177,23 +200,35 @@ class CommunityListForm(NetBoxModelForm):
 
     class Meta:
         model = CommunityList
-        fields = ["name", "description", "tags", "comments"]
+        fields = ["name", "description", "site", "tags", "comments"]
 
 
 class CommunityListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
 
     model = CommunityList
     nullable_fields = [
         "description",
+        "site",
     ]
 
 
 class CommunityListImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site")
+    )
 
     class Meta:
         model = CommunityList
-        fields = ("name", "description", "tags")
+        fields = ("name", "description", "site", "tags")
 
 
 class CommunityListRuleForm(NetBoxModelForm):
@@ -571,6 +606,11 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
     model = RoutingPolicy
     q = forms.CharField(required=False, label="Search")
 
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
     tag = TagFilterField(model)
 
 
@@ -580,22 +620,34 @@ class RoutingPolicyForm(NetBoxModelForm):
 
     class Meta:
         model = RoutingPolicy
-        fields = ["name", "description", "tags", "comments"]
+        fields = ["name", "description", "site", "tags", "comments"]
 
 
 class RoutingPolicyImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site")
+    )
 
     class Meta:
         model = RoutingPolicy
-        fields = ("name", "description", "tags")
+        fields = ("name", "description", "site", "tags")
 
 
 class RoutingPolicyBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
 
     model = RoutingPolicy
     nullable_fields = [
         "description",
+        "site",
     ]
 
 
@@ -603,6 +655,11 @@ class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
     model = BGPPeerGroup
     q = forms.CharField(required=False, label="Search")
 
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
     tag = TagFilterField(model)
 
 
@@ -624,6 +681,7 @@ class BGPPeerGroupForm(NetBoxModelForm):
         fields = [
             "name",
             "description",
+            "site",
             "import_policies",
             "export_policies",
             "tags",
@@ -633,6 +691,12 @@ class BGPPeerGroupForm(NetBoxModelForm):
 
 class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site")
+    )
     import_policies = CSVModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         to_field_name="name",
@@ -648,11 +712,16 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ("name", "description", "import_policies", "export_policies", "tags")
+        fields = ("name", "description", "site", "import_policies", "export_policies", "tags")
 
 
 class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
+    site = forms.ModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+    )
 
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -667,7 +736,7 @@ class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
 
     model = BGPPeerGroup
     nullable_fields = [
-        "description", "import_policies", "export_policies"
+        "description", "site", "import_policies", "export_policies"
     ]
 
 
@@ -768,12 +837,12 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
     model = PrefixList
     q = forms.CharField(required=False, label="Search")
 
-    tag = TagFilterField(model)
     site = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
     )
+    tag = TagFilterField(model)
 
 
 class PrefixListForm(NetBoxModelForm):

@@ -35,6 +35,7 @@ from .filters import (
 class ASPathListType(NetBoxObjectType):
     name: str
     description: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     rules: List[
          Annotated["ASPathListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -91,6 +92,7 @@ class BGPSessionType(NetBoxObjectType):
 class BGPPeerGroupType(NetBoxObjectType):
     name: str
     description: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     import_policies: List[
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -103,6 +105,7 @@ class BGPPeerGroupType(NetBoxObjectType):
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     rules: List[
          Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -162,6 +165,7 @@ class PrefixListRuleType(NetBoxObjectType):
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     commlistrules: List[
          Annotated["CommunityListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
