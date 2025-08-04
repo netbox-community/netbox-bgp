@@ -26,66 +26,66 @@ class RootView(APIRootView):
     
 
 class BGPSessionViewSet(NetBoxModelViewSet):
-    queryset = BGPSession.objects.all()
+    queryset = BGPSession.objects.all().order_by('-pk')
     serializer_class = BGPSessionSerializer
     filterset_class = BGPSessionFilterSet
 
 
 class RoutingPolicyViewSet(NetBoxModelViewSet):
-    queryset = RoutingPolicy.objects.all()
+    queryset = RoutingPolicy.objects.all().order_by('-pk')
     serializer_class = RoutingPolicySerializer
     filterset_class = RoutingPolicyFilterSet
 
 
 class RoutingPolicyRuleViewSet(NetBoxModelViewSet):
-    queryset = RoutingPolicyRule.objects.all()
+    queryset = RoutingPolicyRule.objects.all().order_by('-pk')
     serializer_class = RoutingPolicyRuleSerializer
     filterset_class = RoutingPolicyRuleFilterSet
 
 
 class BGPPeerGroupViewSet(NetBoxModelViewSet):
-    queryset = BGPPeerGroup.objects.all()
+    queryset = BGPPeerGroup.objects.all().order_by('-pk')
     serializer_class = BGPPeerGroupSerializer
     filterset_class = BGPPeerGroupFilterSet
 
 
 class CommunityViewSet(NetBoxModelViewSet):
-    queryset = Community.objects.all()
+    queryset = Community.objects.all().order_by('-pk')
     serializer_class = CommunitySerializer
     filterset_class = CommunityFilterSet
 
 
 class CommunityListViewSet(NetBoxModelViewSet):
-    queryset = CommunityList.objects.all()
+    queryset = CommunityList.objects.all().order_by('-pk')
     serializer_class = CommunityListSerializer
     filterset_class = CommunityListFilterSet
 
 
 class CommunityListRuleViewSet(NetBoxModelViewSet):
-    queryset = CommunityListRule.objects.all()
+    queryset = CommunityListRule.objects.all().order_by('-pk')
     serializer_class = CommunityListRuleSerializer
     filterset_class = CommunityListRuleFilterSet
 
 
 class PrefixListViewSet(NetBoxModelViewSet):
-    queryset = PrefixList.objects.all()
+    queryset = PrefixList.objects.all().order_by('-pk')
     serializer_class = PrefixListSerializer
     filterset_class = PrefixListFilterSet
 
 
 class PrefixListRuleViewSet(NetBoxModelViewSet):
-    queryset = PrefixListRule.objects.all()
+    queryset = PrefixListRule.objects.all().order_by('-pk')
     serializer_class = PrefixListRuleSerializer
     filterset_class = PrefixListRuleFilterSet
 
 
 class ASPathListViewSet(NetBoxModelViewSet):
-    queryset = ASPathList.objects.all()
+    queryset = ASPathList.objects.all().order_by('-pk')
     serializer_class = ASPathListSerializer
     filterset_class = ASPathListFilterSet
 
 
 class ASPathListRuleViewSet(NetBoxModelViewSet):
-    queryset = ASPathListRule.objects.all()
+    queryset = ASPathListRule.objects.all().order_by('-pk')
     serializer_class = ASPathListRuleSerializer
     filterset_class = ASPathListRuleFilterSet
