@@ -31,6 +31,28 @@ class SessionStatusChoices(ChoiceSet):
     ]
 
 
+class RedistributeSourceChoices(ChoiceSet):
+    key = "Redistributing.redistribute_source"
+
+    REDISTRIBUTE_DIRECT = 'Direct'
+    REDISTRIBUTE_STATIC = 'Static'
+    REDISTRIBUTE_OSPF = 'OSPF'
+    REDISTRIBUTE_ISIS = 'IS-IS'
+    REDISTRIBUTE_EIGRP = 'EIGRP'
+    REDISTRIBUTE_RIP = 'RIP'
+    REDISTRIBUTE_BGP = 'BGP'
+
+    CHOICES = [
+        (REDISTRIBUTE_DIRECT, 'Direct'),
+        (REDISTRIBUTE_STATIC, 'Static'),
+        (REDISTRIBUTE_OSPF, 'OSPF'),
+        (REDISTRIBUTE_ISIS, 'IS-IS'),
+        (REDISTRIBUTE_EIGRP, 'EIGRP'),
+        (REDISTRIBUTE_RIP, 'RIP'),
+        (REDISTRIBUTE_BGP, 'BGP'),
+    ]
+
+
 class ActionChoices(ChoiceSet):
     key = "Action.status"
 

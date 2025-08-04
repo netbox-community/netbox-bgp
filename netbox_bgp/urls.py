@@ -118,4 +118,14 @@ urlpatterns = (
         "prefix-list-rule/<int:pk>/",
         include(get_model_urls("netbox_bgp", "prefixlistrule")),
     ),
+
+    # Redistributing
+    path(
+        "redistributing/",
+        include(get_model_urls("netbox_bgp", "redistributing", detail=False)),
+    ),
+    path(
+        "redistributing/<int:pk>/",
+        include(get_model_urls("netbox_bgp", "redistributing")),
+    ),
 )

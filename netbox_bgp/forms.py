@@ -41,13 +41,14 @@ from .models import (
     CommunityList,
     CommunityListRule,
     ASPathList,
-    ASPathListRule,
+    ASPathListRule, Redistributing,
 )
 
 from .choices import (
     SessionStatusChoices,
     CommunityStatusChoices,
     IPAddressFamilyChoices,
+    RedistributeSourceChoices,
 )
 
 from virtualization.models import VirtualMachine
@@ -940,3 +941,169 @@ class PrefixListRuleForm(NetBoxModelForm):
             "tags",
             "comments",
         ]
+
+
+class RedistributingForm(NetBoxModelForm):
+    name = forms.CharField(max_length=64, required=False)
+    site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
+    device = DynamicModelChoiceField(
+        queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}
+    )
+    virtualmachine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, query_params={"site_id": "$site"}
+    )
+    redistribute_source = forms.ChoiceField(
+        required=True,
+        choices=RedistributeSourceChoices,
+    )
+    redistribute_policy = DynamicModelChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=True,
+        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+    )
+    tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
+
+    comments = CommentField()
+
+    class Meta:
+        model = Redistributing
+        fields = [
+            "name",
+            "description",
+            "site",
+            "device",
+            "virtualmachine",
+            "redistribute_source",
+            "redistribute_policy",
+            "tenant",
+            "tags",
+            "comments",
+        ]
+
+
+class RedistributingAddForm(RedistributingForm):
+    def clean_device_or_virtualmachine(self):
+        cleaned_data = super().clean()
+        device = cleaned_data.get("device")
+        virtualmachine = cleaned_data.get("virtual_machine")
+
+        if not device and not virtualmachine:
+            raise ValidationError("You need to fill one of required fields: 'device' or 'virtual machine'.")
+
+        return cleaned_data
+
+
+class RedistributingImportForm(NetBoxModelImportForm):
+    site = CSVModelChoiceField(
+        label=_("Site"),
+        required=False,
+        queryset=Site.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned site"),
+    )
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text=_("Assigned tenant"),
+    )
+    device = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned device"),
+    )
+    virtualmachine = CSVModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned virtual machine"),
+    )
+    redistribute_policy = CSVChoiceField(
+        choices=RedistributeSourceChoices, required=True, help_text=_("Redistribute source")
+    )
+    routing_policy = CSVModelChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Routing policy name"),
+    )
+
+    class Meta:
+        model = Redistributing
+        fields = [
+            "name",
+            "description",
+            "site",
+            "device",
+            "virtualmachine",
+            "redistribute_source",
+            "redistribute_policy",
+            "tenant",
+            "tags",
+            "comments",
+        ]
+
+
+class RedistributingFilterForm(NetBoxModelFilterSetForm):
+    model = Redistributing
+    q = forms.CharField(required=False, label="Search")
+    device_id = DynamicModelMultipleChoiceField(
+        queryset=Device.objects.all(), required=False, label=_("Device")
+    )
+    virtualmachine_id = DynamicModelMultipleChoiceField(
+        queryset=VirtualMachine.objects.all(), required=False, label=_("VirtualMachine")
+    )
+    site_id = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(), required=False, label=_("Site")
+    )
+    redistribute_source = forms.MultipleChoiceField(
+        choices=RedistributeSourceChoices,
+        required=False,
+    )
+    redistribute_policy = DynamicModelChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=False,
+        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+    )
+    tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
+
+    tag = TagFilterField(model)
+
+
+class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
+    device = DynamicModelChoiceField(
+        label=_("Device"),
+        queryset=Device.objects.all(),
+        required=False,
+    )
+    virtualmachine = DynamicModelChoiceField(
+        label=_("Virtual Machine"),
+        queryset=VirtualMachine.objects.all(),
+        required=False,
+    )
+    site = DynamicModelChoiceField(
+        label=_("Site"), queryset=Site.objects.all(), required=False
+    )
+    redistribute_source = forms.ChoiceField(
+        label=_('Redistribute source'),
+        choices=add_blank_choice(RedistributeSourceChoices),
+        required=True
+    )
+    redistribute_policy = DynamicModelChoiceField(
+        queryset=RoutingPolicy.objects.all(),
+        required=True,
+        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+    )
+    description = forms.CharField(
+        label=_("Description"), max_length=200, required=False
+    )
+    tenant = DynamicModelChoiceField(
+        label=_("Tenant"), queryset=Tenant.objects.all(), required=False
+    )
+
+    model = Redistributing
+
+    nullable_fields = [
+        "tenant",
+        "description",
+        "site"
+    ]

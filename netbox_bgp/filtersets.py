@@ -5,11 +5,13 @@ from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
 
+from choices import RedistributeSourceChoices
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
     BGPPeerGroup, PrefixList, PrefixListRule, CommunityList,
-    CommunityListRule, ASPathList, ASPathListRule
+    CommunityListRule, ASPathList, ASPathListRule, Redistributing
 )
+
 from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
@@ -330,5 +332,66 @@ class PrefixListRuleFilterSet(NetBoxModelFilterSet):
                 | Q(le__icontains=value)
                 | Q(prefix_list__icontains=value)
                 | Q(prefix_list_id__icontains=value)
+        )
+        return queryset.filter(qs_filter)
+
+
+class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
+    redistribute_source = django_filters.ChoiceFilter(
+        choices=RedistributeSourceChoices,
+    )
+    redistribute_policy = django_filters.ModelChoiceFilter(
+        queryset=RoutingPolicy.objects.all(),
+    )
+    device_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='device__id',
+        queryset=Device.objects.all(),
+        to_field_name='id',
+        label='Device (ID)',
+    )
+    device = django_filters.ModelMultipleChoiceFilter(
+        field_name='device__name',
+        queryset=Device.objects.all(),
+        to_field_name='name',
+        label='Device (name)',
+    )
+    virtualmachine_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='virtualmachine__id',
+        queryset=VirtualMachine.objects.all(),
+        to_field_name='id',
+        label='VirtualMachine (ID)',
+    )
+    virtualmachine = django_filters.ModelMultipleChoiceFilter(
+        field_name='virtualmachine__name',
+        queryset=VirtualMachine.objects.all(),
+        to_field_name='name',
+        label='VirtualMachine (name)',
+    )
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )
+
+    class Meta:
+        model = Redistributing
+        fields = ('id', 'name', 'description', 'tenant',)
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = (
+                Q(redistribute_source__icontains=value)
+                | Q(name__icontains=value)
+                | Q(redistribute_policy__icontains=value)
+                | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)

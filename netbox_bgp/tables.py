@@ -9,7 +9,7 @@ from .models import (
     Community, BGPSession, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
     PrefixListRule, CommunityList, CommunityListRule,
-    ASPathList, ASPathListRule
+    ASPathList, ASPathListRule, Redistributing,
 )
 
 
@@ -210,4 +210,33 @@ class PrefixListRuleTable(NetBoxTable):
         fields = (
             'pk', 'prefix_list', 'index',
             'action', 'network', 'ge', 'le'
+        )
+
+
+class RedistributingTable(NetBoxTable):
+    name = tables.LinkColumn()
+    device = tables.LinkColumn()
+    virtualmachine = tables.LinkColumn()
+    redistribute_source = ChoiceFieldColumn(
+        default=AVAILABLE_LABEL
+    )
+    redistribute_policy = tables.TemplateColumn(
+        template_code=POLICIES,
+        orderable=False
+    )
+    site = tables.LinkColumn()
+
+    tenant = tables.TemplateColumn(
+        template_code=COL_TENANT
+    )
+
+    class Meta(NetBoxTable.Meta):
+        model = Redistributing
+        fields = (
+            'pk', 'name', 'device', 'virtualmachine', 'description', 'redistribute_source',
+            'redistribute_policy', 'site', 'tenant', 'actions'
+        )
+        default_columns = (
+            'pk', 'name', 'device', 'virtualmachine', 'description', 'redistribute_source',
+            'redistribute_policy', 'site', 'tenant', 'actions'
         )

@@ -6,7 +6,13 @@ from django.core.exceptions import ValidationError
 from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
 
-from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
+from .choices import (
+    IPAddressFamilyChoices,
+    RedistributeSourceChoices,
+    SessionStatusChoices,
+    ActionChoices,
+    CommunityStatusChoices
+)
 
 
 class ASPathList(NetBoxModel):
@@ -626,3 +632,65 @@ class RoutingPolicyRule(NetBoxModel):
         if self.set_actions:
             return self.set_actions
         return {}
+
+
+class Redistributing(NetBoxModel):
+    name = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True
+    )
+    site = models.ForeignKey(
+        to='dcim.Site',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    tenant = models.ForeignKey(
+        to='tenancy.Tenant',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    device = models.ForeignKey(
+        to='dcim.Device',
+        on_delete=models.CASCADE,
+        blank=True,
+    )
+    virtualmachine = models.ForeignKey(
+        to='virtualization.VirtualMachine',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+    redistribute_source = models.CharField(
+        max_length=50,
+        choices=RedistributeSourceChoices,
+    )
+    redistribute_policy = models.ForeignKey(
+        RoutingPolicy,
+        blank=True,
+        related_name='redistributing',
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Redistributing'
+        unique_together = ['name', 'device', 'redistribute_source',]
+
+    def __str__(self):
+        if self.device:
+            return f'{self.device}:{self.name}'
+        elif self.virtualmachine:
+            return f'{self.virtualmachine}:{self.name}'
+        else:
+            return f':{self.name}'
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:redistributing', args=[self.pk])
