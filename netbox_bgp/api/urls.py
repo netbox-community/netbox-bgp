@@ -4,7 +4,7 @@ from .views import (
     BGPSessionViewSet, RoutingPolicyViewSet, BGPPeerGroupViewSet, CommunityViewSet,
     PrefixListViewSet, PrefixListRuleViewSet, RoutingPolicyRuleViewSet,
     CommunityListViewSet, CommunityListRuleViewSet, RootView,
-    ASPathListViewSet, ASPathListRuleViewSet
+    ASPathListViewSet, ASPathListRuleViewSet, RedistributingViewSet,
 )
 
 
@@ -23,5 +23,6 @@ router.register('community-list', CommunityListViewSet)
 router.register('community-list-rule', CommunityListRuleViewSet)
 router.register('aspath-list', ASPathListViewSet)
 router.register('aspath-list-rule', ASPathListRuleViewSet)
+router.register('redistributing', RedistributingViewSet, 'redistributing')
 
 urlpatterns = router.urls

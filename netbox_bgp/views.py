@@ -11,7 +11,7 @@ from .models import (
     Community, BGPSession, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
     PrefixListRule, CommunityList, CommunityListRule,
-    ASPathList, ASPathListRule
+    ASPathList, ASPathListRule, Redistributing
 )
 
 from . import filtersets, forms, tables
@@ -590,3 +590,51 @@ class ASPathListRuleBulkImportView(generic.BulkImportView):
 class ASPathListRuleView(generic.ObjectView):
     queryset = ASPathListRule.objects.all()
     template_name = 'netbox_bgp/aspathlistrule.html'
+
+
+# Redistributing
+
+@register_model_view(Redistributing, "list", path="", detail=False)
+class RedistributingListView(generic.ObjectListView):
+    queryset = Redistributing.objects.all()
+    filterset = filtersets.RedistributingFilterSet
+    filterset_form = forms.RedistributingFilterForm
+    table = tables.RedistributingTable
+
+@register_model_view(Redistributing, "edit")
+class RedistributingEditView(generic.ObjectEditView):
+    queryset = Redistributing.objects.all()
+    form = forms.RedistributingForm
+
+@register_model_view(Redistributing, "add", detail=False)
+class RedistributingAddView(generic.ObjectEditView):
+    queryset = Redistributing.objects.all()
+    form = forms.RedistributingAddForm
+
+@register_model_view(Redistributing, "bulk_import", path="import", detail=False)
+class RedistributingBulkImportView(generic.BulkImportView):
+    queryset = Redistributing.objects.all()
+    model_form = forms.RedistributingImportForm
+
+@register_model_view(Redistributing, "bulk_edit", path="edit", detail=False)
+class RedistributingBulkEditView(generic.BulkEditView):
+    queryset = Redistributing.objects.all()
+    filterset = filtersets.RedistributingFilterSet
+    table = tables.RedistributingTable
+    form = forms.RedistributingBulkEditForm
+
+@register_model_view(Redistributing, "bulk_delete", path="delete", detail=False)
+class RedistributingBulkDeleteView(generic.BulkDeleteView):
+    queryset = Redistributing.objects.all()
+    table = tables.RedistributingTable
+
+@register_model_view(Redistributing)
+class RedistributingnView(generic.ObjectView):
+    queryset = Redistributing.objects.all()
+    table = tables.RedistributingTable
+    template_name = 'netbox_bgp/redistributing.html'
+
+@register_model_view(Redistributing, "delete")
+class RedistributingDeleteView(generic.ObjectDeleteView):
+    queryset = Redistributing.objects.all()
+    default_return_url = 'plugins:netbox_bgp:redistributing_list'

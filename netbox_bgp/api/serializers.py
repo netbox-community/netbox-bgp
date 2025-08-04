@@ -1,4 +1,4 @@
-from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
+from rest_framework.serializers import CharField, HyperlinkedIdentityField, ValidationError
 from rest_framework.relations import PrimaryKeyRelatedField
 from netbox.api.fields import ChoiceField, SerializedPKRelatedField
 from netbox.api.serializers import NetBoxModelSerializer
@@ -19,10 +19,11 @@ from netbox_bgp.models import (
     CommunityList,
     CommunityListRule,
     ASPathList,
-    ASPathListRule
+    ASPathListRule,
+    Redistributing
 )
 
-from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
+from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices, RedistributeSourceChoices
 
 
 class ASPathListSerializer(NetBoxModelSerializer):
@@ -36,6 +37,7 @@ class ASPathListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
+            "site",
             "tags",
             "custom_fields",
             "comments",
@@ -76,6 +78,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
+            "site",
             "tags",
             "custom_fields",
             "comments",
@@ -94,6 +97,7 @@ class PrefixListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
+            "site",
             "family",
             "tags",
             "custom_fields",
@@ -130,6 +134,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
+            "site",
             "import_policies",
             "export_policies",
             "comments",
@@ -264,6 +269,7 @@ class CommunityListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
+            "site",
             "tags",
             "custom_fields",
             "comments",
@@ -387,3 +393,41 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
         )
         brief_fields = ("id", "display", "description")
 
+
+class RedistributingSerializer(NetBoxModelSerializer):
+    url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:redistributing-detail")
+    name = CharField(required=False, allow_null=True)
+    site = SiteSerializer(nested=True, required=False, allow_null=True)
+    tenant = TenantSerializer(nested=True, required=False, allow_null=True)
+    device = DeviceSerializer(nested=True, required=False, allow_null=True)
+    virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
+    redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=False)
+    redistribute_policy = SerializedPKRelatedField(
+        queryset=RoutingPolicy.objects.all(),
+        serializer=RoutingPolicySerializer,
+        nested=True,
+        required=True,
+    )
+
+
+    class Meta:
+        model = Redistributing
+        fields = (
+            "id",
+            "url",
+            "tags",
+            "custom_fields",
+            "display",
+            "site",
+            "tenant",
+            "device",
+            "virtualmachine",
+            "redistribute_source",
+            "redistribute_policy",
+            "created",
+            "last_updated",
+            "name",
+            "description",
+            "comments",
+        )
+        brief_fields = ("id", "url", "name", "display", "device", "virtualmachine", "redistribute_source", "redistribute_policy")

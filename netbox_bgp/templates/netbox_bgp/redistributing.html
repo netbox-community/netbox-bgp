@@ -73,7 +73,7 @@
                         <td>Site</td>
                         <td>
                             {% if object.site %}
-                            <a href="{{ object.device.get_absolute_url }}">{{ object.site }}</a>
+                            <a href="{{ object.site.get_absolute_url }}">{{ object.site }}</a>
                             {% else %}
                             <span class="text-muted">None</span>
                             {% endif %}

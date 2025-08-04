@@ -4,7 +4,7 @@ from utilities.urls import get_model_urls
 from .models import (
     BGPSession, Community, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
-    PrefixListRule, CommunityList, CommunityListRule
+    PrefixListRule, CommunityList, CommunityListRule, Redistributing
 )
 from . import views
 

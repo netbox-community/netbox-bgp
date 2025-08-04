@@ -945,7 +945,10 @@ class PrefixListRuleForm(NetBoxModelForm):
 
 class RedistributingForm(NetBoxModelForm):
     name = forms.CharField(max_length=64, required=False)
-    site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
+    site = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+    )
     device = DynamicModelChoiceField(
         queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}
     )
@@ -959,7 +962,8 @@ class RedistributingForm(NetBoxModelForm):
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=True,
-        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+        query_params={"site_id": "$site"},
+        widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
 
@@ -1062,7 +1066,7 @@ class RedistributingFilterForm(NetBoxModelFilterSetForm):
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
-        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+        widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
 
@@ -1091,7 +1095,7 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=True,
-        widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
+        widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
     description = forms.CharField(
         label=_("Description"), max_length=200, required=False

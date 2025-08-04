@@ -220,10 +220,7 @@ class RedistributingTable(NetBoxTable):
     redistribute_source = ChoiceFieldColumn(
         default=AVAILABLE_LABEL
     )
-    redistribute_policy = tables.TemplateColumn(
-        template_code=POLICIES,
-        orderable=False
-    )
+    redistribute_policy = tables.LinkColumn()
     site = tables.LinkColumn()
 
     tenant = tables.TemplateColumn(

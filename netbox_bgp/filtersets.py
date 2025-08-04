@@ -5,7 +5,7 @@ from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
 
-from choices import RedistributeSourceChoices
+from .choices import RedistributeSourceChoices
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
     BGPPeerGroup, PrefixList, PrefixListRule, CommunityList,
@@ -18,6 +18,18 @@ from virtualization.models import VirtualMachine
 
 
 class ASPathListFilterSet(NetBoxModelFilterSet):
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )
 
     class Meta:
         model = ASPathList
@@ -70,6 +82,18 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
 
 class CommunityListFilterSet(NetBoxModelFilterSet):
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )
 
     class Meta:
         model = CommunityList
@@ -244,6 +268,18 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
 
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )
 
     class Meta:
         model = RoutingPolicy
@@ -298,6 +334,18 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
 
 class PrefixListFilterSet(NetBoxModelFilterSet):
+    site_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__id',
+        queryset=Site.objects.all(),
+        to_field_name='id',
+        label='Site (ID)',
+    )
+    site = django_filters.ModelMultipleChoiceFilter(
+        field_name='site__name',
+        queryset=Site.objects.all(),
+        to_field_name='name',
+        label='DSite (name)',
+    )
 
     class Meta:
         model = PrefixList
