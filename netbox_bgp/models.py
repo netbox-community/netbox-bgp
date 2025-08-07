@@ -674,7 +674,7 @@ class Redistributing(NetBoxModel):
     redistribute_policy = models.ForeignKey(
         RoutingPolicy,
         blank=True,
-        related_name='for_redistribute',
+        related_name='redistributing',
         on_delete=models.CASCADE,
     )
     comments = models.TextField(

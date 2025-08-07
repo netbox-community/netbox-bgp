@@ -79,6 +79,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "name",
             "description",
             "site",
+            "redistributing"
             "tags",
             "custom_fields",
             "comments",
