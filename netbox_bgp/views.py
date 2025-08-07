@@ -255,11 +255,17 @@ class RoutingPolicyView(generic.ObjectView):
         )
         sess = sess.distinct()
         sess_table = tables.BGPSessionTable(sess)
+        redist = Redistributing.objects.filter(
+            Q(redistribute_policy=instance)
+        )
+        redist = redist.distinct()
+        redist_table = tables.RedistributingTable(redist)
         rules = instance.rules.all()
         rules_table = tables.RoutingPolicyRuleTable(rules)
         return {
             'rules_table': rules_table,
-            'related_session_table': sess_table
+            'related_session_table': sess_table,
+            'related_redistributing_table': redist_table,
         }
 
 @register_model_view(RoutingPolicy, "delete")

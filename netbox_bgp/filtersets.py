@@ -12,7 +12,7 @@ from .models import (
     CommunityListRule, ASPathList, ASPathListRule, Redistributing
 )
 
-from ipam.models import IPAddress, ASN
+from ipam.models import IPAddress, ASN, VRF
 from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
 
@@ -28,7 +28,7 @@ class ASPathListFilterSet(NetBoxModelFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
     )
 
     class Meta:
@@ -92,7 +92,7 @@ class CommunityListFilterSet(NetBoxModelFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
     )
 
     class Meta:
@@ -221,7 +221,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
     )    
     by_remote_address = django_filters.CharFilter(
         method='search_by_remote_ip',
@@ -278,7 +278,7 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
     )
 
     class Meta:
@@ -344,7 +344,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
     )
 
     class Meta:
@@ -425,7 +425,19 @@ class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         field_name='site__name',
         queryset=Site.objects.all(),
         to_field_name='name',
-        label='DSite (name)',
+        label='Site (name)',
+    )
+    vrf = django_filters.ModelMultipleChoiceFilter(
+        field_name='vrf__name',
+        queryset=VRF.objects.all(),
+        to_field_name='name',
+        label='VRF (name)',
+    )
+    vrf_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='vrf__id',
+        queryset=VRF.objects.all(),
+        to_field_name='id',
+        label='VRF (ID)',
     )
 
     class Meta:
@@ -439,7 +451,6 @@ class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         qs_filter = (
                 Q(redistribute_source__icontains=value)
                 | Q(name__icontains=value)
-                | Q(redistribute_policy__icontains=value)
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)

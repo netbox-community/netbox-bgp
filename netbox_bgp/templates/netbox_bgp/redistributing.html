@@ -30,6 +30,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>VRF</td>
+                        <td>
+                            {% if object.vrf %}
+                            <a href="{{ object.vrf.get_absolute_url }}">{{ object.vrf }}</a>
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Device</td>
                         <td>
                             {% if object.device %}

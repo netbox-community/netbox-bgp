@@ -33,6 +33,7 @@ POLICIES = """
 
 class ASPathListTable(NetBoxTable):
     name = tables.LinkColumn()
+    site = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = ASPathList
@@ -78,6 +79,7 @@ class CommunityTable(NetBoxTable):
 
 class CommunityListTable(NetBoxTable):
     name = tables.LinkColumn()
+    site = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = CommunityList
@@ -135,6 +137,7 @@ class BGPSessionTable(NetBoxTable):
 
 class RoutingPolicyTable(NetBoxTable):
     name = tables.LinkColumn()
+    site = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
@@ -151,6 +154,7 @@ class BGPPeerGroupTable(NetBoxTable):
         template_code=POLICIES,
         orderable=False
     )
+    site = tables.LinkColumn()
     tags = TagColumn(
         url_name='plugins:netbox_bgp:peer_group_list'
     )
@@ -186,6 +190,7 @@ class RoutingPolicyRuleTable(NetBoxTable):
 class PrefixListTable(NetBoxTable):
     name = tables.LinkColumn()
     family = ChoiceFieldColumn()
+    site = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = PrefixList
@@ -222,6 +227,7 @@ class RedistributingTable(NetBoxTable):
     )
     redistribute_policy = tables.LinkColumn()
     site = tables.LinkColumn()
+    vrf = tables.LinkColumn()
 
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
@@ -230,10 +236,10 @@ class RedistributingTable(NetBoxTable):
     class Meta(NetBoxTable.Meta):
         model = Redistributing
         fields = (
-            'pk', 'name', 'device', 'virtualmachine', 'description', 'redistribute_source',
-            'redistribute_policy', 'site', 'tenant', 'actions'
+            'pk', 'name', 'device', 'virtualmachine', 'redistribute_source',
+            'redistribute_policy', 'site', 'vrf', 'description', 'tenant'
         )
         default_columns = (
-            'pk', 'name', 'device', 'virtualmachine', 'description', 'redistribute_source',
-            'redistribute_policy', 'site', 'tenant', 'actions'
+            'pk', 'name', 'device', 'virtualmachine', 'redistribute_source',
+            'redistribute_policy', 'site', 'vrf', 'description', 'tenant'
         )

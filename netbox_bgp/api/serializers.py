@@ -2,7 +2,7 @@ from rest_framework.serializers import CharField, HyperlinkedIdentityField, Vali
 from rest_framework.relations import PrimaryKeyRelatedField
 from netbox.api.fields import ChoiceField, SerializedPKRelatedField
 from netbox.api.serializers import NetBoxModelSerializer
-from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer
+from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer, VRFSerializer
 from tenancy.api.serializers import TenantSerializer
 from dcim.api.serializers import SiteSerializer, DeviceSerializer
 from ipam.api.field_serializers import IPNetworkField
@@ -79,7 +79,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "name",
             "description",
             "site",
-            "redistributing"
+            "redistributing",
             "tags",
             "custom_fields",
             "comments",
@@ -399,17 +399,12 @@ class RedistributingSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:redistributing-detail")
     name = CharField(required=False, allow_null=True)
     site = SiteSerializer(nested=True, required=False, allow_null=True)
+    vrf = VRFSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
     virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=False)
-    redistribute_policy = SerializedPKRelatedField(
-        queryset=RoutingPolicy.objects.all(),
-        serializer=RoutingPolicySerializer,
-        nested=True,
-        required=True,
-    )
-
+    redistribute_policy = RoutingPolicySerializer(required=True)
 
     class Meta:
         model = Redistributing
@@ -420,6 +415,7 @@ class RedistributingSerializer(NetBoxModelSerializer):
             "custom_fields",
             "display",
             "site",
+            "vrf",
             "tenant",
             "device",
             "virtualmachine",

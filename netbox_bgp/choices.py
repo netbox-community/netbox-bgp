@@ -43,13 +43,13 @@ class RedistributeSourceChoices(ChoiceSet):
     REDISTRIBUTE_BGP = 'BGP'
 
     CHOICES = [
-        (REDISTRIBUTE_DIRECT, 'Direct'),
-        (REDISTRIBUTE_STATIC, 'Static'),
-        (REDISTRIBUTE_OSPF, 'OSPF'),
-        (REDISTRIBUTE_ISIS, 'IS-IS'),
-        (REDISTRIBUTE_EIGRP, 'EIGRP'),
-        (REDISTRIBUTE_RIP, 'RIP'),
-        (REDISTRIBUTE_BGP, 'BGP'),
+        (REDISTRIBUTE_DIRECT, 'Direct', 'white'),
+        (REDISTRIBUTE_STATIC, 'Static', 'grey'),
+        (REDISTRIBUTE_OSPF, 'OSPF', 'green'),
+        (REDISTRIBUTE_ISIS, 'IS-IS', 'yellow'),
+        (REDISTRIBUTE_EIGRP, 'EIGRP', 'red'),
+        (REDISTRIBUTE_RIP, 'RIP', 'brown'),
+        (REDISTRIBUTE_BGP, 'BGP', 'blue'),
     ]
 
 

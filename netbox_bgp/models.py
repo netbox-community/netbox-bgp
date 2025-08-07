@@ -646,6 +646,12 @@ class Redistributing(NetBoxModel):
         blank=True,
         null=True
     )
+    vrf = models.ForeignKey(
+        to='ipam.VRF',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     tenant = models.ForeignKey(
         to='tenancy.Tenant',
         on_delete=models.PROTECT,
@@ -683,7 +689,7 @@ class Redistributing(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Redistributing'
-        unique_together = ['name', 'device', 'redistribute_source',]
+        unique_together = ['name', 'device', 'redistribute_source', 'vrf']
 
     def __str__(self):
         if self.device:

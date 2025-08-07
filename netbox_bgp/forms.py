@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
 from dcim.models import Device, Site
-from ipam.models import IPAddress, Prefix, ASN
+from ipam.models import IPAddress, Prefix, ASN, VRF
 from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
     DynamicModelChoiceField,
@@ -57,7 +57,7 @@ class ASPathListFilterForm(NetBoxModelFilterSetForm):
     model = ASPathList
     q = forms.CharField(required=False, label="Search")
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -83,7 +83,7 @@ class ASPathListForm(NetBoxModelForm):
 
 class ASPathListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -187,7 +187,7 @@ class CommunityListFilterForm(NetBoxModelFilterSetForm):
     model = CommunityList
     q = forms.CharField(required=False, label="Search")
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -206,7 +206,7 @@ class CommunityListForm(NetBoxModelForm):
 
 class CommunityListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -607,7 +607,7 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
     model = RoutingPolicy
     q = forms.CharField(required=False, label="Search")
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -639,7 +639,7 @@ class RoutingPolicyImportForm(NetBoxModelImportForm):
 
 class RoutingPolicyBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -656,7 +656,7 @@ class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
     model = BGPPeerGroup
     q = forms.CharField(required=False, label="Search")
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -718,7 +718,7 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
 class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -838,7 +838,7 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
     model = PrefixList
     q = forms.CharField(required=False, label="Search")
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -879,7 +879,7 @@ class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
         choices=IPAddressFamilyChoices,
     )
 
-    site = forms.ModelChoiceField(
+    site_id = forms.ModelChoiceField(
         label=_("Site"),
         required=False,
         queryset=Site.objects.all(),
@@ -944,11 +944,12 @@ class PrefixListRuleForm(NetBoxModelForm):
 
 
 class RedistributingForm(NetBoxModelForm):
-    name = forms.CharField(max_length=64, required=False)
+    name = forms.CharField(max_length=64, required=True)
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
         required=False,
     )
+    vrf = DynamicModelChoiceField(label="VRF", queryset=VRF.objects.all(), required=False)
     device = DynamicModelChoiceField(
         queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}
     )
@@ -975,6 +976,7 @@ class RedistributingForm(NetBoxModelForm):
             "name",
             "description",
             "site",
+            "vrf",
             "device",
             "virtualmachine",
             "redistribute_source",
@@ -1005,6 +1007,13 @@ class RedistributingImportForm(NetBoxModelImportForm):
         to_field_name="name",
         help_text=_("Assigned site"),
     )
+    vrf = CSVModelChoiceField(
+        label=_("VRF"),
+        required=False,
+        queryset=VRF.objects.all(),
+        to_field_name="name",
+        help_text=_("Assigned VRF"),
+    )
     tenant = CSVModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
@@ -1021,13 +1030,13 @@ class RedistributingImportForm(NetBoxModelImportForm):
         to_field_name="name",
         help_text=_("Assigned virtual machine"),
     )
-    redistribute_policy = CSVChoiceField(
+    redistribute_source = CSVChoiceField(
         choices=RedistributeSourceChoices, required=True, help_text=_("Redistribute source")
     )
-    routing_policy = CSVModelChoiceField(
+    redistribute_policy = CSVModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
         to_field_name="name",
-        required=False,
+        required=True,
         help_text=_("Routing policy name"),
     )
 
@@ -1037,6 +1046,7 @@ class RedistributingImportForm(NetBoxModelImportForm):
             "name",
             "description",
             "site",
+            "vrf",
             "device",
             "virtualmachine",
             "redistribute_source",
@@ -1050,6 +1060,9 @@ class RedistributingImportForm(NetBoxModelImportForm):
 class RedistributingFilterForm(NetBoxModelFilterSetForm):
     model = Redistributing
     q = forms.CharField(required=False, label="Search")
+    vrf_id = DynamicModelMultipleChoiceField(
+        queryset=VRF.objects.all(), required=False, label=_("VRF")
+    )
     device_id = DynamicModelMultipleChoiceField(
         queryset=Device.objects.all(), required=False, label=_("Device")
     )
@@ -1084,6 +1097,9 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
         queryset=VirtualMachine.objects.all(),
         required=False,
     )
+    vrf = DynamicModelChoiceField(
+        label=_("VRF"), queryset=VRF.objects.all(), required=False
+    )
     site = DynamicModelChoiceField(
         label=_("Site"), queryset=Site.objects.all(), required=False
     )
@@ -1109,5 +1125,6 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = [
         "tenant",
         "description",
-        "site"
+        "site",
+        "vrf"
     ]
