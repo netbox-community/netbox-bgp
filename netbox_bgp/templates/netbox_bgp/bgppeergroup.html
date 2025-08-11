@@ -27,6 +27,16 @@
                         <td>Description</td>
                         <td>{{ object.description|placeholder }}</td>
                     </tr>
+                    <tr>
+                        <td>Site</td>
+                        <td>
+                            {% if object.site %}
+                            <a href="{{ object.site.get_absolute_url }}">{{ object.site }}</a>
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>

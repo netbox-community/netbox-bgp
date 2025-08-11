@@ -15,7 +15,8 @@ from netbox_bgp.models import (
     CommunityList,
     CommunityListRule,
     ASPathList,
-    ASPathListRule
+    ASPathListRule,
+    Redistributing,
 )
 from .filters import (
     NetBoxBGPCommunityFilter,
@@ -28,7 +29,8 @@ from .filters import (
     NetBoxBGPCommunityListFilter,
     NetBoxBGPCommunityListRuleFilter,
     NetBoxBGPASPathListFilter,
-    NetBoxBGPASPathListRuleFilter
+    NetBoxBGPASPathListRuleFilter,
+    NetBoxBGPRedistributingFilter,
 )
 
 @strawberry_django.type(ASPathList, fields="__all__", filters=NetBoxBGPASPathListFilter)
@@ -181,3 +183,17 @@ class CommunityListRuleType(NetBoxObjectType):
     action: str
     community: Annotated["CommunityType", strawberry.lazy("netbox_bgp.graphql.types")]
     description: str
+
+
+@strawberry_django.type(Redistributing, fields="__all__", filters=NetBoxBGPRedistributingFilter)
+class RedistributingType(NetBoxObjectType):
+    name: str
+    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
+    tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
+    device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")] | None
+    virtualmachine: Annotated["VirtualMachineType", strawberry.lazy("virtualization.graphql.types")] | None
+    description: str
+    redistribute_source: str
+    redistribute_policy: (
+        Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
+    )

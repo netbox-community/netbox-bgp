@@ -539,7 +539,6 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     site = DynamicModelChoiceField(
         label=_("Site"), queryset=Site.objects.all(), required=False
     )
-
     status = forms.ChoiceField(
         label=_('Status'),
         choices=add_blank_choice(SessionStatusChoices),
@@ -600,6 +599,7 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
         "export_policies",
         "prefix_list_in",
         "prefix_list_out",
+        "site",
     ]
 
 
@@ -944,7 +944,7 @@ class PrefixListRuleForm(NetBoxModelForm):
 
 
 class RedistributingForm(NetBoxModelForm):
-    name = forms.CharField(max_length=64, required=True)
+    name = forms.CharField(max_length=256, required=True)
     site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
         required=False,
@@ -987,18 +987,6 @@ class RedistributingForm(NetBoxModelForm):
         ]
 
 
-class RedistributingAddForm(RedistributingForm):
-    def clean_device_or_virtualmachine(self):
-        cleaned_data = super().clean()
-        device = cleaned_data.get("device")
-        virtualmachine = cleaned_data.get("virtual_machine")
-
-        if not device and not virtualmachine:
-            raise ValidationError("You need to fill one of required fields: 'device' or 'virtual machine'.")
-
-        return cleaned_data
-
-
 class RedistributingImportForm(NetBoxModelImportForm):
     site = CSVModelChoiceField(
         label=_("Site"),
@@ -1022,11 +1010,13 @@ class RedistributingImportForm(NetBoxModelImportForm):
     )
     device = CSVModelChoiceField(
         queryset=Device.objects.all(),
+        required=False,
         to_field_name="name",
         help_text=_("Assigned device"),
     )
     virtualmachine = CSVModelChoiceField(
         queryset=VirtualMachine.objects.all(),
+        required=False,
         to_field_name="name",
         help_text=_("Assigned virtual machine"),
     )
@@ -1126,5 +1116,5 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
         "tenant",
         "description",
         "site",
-        "vrf"
+        "vrf",
     ]

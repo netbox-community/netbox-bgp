@@ -27,7 +27,8 @@ from .types import (
     CommunityListType,
     CommunityListRuleType,
     ASPathListType,
-    ASPathListRuleType
+    ASPathListRuleType,
+    RedistributingType
 )
 
 
@@ -66,3 +67,6 @@ class NetBoxBGPQuery:
 
     netbox_bgp_aspathlist_rule: ASPathListRuleType = strawberry_django.field()
     netbox_bgp_aspathlist_rule_list: List[ASPathListRuleType] = strawberry_django.field()
+
+    netbox_bgp_redistributing: RedistributingType = strawberry_django.field()
+    netbox_bgp_redistributing_list: List[RedistributingType] = strawberry_django.field()

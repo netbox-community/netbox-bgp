@@ -637,8 +637,6 @@ class RoutingPolicyRule(NetBoxModel):
 class Redistributing(NetBoxModel):
     name = models.CharField(
         max_length=256,
-        blank=True,
-        null=True
     )
     site = models.ForeignKey(
         to='dcim.Site',
@@ -662,6 +660,7 @@ class Redistributing(NetBoxModel):
         to='dcim.Device',
         on_delete=models.CASCADE,
         blank=True,
+        null=True,
     )
     virtualmachine = models.ForeignKey(
         to='virtualization.VirtualMachine',
@@ -689,7 +688,7 @@ class Redistributing(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Redistributing'
-        unique_together = ['name', 'device', 'redistribute_source', 'vrf']
+        unique_together = ['name', 'device', 'redistribute_source', 'vrf', 'site']
 
     def __str__(self):
         if self.device:
@@ -698,6 +697,13 @@ class Redistributing(NetBoxModel):
             return f'{self.virtualmachine}:{self.name}'
         else:
             return f':{self.name}'
+
+    def clean(self):
+        super().clean()
+        if not self.device and not self.virtualmachine:
+            raise ValidationError('You need to fill one of required fields: "device" or "virtualmachine".')
+        if self.device and self.virtualmachine:
+            raise ValidationError('You can to fill only one of required fields: "device" or "virtualmachine".')
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:redistributing', args=[self.pk])

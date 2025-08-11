@@ -8,6 +8,7 @@ from netbox.graphql.filter_mixins import NetBoxModelFilterMixin
 from tenancy.graphql.filter_mixins import TenancyFilterMixin
 from ipam.graphql.filters import IPAddressFilter, ASNFilter
 from dcim.graphql.filters import DeviceFilter, SiteFilter
+from virtualization.graphql.filters import VirtualMachineFilter
 
 from netbox_bgp.models import (
     Community,
@@ -20,7 +21,8 @@ from netbox_bgp.models import (
     CommunityList,
     CommunityListRule,
     ASPathList,
-    ASPathListRule
+    ASPathListRule,
+    Redistributing,
 )
 
 from netbox_bgp.filtersets import (
@@ -41,7 +43,8 @@ from netbox_bgp.graphql.enums import (
     NetBoxBGPCommunityStatusEnum,
     NetBoxBGPSessionStatusEnum,
     NetBoxBGPIPAddressFamilyEnum,
-    NetBoxBGPActionEnum
+    NetBoxBGPActionEnum,
+    NetBoxBGPRedistributingRedistributeSourceEnum,
 )
 
 
@@ -100,6 +103,9 @@ class NetBoxBGPCommunityFilter(TenancyFilterMixin, NetBoxModelFilterMixin):
 class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
+    site: (
+        Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None
+    ) = strawberry_django.filter_field()
     status: (
         Annotated[
             "NetBoxBGPSessionStatusEnum", strawberry.lazy("netbox_bgp.graphql.enums")
@@ -246,3 +252,35 @@ class NetBoxBGPCommunityListRuleFilter(NetBoxModelFilterMixin):
         | None
     ) = strawberry_django.filter_field()
     community_list_id: ID | None = strawberry_django.filter_field()
+
+
+@strawberry_django.filter_type(Redistributing, lookups=True)
+class NetBoxBGPRedistributingFilter(TenancyFilterMixin, NetBoxModelFilterMixin):
+    name: FilterLookup[str] | None = strawberry_django.filter_field()
+    description: FilterLookup[str] | None = strawberry_django.filter_field()
+    site: (
+        Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None
+    ) = strawberry_django.filter_field()
+    device: (
+        Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None
+    ) = strawberry_django.filter_field()
+    device_id: ID | None = strawberry_django.filter_field()
+
+    virtualmachine: (
+        Annotated[
+            "VirtualMachineFilter", strawberry.lazy("virtualization.graphql.filters")
+        ] | None
+    ) = strawberry_django.filter_field()
+    virtualmachine_id: ID | None = strawberry_django.filter_field()
+
+    redistribute_source: (
+        Annotated[
+            "NetBoxBGPRedistributingRedistributeSourceEnum", strawberry.lazy("netbox_bgp.graphql.enums")
+        ] | None
+    ) = strawberry_django.filter_field()
+
+    redistribute_policy: (
+        Annotated[
+            "NetBoxBGPRoutingPolicyFilter", strawberry.lazy("netbox_bgp.graphql.filters")
+        ] | None
+    ) = strawberry_django.filter_field()

@@ -397,14 +397,14 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
 
 class RedistributingSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:redistributing-detail")
-    name = CharField(required=False, allow_null=True)
+    name = CharField(required=True, allow_null=False)
     site = SiteSerializer(nested=True, required=False, allow_null=True)
     vrf = VRFSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
     virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
-    redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=False)
-    redistribute_policy = RoutingPolicySerializer(required=True)
+    redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=True, allow_null=False)
+    redistribute_policy = RoutingPolicySerializer(required=True, allow_null=False)
 
     class Meta:
         model = Redistributing

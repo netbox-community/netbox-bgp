@@ -607,15 +607,11 @@ class RedistributingListView(generic.ObjectListView):
     filterset_form = forms.RedistributingFilterForm
     table = tables.RedistributingTable
 
+@register_model_view(Redistributing, "add", detail=False)
 @register_model_view(Redistributing, "edit")
 class RedistributingEditView(generic.ObjectEditView):
     queryset = Redistributing.objects.all()
     form = forms.RedistributingForm
-
-@register_model_view(Redistributing, "add", detail=False)
-class RedistributingAddView(generic.ObjectEditView):
-    queryset = Redistributing.objects.all()
-    form = forms.RedistributingAddForm
 
 @register_model_view(Redistributing, "bulk_import", path="import", detail=False)
 class RedistributingBulkImportView(generic.BulkImportView):
