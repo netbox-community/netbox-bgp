@@ -388,11 +388,13 @@ class BGPSessionImportForm(NetBoxModelImportForm):
         queryset=Device.objects.all(),
         to_field_name="name",
         help_text=_("Assigned device"),
+        required=False,
     )
     virtualmachine = CSVModelChoiceField(
         queryset=VirtualMachine.objects.all(),
         to_field_name="name",
         help_text=_("Assigned virtual machine"),
+        required=False,
     )
     status = CSVChoiceField(
         choices=SessionStatusChoices, required=False, help_text=_("Operational status")

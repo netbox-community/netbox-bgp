@@ -156,7 +156,7 @@ class BGPPeerGroupTable(NetBoxTable):
     )
     site = tables.LinkColumn()
     tags = TagColumn(
-        url_name='plugins:netbox_bgp:peer_group_list'
+        url_name='plugins:netbox_bgp:bgppeergroup_list'
     )
 
     class Meta(NetBoxTable.Meta):
