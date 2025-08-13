@@ -63,7 +63,7 @@
                         <td>Redistribute source</td>
                         <td>
                             {% if object.redistribute_source %}
-                            <a href="{{ object.redistribute_source.get_absolute_url }}">{{ object.redistribute_source }}</a>
+                            {% badge object.get_redistribute_source_display bg_color=object.get_redistribute_source_color %}
                             {% else %}
                             <span class="text-muted">None</span>
                             {% endif %}

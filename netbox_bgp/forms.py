@@ -28,8 +28,6 @@ from netbox.forms import (
     NetBoxModelFilterSetForm,
     NetBoxModelImportForm,
 )
-from .choices import SessionStatusChoices
-
 from .models import (
     Community,
     BGPSession,
@@ -41,7 +39,8 @@ from .models import (
     CommunityList,
     CommunityListRule,
     ASPathList,
-    ASPathListRule, Redistributing,
+    ASPathListRule,
+    Redistributing,
 )
 
 from .choices import (

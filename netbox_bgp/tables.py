@@ -126,7 +126,7 @@ class BGPSessionTable(NetBoxTable):
         fields = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status', 'tenant', 'actions'
+            'site', 'status', 'tenant'
         )
         default_columns = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',

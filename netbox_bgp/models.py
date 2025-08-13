@@ -588,7 +588,6 @@ class RoutingPolicyRule(NetBoxModel):
     )    
 
     class Meta:
-        ordering = ['routing_policy', 'index']
         unique_together = ('routing_policy', 'index')
         ordering = ['routing_policy', 'index']
 
@@ -691,7 +690,6 @@ class Redistributing(NetBoxModel):
     )
     redistribute_policy = models.ForeignKey(
         RoutingPolicy,
-        blank=True,
         related_name='redistributing',
         on_delete=models.CASCADE,
     )
@@ -701,7 +699,7 @@ class Redistributing(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Redistributing'
-        unique_together = ['name', 'device', 'redistribute_source', 'vrf', 'site']
+        unique_together = ['name', 'device', 'virtualmachine', 'redistribute_source', 'vrf', 'site']
 
     def __str__(self):
         if self.device:
@@ -717,6 +715,9 @@ class Redistributing(NetBoxModel):
             raise ValidationError('You need to fill one of required fields: "device" or "virtualmachine".')
         if self.device and self.virtualmachine:
             raise ValidationError('You can to fill only one of required fields: "device" or "virtualmachine".')
+
+    def get_redistribute_source_color(self):
+        return RedistributeSourceChoices.colors.get(self.redistribute_source)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:redistributing', args=[self.pk])

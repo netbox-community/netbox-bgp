@@ -255,17 +255,17 @@ class RoutingPolicyView(generic.ObjectView):
         )
         sess = sess.distinct()
         sess_table = tables.BGPSessionTable(sess)
-        redist = Redistributing.objects.filter(
+        redistiributing = Redistributing.objects.filter(
             Q(redistribute_policy=instance)
         )
-        redist = redist.distinct()
-        redist_table = tables.RedistributingTable(redist)
+        redistiributing = redistiributing.distinct()
+        redistiributing_table = tables.RedistributingTable(redistiributing)
         rules = instance.rules.all()
         rules_table = tables.RoutingPolicyRuleTable(rules)
         return {
             'rules_table': rules_table,
             'related_session_table': sess_table,
-            'related_redistributing_table': redist_table,
+            'related_redistributing_table': redistiributing_table,
         }
 
 @register_model_view(RoutingPolicy, "delete")
@@ -631,7 +631,7 @@ class RedistributingBulkDeleteView(generic.BulkDeleteView):
     table = tables.RedistributingTable
 
 @register_model_view(Redistributing)
-class RedistributingnView(generic.ObjectView):
+class RedistributingView(generic.ObjectView):
     queryset = Redistributing.objects.all()
     table = tables.RedistributingTable
     template_name = 'netbox_bgp/redistributing.html'
