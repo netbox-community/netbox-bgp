@@ -64,7 +64,7 @@ class CommunityBulkImportView(generic.BulkImportView):
 
 @register_model_view(CommunityList, "list", path="", detail=False)
 class CommunityListListView(generic.ObjectListView):
-    queryset = CommunityList.objects.all()
+    queryset = CommunityList.objects.select_related('site').prefetch_related('tags')
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
@@ -149,7 +149,19 @@ class CommunityListRuleView(generic.ObjectView):
 
 @register_model_view(BGPSession, "list", path="", detail=False)
 class BGPSessionListView(generic.ObjectListView):
-    queryset = BGPSession.objects.all()
+    queryset = BGPSession.objects.select_related(
+        'device',
+        'virtualmachine',
+        'local_address',
+        'remote_address',
+        'local_as',
+        'remote_as',
+        'peer_group',
+        'prefix_list_in',
+        'prefix_list_out',
+        'site',
+        'tenant'
+    ).prefetch_related('import_policies', 'export_policies', 'tags')
     filterset = filtersets.BGPSessionFilterSet
     filterset_form = forms.BGPSessionFilterForm
     table = tables.BGPSessionTable
@@ -218,7 +230,7 @@ class BGPSessionDeleteView(generic.ObjectDeleteView):
 
 @register_model_view(RoutingPolicy, "list", path="", detail=False)
 class RoutingPolicyListView(generic.ObjectListView):
-    queryset = RoutingPolicy.objects.all()
+    queryset = RoutingPolicy.objects.select_related('site').prefetch_related('tags')
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
@@ -334,7 +346,9 @@ class RoutingPolicyRuleImportView(generic.BulkImportView):
 
 @register_model_view(BGPPeerGroup, "list", path="", detail=False)
 class BGPPeerGroupListView(generic.ObjectListView):
-    queryset = BGPPeerGroup.objects.all()
+    queryset = BGPPeerGroup.objects.select_related(
+        'site'
+    ).prefetch_related('import_policies', 'export_policies', 'tags')
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
@@ -396,7 +410,7 @@ class BGPPeerGroupBulkEditView(generic.BulkEditView):
 
 @register_model_view(PrefixList, "list", path="", detail=False)
 class PrefixListListView(generic.ObjectListView):
-    queryset = PrefixList.objects.all()
+    queryset = PrefixList.objects.select_related('site').prefetch_related('tags')
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
@@ -508,7 +522,7 @@ class VMBGPSessionView(generic.ObjectChildrenView):
 
 @register_model_view(ASPathList, "list", path="", detail=False)
 class ASPathListListView(generic.ObjectListView):
-    queryset = ASPathList.objects.all()
+    queryset = ASPathList.objects.select_related('site').prefetch_related('tags')
     filterset = filtersets.ASPathListFilterSet
     filterset_form = forms.ASPathListFilterForm
     table = tables.ASPathListTable
@@ -632,7 +646,14 @@ class RedistributingBulkDeleteView(generic.BulkDeleteView):
 
 @register_model_view(Redistributing)
 class RedistributingView(generic.ObjectView):
-    queryset = Redistributing.objects.all()
+    queryset = Redistributing.objects.select_related(
+        'device',
+        'virtualmachine',
+        'redistribute_policy',
+        'site',
+        'vrf',
+        'tenant'
+    ).prefetch_related('tags')
     table = tables.RedistributingTable
     template_name = 'netbox_bgp/redistributing.html'
 

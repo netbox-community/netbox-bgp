@@ -21,4 +21,22 @@ class DeviceRelatedObjects(PluginTemplateExtension):
             }
         )
 
-template_extensions = [DeviceRelatedObjects]
+
+class VirtualmachineRelatedObjects(PluginTemplateExtension):
+    models = ('virtualization.virtualmachine',)
+
+    def full_width_page(self):
+        obj = self.context['object']
+        sess = BGPSession.objects.filter(virtualmachine=obj)
+        sess_table = BGPSessionTable(sess)
+        redistributing = Redistributing.objects.filter(virtualmachine=obj)
+        redistributing_table = RedistributingTable(redistributing)
+        return self.render(
+            'netbox_bgp/device_extend.html',
+            extra_context={
+                'related_session_table': sess_table,
+                'related_redistributing_table': redistributing_table
+            }
+        )
+
+template_extensions = [DeviceRelatedObjects, VirtualmachineRelatedObjects]
