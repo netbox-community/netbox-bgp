@@ -1,9 +1,5 @@
 from netbox.plugins import PluginTemplateExtension
 
-from .models import BGPSession
-from .tables import BGPSessionTable
-
-
 class DeviceBGPSession(PluginTemplateExtension):
     models = ('dcim.device',)
 
@@ -23,14 +19,8 @@ class DeviceBGPSession(PluginTemplateExtension):
         return ''
 
     def x_page(self):
-        obj = self.context['object']
-        sess = BGPSession.objects.filter(device=obj)
-        sess_table = BGPSessionTable(sess)
         return self.render(
             'netbox_bgp/device_extend.html',
-            extra_context={
-                'related_session_table': sess_table
-            }
         )
 
 template_extensions = [DeviceBGPSession]
