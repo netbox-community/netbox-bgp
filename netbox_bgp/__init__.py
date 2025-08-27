@@ -12,7 +12,7 @@ class BGPConfig(PluginConfig):
     base_url = 'bgp'
     required_settings = []
     min_version = '4.3.0'
-    max_version = '4.3.99'
+    max_version = '4.4.99'
     default_settings = {
         'device_ext_page': 'right',
         'top_level_menu' : False,
