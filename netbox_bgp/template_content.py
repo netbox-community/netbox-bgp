@@ -137,6 +137,33 @@ class VirtualMachineBGPSessionsView(generic.ObjectChildrenView):
         return BGPSession.objects.filter(virtualmachine=parent)
 
 
+@register_model_view(ASN, name="bgp-sessions", path="bgp-sessions")
+class ASNBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with an ASN."""
+
+    queryset = ASN.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    @staticmethod
+    def _get_asn_bgp_sessions(asn: ASN) -> QuerySet[BGPSession]:
+        """Helper to get BGP sessions related to an ASN."""
+        return BGPSession.objects.filter(Q(local_as=asn) | Q(remote_as=asn)).distinct()
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: ASNBGPSessionsView._get_asn_bgp_sessions(obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(self, request: HttpRequest, parent: ASN) -> QuerySet[BGPSession]:
+        """Get BGP sessions where the ASN is either the local or remote AS."""
+        return ASNBGPSessionsView._get_asn_bgp_sessions(parent)
+
+
 # Register only when device_ext_page is set to 'tab';
 class DeviceBGPSessionsView(generic.ObjectChildrenView):
     """View to display BGP sessions associated with a device."""
