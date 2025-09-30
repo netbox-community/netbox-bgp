@@ -35,6 +35,37 @@ if config.get("device_ext_page", "") == "tab":
             return BGPSession.objects.filter(device=parent)
 
 
+@register_model_view(IPAddress, name="bgp-sessions", path="bgp-sessions")
+class IPAddressBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with an IP address."""
+
+    queryset = IPAddress.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    @staticmethod
+    def _get_ip_bgp_sessions(ip_address: IPAddress) -> QuerySet[BGPSession]:
+        """Helper to get BGP sessions related to an IP address."""
+        return BGPSession.objects.filter(
+            Q(local_address=ip_address) | Q(remote_address=ip_address)
+        ).distinct()
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: IPAddressBGPSessionsView._get_ip_bgp_sessions(obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(
+        self, request: HttpRequest, parent: IPAddress
+    ) -> QuerySet[BGPSession]:
+        """Get BGP sessions where the IP address is either the local or remote address."""
+        return IPAddressBGPSessionsView._get_ip_bgp_sessions(parent)
+
+
 class DeviceBGPSession(PluginTemplateExtension):
     models = ("dcim.device",)
 
