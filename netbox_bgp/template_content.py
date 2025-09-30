@@ -1,4 +1,4 @@
-from dcim.models import Device
+from dcim.models import Device, Site
 from django.conf import settings
 from netbox.plugins import PluginTemplateExtension
 from netbox.views.generic import ObjectChildrenView
@@ -64,6 +64,28 @@ class IPAddressBGPSessionsView(generic.ObjectChildrenView):
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions where the IP address is either the local or remote address."""
         return IPAddressBGPSessionsView._get_ip_bgp_sessions(parent)
+
+
+@register_model_view(Site, name="bgp-sessions", path="bgp-sessions")
+class SiteBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with a site."""
+
+    queryset = Site.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: BGPSession.objects.filter(site=obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(self, request: HttpRequest, parent: Site) -> QuerySet[BGPSession]:
+        """Get BGP sessions for the site."""
+        return BGPSession.objects.filter(site=parent)
 
 
 # Register only when device_ext_page is set to 'tab';
