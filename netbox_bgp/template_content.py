@@ -3,6 +3,7 @@ from django.conf import settings
 from netbox.plugins import PluginTemplateExtension
 from netbox.views.generic import ObjectChildrenView
 from utilities.views import ViewTab, register_model_view
+from virtualization.models import VirtualMachine
 
 from .filtersets import BGPSessionFilterSet
 from .models import BGPSession
@@ -110,6 +111,30 @@ class TenantBGPSessionsView(generic.ObjectChildrenView):
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions for the tenant."""
         return BGPSession.objects.filter(tenant=parent)
+
+
+@register_model_view(VirtualMachine, name="bgp-sessions", path="bgp-sessions")
+class VirtualMachineBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with a virtual machine."""
+
+    queryset = VirtualMachine.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: BGPSession.objects.filter(virtualmachine=obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(
+        self, request: HttpRequest, parent: VirtualMachine
+    ) -> QuerySet[BGPSession]:
+        """Get BGP sessions for the virtual machine."""
+        return BGPSession.objects.filter(virtualmachine=parent)
 
 
 # Register only when device_ext_page is set to 'tab';
