@@ -88,6 +88,30 @@ class SiteBGPSessionsView(generic.ObjectChildrenView):
         return BGPSession.objects.filter(site=parent)
 
 
+@register_model_view(Tenant, name="bgp-sessions", path="bgp-sessions")
+class TenantBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with a tenant."""
+
+    queryset = Tenant.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: BGPSession.objects.filter(tenant=obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(
+        self, request: HttpRequest, parent: Tenant
+    ) -> QuerySet[BGPSession]:
+        """Get BGP sessions for the tenant."""
+        return BGPSession.objects.filter(tenant=parent)
+
+
 # Register only when device_ext_page is set to 'tab';
 class DeviceBGPSessionsView(generic.ObjectChildrenView):
     """View to display BGP sessions associated with a device."""
