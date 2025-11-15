@@ -29,6 +29,9 @@ POLICIES = """
     &mdash;
 {% endfor %}
 """
+SESSION_LINK = """
+{{ record.name|default:'<span class="badge text-bg-info">Noname</span>' }}
+"""
 
 
 class ASPathListTable(NetBoxTable):
@@ -103,7 +106,10 @@ class CommunityListRuleTable(NetBoxTable):
 
 
 class BGPSessionTable(NetBoxTable):
-    name = tables.LinkColumn()
+    name = tables.TemplateColumn(
+        template_code=SESSION_LINK,
+        linkify=True,
+    )
     device = tables.LinkColumn()
     virtualmachine = tables.LinkColumn()
     local_address = tables.LinkColumn()
