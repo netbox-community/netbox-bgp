@@ -138,7 +138,7 @@ class RoutingPolicyTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
-        fields = ('pk', 'name', 'description', 'actions')
+        fields = ('pk', 'name', 'description', 'weight', 'actions')
 
 
 class BGPPeerGroupTable(NetBoxTable):

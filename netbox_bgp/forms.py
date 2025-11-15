@@ -582,14 +582,14 @@ class RoutingPolicyForm(NetBoxModelForm):
 
     class Meta:
         model = RoutingPolicy
-        fields = ["name", "description", "tags", "comments"]
+        fields = ["name", "description", "weight", "tags", "comments"]
 
 
 class RoutingPolicyImportForm(NetBoxModelImportForm):
 
     class Meta:
         model = RoutingPolicy
-        fields = ("name", "description", "tags")
+        fields = ("name", "description", "weight", "tags")
 
 
 class RoutingPolicyBulkEditForm(NetBoxModelBulkEditForm):

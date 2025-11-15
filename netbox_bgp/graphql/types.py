@@ -103,6 +103,7 @@ class BGPPeerGroupType(NetBoxObjectType):
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
+    weight: int
     rules: List[
          Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -124,6 +125,9 @@ class RoutingPolicyRuleType(NetBoxObjectType):
     ]
     match_community_list: List[
         Annotated["CommunityListType", strawberry.lazy("netbox_bgp.graphql.types")]
+    ]
+    match_aspath_list: List[
+        Annotated["ASPathListType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     match_ip_address: List[
         Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")]
