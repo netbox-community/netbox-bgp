@@ -71,7 +71,7 @@ class ASPathListRule(NetBoxModel):
         return ActionChoices.colors.get(self.action)
 
     class Meta:
-        ordering = ['aspath_list', 'index']
+        ordering = ('aspath_list', 'index')
 
 
 class RoutingPolicy(NetBoxModel):
@@ -87,11 +87,15 @@ class RoutingPolicy(NetBoxModel):
     comments = models.TextField(
         blank=True
     )
+    weight = models.PositiveIntegerField(
+        blank=True,
+        null=True
+    )
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
         unique_together = ['name', 'description']
-        ordering = ['name']
+        ordering = ['weight', 'name']
 
     def __str__(self):
         return self.name
