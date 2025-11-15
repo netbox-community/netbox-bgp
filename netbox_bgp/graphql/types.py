@@ -103,7 +103,7 @@ class BGPPeerGroupType(NetBoxObjectType):
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
-    weight: int
+    weight: int | None
     rules: List[
          Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]

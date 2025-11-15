@@ -449,7 +449,6 @@ class PrefixListBulkImportView(generic.BulkImportView):
 class PrefixListRuleListView(generic.ObjectListView):
     queryset = PrefixListRule.objects.all()
     filterset = filtersets.PrefixListRuleFilterSet
-    # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
     actions = {'add': {'add'}, 'bulk_import': {'add'}, 'export': {'export'}, 'bulk_delete': {'delete'}}
 

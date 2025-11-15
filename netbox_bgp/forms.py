@@ -28,7 +28,7 @@ from netbox.forms import (
     NetBoxModelFilterSetForm,
     NetBoxModelImportForm,
 )
-from .choices import SessionStatusChoices
+from .choices import SessionStatusChoices, ActionChoices
 
 from .models import (
     Community,
@@ -91,6 +91,15 @@ class ASPathListImportForm(NetBoxModelImportForm):
 
 
 class ASPathListRuleImportForm(NetBoxModelImportForm):
+    aspath_list = CSVModelChoiceField(
+        label=_('AS Path List'),
+        queryset=ASPathList.objects.all(),
+        to_field_name='name'
+    )
+    action = CSVChoiceField(
+        label=_('Action'),
+        choices=ActionChoices
+    )
 
     class Meta:
         model = ASPathListRule
@@ -745,6 +754,48 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         ]
 
 class RoutingPolicyRuleImportForm(NetBoxModelImportForm):
+    routing_policy = CSVModelChoiceField(
+        label=_('Routing policy'),
+        queryset=RoutingPolicy.objects.all(),
+        required=True,
+        to_field_name='name',
+        help_text=_('Routing policy')
+    )
+    action = CSVChoiceField(
+        label=_('Action'),
+        choices=ActionChoices
+    )
+    match_community = CSVModelMultipleChoiceField(
+        label=_('Match Community'),
+        queryset=Community.objects.all(),
+        required=False,
+        to_field_name='value'
+    )
+    match_community_list = CSVModelMultipleChoiceField(
+        label=_('Match Community List'),
+        queryset=CommunityList.objects.all(),
+        required=False,
+        to_field_name='name',
+    )
+    match_aspath_list = CSVModelMultipleChoiceField(
+        label=_('Match AS Path List'),
+        queryset=ASPathList.objects.all(),
+        required=False,
+        to_field_name='name'
+    )
+    match_ip_address = CSVModelMultipleChoiceField(
+        label=_('Match IPv4 by Prefix List'),
+        queryset=PrefixList.objects.all(),
+        required=False,
+        to_field_name='name',
+    )
+
+    match_ipv6_address = CSVModelMultipleChoiceField(
+        label=_('Match IPv6 by Prefix List'),
+        queryset=PrefixList.objects.all(),
+        required=False,
+        to_field_name='name',
+    )
 
     class Meta:
         model = RoutingPolicyRule
@@ -755,6 +806,7 @@ class RoutingPolicyRuleImportForm(NetBoxModelImportForm):
             "continue_entry",
             "match_community",
             "match_community_list",
+            "match_aspath_list",
             "match_ip_address",
             "match_ipv6_address",
             "match_custom",
@@ -807,6 +859,19 @@ class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
     ]
 
 class PrefixListRuleImportForm(NetBoxModelImportForm):
+    prefix_list = CSVModelChoiceField(
+        label=_('Prefix List'),
+        queryset=PrefixList.objects.all(),
+        required=True,
+        to_field_name='name',
+        help_text=_('Prefix List')
+    )
+    prefix = CSVModelChoiceField(
+        queryset=Prefix.objects.all(),
+        to_field_name='prefix',
+        required=False,
+        help_text=_('Prefix')
+    )
 
     class Meta:
         model = PrefixListRule
