@@ -134,7 +134,7 @@ class CommunityListRuleBulkDeleteView(generic.BulkDeleteView):
     queryset = CommunityListRule.objects.all()
     table = tables.CommunityListRuleTable
 
-@register_model_view(CommunityListRule, "delete", path="delete", detail=False)
+@register_model_view(CommunityListRule, "delete")
 class CommunityListRuleDeleteView(generic.ObjectDeleteView):
     queryset = CommunityListRule.objects.all()
     default_return_url = 'plugins:netbox_bgp:communitylistrule_list'
@@ -469,7 +469,6 @@ class PrefixListBulkImportView(generic.BulkImportView):
 class PrefixListRuleListView(generic.ObjectListView):
     queryset = PrefixListRule.objects.all()
     filterset = filtersets.PrefixListRuleFilterSet
-    # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.PrefixListRuleTable
     actions = {'add': {'add'}, 'bulk_import': {'add'}, 'export': {'export'}, 'bulk_delete': {'delete'}}
 

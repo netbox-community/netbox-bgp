@@ -1,4 +1,4 @@
-{% load render_table from django_tables2 %}
+{% load helpers %}
 
 <div class="card">
     <h5 class="card-header">
@@ -13,6 +13,6 @@
         Related BGP Sessions
     </h5>
     <div class="card-body">
-        {% render_table related_session_table 'inc/table.html' %}
+        {% htmx_table 'plugins:netbox_bgp:bgpsession_list' device_id=object.id %}
     </div>
 </div>

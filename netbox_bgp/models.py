@@ -84,7 +84,7 @@ class ASPathListRule(NetBoxModel):
         return ActionChoices.colors.get(self.action)
 
     class Meta:
-        ordering = ['aspath_list', 'index']
+        ordering = ('aspath_list', 'index')
 
 
 class RoutingPolicy(NetBoxModel):
@@ -107,11 +107,15 @@ class RoutingPolicy(NetBoxModel):
     comments = models.TextField(
         blank=True
     )
+    weight = models.PositiveIntegerField(
+        blank=True,
+        null=True
+    )
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
         unique_together = ['name', 'description', 'site']
-        ordering = ['name']
+        ordering = ['weight', 'name']
 
     def __str__(self):
         return self.name
@@ -505,15 +509,15 @@ class BGPSession(NetBoxModel):
     class Meta:
         verbose_name_plural = 'BGP Sessions'
         unique_together = [['device', 'local_address', 'local_as', 'remote_address', 'remote_as'], ['virtualmachine', 'local_address', 'local_as', 'remote_address', 'remote_as']]
-        ordering = ['name']
+        ordering = ('name', 'pk')  # Name may be null
 
     def __str__(self):
         if self.device:
-            return f'{self.device}:{self.name}'
+            return f'{self.device}:{self.label}'
         elif self.virtualmachine:
-            return f'{self.virtualmachine}:{self.name}'
+            return f'{self.virtualmachine}:{self.label}'
         else:
-            return f':{self.name}'
+            return f'{self.label}'
 
     #def clean(self, *args, new_session=None, **kwargs):
     #    if not self.device and not self.virtualmachine:
@@ -529,6 +533,15 @@ class BGPSession(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
+
+    @property
+    def label(self):
+        """
+        Return the session name if set; otherwise return a generated name if available.
+        """
+        if self.name:
+            return self.name
+        return f'{self.remote_address}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):

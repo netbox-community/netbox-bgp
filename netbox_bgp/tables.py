@@ -29,6 +29,9 @@ POLICIES = """
     &mdash;
 {% endfor %}
 """
+SESSION_LINK = """
+{{ record.name|default:'<span class="badge text-bg-info">Noname</span>' }}
+"""
 
 
 class ASPathListTable(NetBoxTable):
@@ -105,7 +108,10 @@ class CommunityListRuleTable(NetBoxTable):
 
 
 class BGPSessionTable(NetBoxTable):
-    name = tables.LinkColumn()
+    name = tables.TemplateColumn(
+        template_code=SESSION_LINK,
+        linkify=True,
+    )
     device = tables.LinkColumn()
     virtualmachine = tables.LinkColumn()
     local_address = tables.LinkColumn()
@@ -120,13 +126,16 @@ class BGPSessionTable(NetBoxTable):
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
     )
+    tags = TagColumn(
+        url_name='plugins:netbox_bgp:bgpsession_list'
+    )
 
     class Meta(NetBoxTable.Meta):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
             'remote_address', 'remote_as', 'description', 'peer_group',
-            'site', 'status', 'tenant'
+            'site', 'status', 'tenant', 'tags', 'actions'
         )
         default_columns = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
@@ -137,11 +146,10 @@ class BGPSessionTable(NetBoxTable):
 
 class RoutingPolicyTable(NetBoxTable):
     name = tables.LinkColumn()
-    site = tables.LinkColumn()
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
-        fields = ('pk', 'name', 'description', 'site', 'actions')
+        fields = ('pk', 'name', 'description', 'site', 'weight', 'actions')
 
 
 class BGPPeerGroupTable(NetBoxTable):

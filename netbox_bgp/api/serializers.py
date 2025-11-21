@@ -78,6 +78,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
+            "weight",
             "site",
             "redistributing",
             "tags",

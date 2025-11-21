@@ -22,6 +22,7 @@ This plugin provide following Models:
 | NetBox 4.1.x  | >= 0.14.0 |
 | NetBox 4.2.x  | 0.15.x    |
 | NetBox 4.3.x  | 0.16.x    |
+| NetBox 4.4.x  | 0.17.x    |
 
 ## Installation
 
@@ -41,8 +42,12 @@ See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing
 ## Configuration
 
 The following options are available:
-* `device_ext_page`: String (default right) Device related BGP sessions table position. The following values are available:  
-left, right, full_width. Set empty value for disable.
+* `device_ext_page`: String (default right) Device related BGP sessions display mode. The following values are available:  
+  - `left`: Display BGP sessions in the left column of the device detail page
+  - `right`: Display BGP sessions in the right column of the device detail page  
+  - `full_width`: Display BGP sessions in full width at the bottom of the device detail page
+  - `tab`: Display BGP sessions in a dedicated tab on the device detail page
+  - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin. 
 
 ## Screenshots
