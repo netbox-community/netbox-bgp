@@ -47,7 +47,6 @@ from netbox_bgp.graphql.enums import (
     NetBoxBGPRedistributingRedistributeSourceEnum,
 )
 
-
 __all__ = (
     "NetBoxBGPCommunityFilter",
     "NetBoxBGPSessionFilter",
@@ -66,7 +65,6 @@ __all__ = (
 class NetBoxBGPASPathListFilter(NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
-    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(ASPathListRule, lookups=True)
@@ -164,14 +162,12 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilterMixin):
 class NetBoxBGPBGPPeerGroupFilter(NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
-    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(RoutingPolicy, lookups=True)
 class NetBoxBGPRoutingPolicyFilter(NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
-    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(RoutingPolicyRule, lookups=True)
@@ -209,7 +205,6 @@ class NetBoxBGPPrefixListFilter(NetBoxModelFilterMixin):
         ]
         | None
     ) = strawberry_django.filter_field()
-    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(PrefixListRule, lookups=True)
@@ -233,7 +228,6 @@ class NetBoxBGPPrefixListRuleFilter(NetBoxModelFilterMixin):
 class NetBoxBGPCommunityListFilter(NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
-    site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(CommunityListRule, lookups=True)
@@ -258,9 +252,6 @@ class NetBoxBGPCommunityListRuleFilter(NetBoxModelFilterMixin):
 class NetBoxBGPRedistributingFilter(TenancyFilterMixin, NetBoxModelFilterMixin):
     name: FilterLookup[str] | None = strawberry_django.filter_field()
     description: FilterLookup[str] | None = strawberry_django.filter_field()
-    site: (
-        Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None
-    ) = strawberry_django.filter_field()
     device: (
         Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None
     ) = strawberry_django.filter_field()

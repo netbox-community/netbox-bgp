@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated, List, TYPE_CHECKING, Optional, Union
 import strawberry
 import strawberry_django
 from netbox.graphql.types import NetBoxObjectType
@@ -33,14 +33,26 @@ from .filters import (
     NetBoxBGPRedistributingFilter,
 )
 
+
 @strawberry_django.type(ASPathList, fields="__all__", filters=NetBoxBGPASPathListFilter)
 class ASPathListType(NetBoxObjectType):
     name: str
     description: str
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     rules: List[
          Annotated["ASPathListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("CommunityScopeType")] | None:
+        return self.scope
 
 
 @strawberry_django.type(ASPathListRule, fields="__all__", filters=NetBoxBGPASPathListRuleFilter)
@@ -56,11 +68,22 @@ class ASPathListRuleType(NetBoxObjectType):
 
 @strawberry_django.type(Community, fields="__all__", filters=NetBoxBGPCommunityFilter)
 class CommunityType(NetBoxObjectType):
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     status: str
     role: Annotated["RoleType", strawberry.lazy("ipam.graphql.types")] | None
     description: str
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("CommunityScopeType")] | None:
+        return self.scope
 
 
 @strawberry_django.type(BGPSession, fields="__all__", filters=NetBoxBGPSessionFilter)
@@ -94,7 +117,6 @@ class BGPSessionType(NetBoxObjectType):
 class BGPPeerGroupType(NetBoxObjectType):
     name: str
     description: str
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     import_policies: List[
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
@@ -102,16 +124,39 @@ class BGPPeerGroupType(NetBoxObjectType):
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("BGPPeerGroupScopeType")] | None:
+        return self.scope
+
 
 @strawberry_django.type(RoutingPolicy, fields="__all__", filters=NetBoxBGPRoutingPolicyFilter)
 class RoutingPolicyType(NetBoxObjectType):
     name: str
     description: str
     weight: int | None
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     rules: List[
          Annotated["RoutingPolicyRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("RoutingPolicyScopeType")] | None:
+        return self.scope
 
 
 @strawberry_django.type(
@@ -147,10 +192,21 @@ class PrefixListType(NetBoxObjectType):
     name: str
     description: str
     family: str
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     prefrules: List[
          Annotated["PrefixListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("PrefixListScopeType")] | None:
+        return self.scope
 
 
 @strawberry_django.type(PrefixListRule, fields="__all__", filters=NetBoxBGPPrefixListRuleFilter)
@@ -171,10 +227,21 @@ class PrefixListRuleType(NetBoxObjectType):
 class CommunityListType(NetBoxObjectType):
     name: str
     description: str
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     commlistrules: List[
          Annotated["CommunityListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("CommunityListScopeType")] | None:
+        return self.scope
 
 
 @strawberry_django.type(
@@ -192,7 +259,6 @@ class CommunityListRuleType(NetBoxObjectType):
 @strawberry_django.type(Redistributing, fields="__all__", filters=NetBoxBGPRedistributingFilter)
 class RedistributingType(NetBoxObjectType):
     name: str
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")] | None
     virtualmachine: Annotated["VirtualMachineType", strawberry.lazy("virtualization.graphql.types")] | None
@@ -201,3 +267,15 @@ class RedistributingType(NetBoxObjectType):
     redistribute_policy: (
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     )
+
+    @strawberry_django.field
+    def scope(self) -> Annotated[Union[
+        Annotated["ClusterType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["ClusterGroupType", strawberry.lazy('virtualization.graphql.types')],
+        Annotated["LocationType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RackType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["RegionType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteType", strawberry.lazy('dcim.graphql.types')],
+        Annotated["SiteGroupType", strawberry.lazy('dcim.graphql.types')],
+    ], strawberry.union("RedistributingScopeType")] | None:
+        return self.scope
