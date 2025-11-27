@@ -28,10 +28,10 @@
                         <td>{{ object.description|placeholder }}</td>
                     </tr>
                     <tr>
-                        <td>Site</td>
+                        <td>Scope</td>
                         <td>
-                            {% if object.site %}
-                            <a href="{{ object.site.get_absolute_url }}">{{ object.site }}</a>
+                            {% if object.scope %}
+                            <a href="{{ object.scope.get_absolute_url }}">{{ object.scope }}</a>
                             {% else %}
                             <span class="text-muted">None</span>
                             {% endif %}

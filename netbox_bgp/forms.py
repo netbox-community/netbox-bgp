@@ -1,5 +1,6 @@
 from django import forms
 from utilities.forms.rendering import FieldSet
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
@@ -8,9 +9,10 @@ from django.core.exceptions import (
 from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
-from dcim.models import Device, Site
+from dcim.models import Device, Location, Rack, Region, Site, SiteGroup
 from ipam.models import IPAddress, Prefix, ASN, VRF
 from ipam.formfields import IPNetworkFormField
+from ipam.constants import VLANGROUP_SCOPE_TYPES
 from utilities.forms.fields import (
     DynamicModelChoiceField,
     CSVModelChoiceField,
@@ -19,9 +21,13 @@ from utilities.forms.fields import (
     TagFilterField,
     CSVChoiceField,
     CommentField,
+    ContentTypeChoiceField,
+    CSVContentTypeField,
 )
 from utilities.forms import add_blank_choice
-from utilities.forms.widgets import APISelect, APISelectMultiple
+from utilities.forms.widgets import APISelect, APISelectMultiple, HTMXSelect
+from utilities.forms.utils import get_field_value
+from utilities.templatetags.builtins.filters import bettertitle
 from netbox.forms import (
     NetBoxModelForm,
     NetBoxModelBulkEditForm,
@@ -52,19 +58,54 @@ from .choices import (
     RedistributeSourceChoices,
 )
 
-from virtualization.models import VirtualMachine
+from virtualization.models import Cluster, ClusterGroup, VirtualMachine
 
 class ASPathListFilterForm(NetBoxModelFilterSetForm):
     model = ASPathList
     q = forms.CharField(required=False, label="Search")
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet("q", "filter_id", "tag"),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+    )
 
 class ASPathListRuleFilterForm(NetBoxModelFilterSetForm):
     model = ASPathListRule
@@ -74,40 +115,115 @@ class ASPathListRuleFilterForm(NetBoxModelFilterSetForm):
 
     
 class ASPathListForm(NetBoxModelForm):
-
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
+    )
     comments = CommentField()
+
+    fieldsets = (
+        FieldSet("name", "description", "tags"),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+    )
 
     class Meta:
         model = ASPathList
-        fields = ["name", "description", "site", "tags", "comments"]
+        fields = ["name", "description", "tags", "comments"]
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
+
 
 
 class ASPathListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
         required=False,
-        queryset=Site.objects.all(),
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
 
     model = ASPathList
+    fieldsets = (
+        FieldSet("description", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+    )
     nullable_fields = [
         "description",
-        "site",
+        "scope",
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
 
 class ASPathListImportForm(NetBoxModelImportForm):
-    site = CSVModelChoiceField(
-        label=_("Site"),
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site")
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        required=False,
+        label=_('Scope type (app & model)')
     )
 
     class Meta:
         model = ASPathList
-        fields = ["name", "description", "site", "tags"]
+        fields = ["name", "description", "scope_type", "scope_id", "tags"]
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 
 class ASPathListRuleImportForm(NetBoxModelImportForm):
@@ -197,50 +313,157 @@ class CommunityListFilterForm(NetBoxModelFilterSetForm):
     model = CommunityList
     q = forms.CharField(required=False, label="Search")
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet("q", "filter_id", "tag"),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+    )
 
 class CommunityListForm(NetBoxModelForm):
-
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
+    )
     comments = CommentField()
+
+    fieldsets = (
+        FieldSet("name", "description", "tags"),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+    )
 
     class Meta:
         model = CommunityList
-        fields = ["name", "description", "site", "tags", "comments"]
+        fields = ["name", "description", "tags", "comments"]
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
 
 class CommunityListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
         required=False,
-        queryset=Site.objects.all(),
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
 
     model = CommunityList
+    fieldsets = (
+        FieldSet("description", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+    )
     nullable_fields = [
         "description",
-        "site",
+        "scope",
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
 
 class CommunityListImportForm(NetBoxModelImportForm):
-    site = CSVModelChoiceField(
-        label=_("Site"),
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site")
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        required=False,
+        label=_('Scope type (app & model)')
     )
 
     class Meta:
         model = CommunityList
-        fields = ("name", "description", "site", "tags")
-
+        fields = ("name", "description", "scope_type", "scope_id", "tags")
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 class CommunityListRuleForm(NetBoxModelForm):
     community = DynamicModelChoiceField(
@@ -619,64 +842,219 @@ class RoutingPolicyFilterForm(NetBoxModelFilterSetForm):
     model = RoutingPolicy
     q = forms.CharField(required=False, label="Search")
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet("q", "filter_id", "tag"),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+    )
 
 class RoutingPolicyForm(NetBoxModelForm):
-
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
+    )
     comments = CommentField()
 
-    class Meta:
-        model = RoutingPolicy
-        fields = ["name", "description", "site", "weight", "tags", "comments"]
-
-
-class RoutingPolicyImportForm(NetBoxModelImportForm):
-    site = CSVModelChoiceField(
-        label=_("Site"),
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site")
+    fieldsets = (
+        FieldSet("name", "description", "weight", "tags"),
+        FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
     class Meta:
         model = RoutingPolicy
-        fields = ("name", "description", "site", "weight", "tags")
+        fields = ["name", "description", "weight", "tags", "comments"]
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
+
+class RoutingPolicyImportForm(NetBoxModelImportForm):
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        required=False,
+        label=_('Scope type (app & model)')
+    )
+
+    class Meta:
+        model = RoutingPolicy
+        fields = ("name", "description", "scope_type", "scope_id", "weight", "tags")
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 class RoutingPolicyBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
         required=False,
-        queryset=Site.objects.all(),
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
 
     model = RoutingPolicy
+    fieldsets = (
+        FieldSet("description", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+    )
     nullable_fields = [
         "description",
-        "site",
+        "scope",
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
 
 class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
     model = BGPPeerGroup
     q = forms.CharField(required=False, label="Search")
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet("q", "filter_id", "tag"),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+    )
 
 class BGPPeerGroupForm(NetBoxModelForm):
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
+    )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
@@ -689,26 +1067,57 @@ class BGPPeerGroupForm(NetBoxModelForm):
     )
     comments = CommentField()
 
+    fieldsets = (
+        FieldSet("name", "description", "import_policies", "export_policies", "tags"),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+    )
+
     class Meta:
         model = BGPPeerGroup
         fields = [
             "name",
             "description",
-            "site",
             "import_policies",
             "export_policies",
             "tags",
             "comments",
         ]
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
 
 class BGPPeerGroupImportForm(NetBoxModelImportForm):
-
-    site = CSVModelChoiceField(
-        label=_("Site"),
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site")
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        required=False,
+        label=_('Scope type (app & model)')
     )
     import_policies = CSVModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
@@ -725,15 +1134,25 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ("name", "description", "site", "import_policies", "export_policies", "tags")
-
+        fields = ("name", "description", "scope_type", "scope_id", "import_policies", "export_policies", "tags")
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
         required=False,
-        queryset=Site.objects.all(),
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
 
     import_policies = DynamicModelMultipleChoiceField(
@@ -748,10 +1167,27 @@ class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = BGPPeerGroup
+    fieldsets = (
+        FieldSet("description", "import_policies", "export_policies", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+    )
     nullable_fields = [
-        "description", "site", "import_policies", "export_policies"
+        "description", "scope", "import_policies", "export_policies"
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
 
 class RoutingPolicyRuleForm(NetBoxModelForm):
     continue_entry = forms.IntegerField(
@@ -893,37 +1329,120 @@ class PrefixListFilterForm(NetBoxModelFilterSetForm):
     model = PrefixList
     q = forms.CharField(required=False, label="Search")
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
         queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet("q", "filter_id", "tag"),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+    )
 
 class PrefixListForm(NetBoxModelForm):
-
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
+    )
     comments = CommentField()
+
+    fieldsets = (
+        FieldSet("name", "description", "family", "tags"),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+    )
 
     class Meta:
         model = PrefixList
-        fields = ["name", "description", "family", "site", "tags", "comments"]
+        fields = ["name", "description", "family", "tags", "comments"]
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
 
 class PrefixListImportForm(NetBoxModelImportForm):
     family = CSVChoiceField(
         choices=IPAddressFamilyChoices, required=True, help_text=_("Family address")
     )
-    site = CSVModelChoiceField(
-        label=_("Site"),
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site")
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        required=False,
+        label=_('Scope type (app & model)')
     )
+
     class Meta:
         model = PrefixList
-        fields = ("name", "description", "family", "site", "tags")
-
+        fields = ("name", "description", "family", "scope_type", "scope_id", "tags")
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
@@ -934,17 +1453,43 @@ class PrefixListBulkEditForm(NetBoxModelBulkEditForm):
         choices=IPAddressFamilyChoices,
     )
 
-    site_id = forms.ModelChoiceField(
-        label=_("Site"),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
         required=False,
-        queryset=Site.objects.all(),
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
 
     model = PrefixList
+    fieldsets = (
+        FieldSet("description", "family", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+    )
     nullable_fields = [
         "description",
-        "site",
+        "scope",
     ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
 
 class PrefixListRuleImportForm(NetBoxModelImportForm):
     prefix_list = CSVModelChoiceField(
@@ -1013,9 +1558,18 @@ class PrefixListRuleForm(NetBoxModelForm):
 
 class RedistributingForm(NetBoxModelForm):
     name = forms.CharField(max_length=256, required=True)
-    site = DynamicModelChoiceField(
-        queryset=Site.objects.all(),
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(),
         required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
     vrf = DynamicModelChoiceField(label="VRF", queryset=VRF.objects.all(), required=False)
     device = DynamicModelChoiceField(
@@ -1038,12 +1592,26 @@ class RedistributingForm(NetBoxModelForm):
 
     comments = CommentField()
 
+    fieldsets = (
+        FieldSet(
+            "name",
+            "description",
+            "vrf",
+            "device",
+            "virtualmachine",
+            "redistribute_source",
+            "redistribute_policy",
+            "tags"
+        ),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+        FieldSet("tenant", name=_("Tenancy")),
+    )
+
     class Meta:
         model = Redistributing
         fields = [
             "name",
             "description",
-            "site",
             "vrf",
             "device",
             "virtualmachine",
@@ -1054,14 +1622,41 @@ class RedistributingForm(NetBoxModelForm):
             "comments",
         ]
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+
+        # Assign the selected scope (if any)
+        self.instance.scope = self.cleaned_data.get("scope")
 
 class RedistributingImportForm(NetBoxModelImportForm):
-    site = CSVModelChoiceField(
-        label=_("Site"),
+    scope_type = CSVContentTypeField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
         required=False,
-        queryset=Site.objects.all(),
-        to_field_name="name",
-        help_text=_("Assigned site"),
+        label=_('Scope type (app & model)')
     )
     vrf = CSVModelChoiceField(
         label=_("VRF"),
@@ -1103,7 +1698,8 @@ class RedistributingImportForm(NetBoxModelImportForm):
         fields = [
             "name",
             "description",
-            "site",
+            "scope_type",
+            "scope_id",
             "vrf",
             "device",
             "virtualmachine",
@@ -1113,6 +1709,9 @@ class RedistributingImportForm(NetBoxModelImportForm):
             "tags",
             "comments",
         ]
+        labels = {
+            "scope_id": "Scope ID",
+        }
 
 
 class RedistributingFilterForm(NetBoxModelFilterSetForm):
@@ -1127,8 +1726,40 @@ class RedistributingFilterForm(NetBoxModelFilterSetForm):
     virtualmachine_id = DynamicModelMultipleChoiceField(
         queryset=VirtualMachine.objects.all(), required=False, label=_("VirtualMachine")
     )
-    site_id = DynamicModelMultipleChoiceField(
-        queryset=Site.objects.all(), required=False, label=_("Site")
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
+        required=False,
+        label=_("Region")
+    )
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
+        required=False,
+        label=_("Site group")
+    )
+    site = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        label=_("Site")
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label=_("Location")
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label=_("Rack")
+    )
+    cluster = DynamicModelMultipleChoiceField(
+        queryset=Cluster.objects.all(),
+        required=False,
+        label=_("Cluster")
+    )
+    cluster_group = DynamicModelMultipleChoiceField(
+        queryset=ClusterGroup.objects.all(),
+        required=False,
+        label=_("Cluster group")
     )
     redistribute_source = forms.MultipleChoiceField(
         choices=RedistributeSourceChoices,
@@ -1143,6 +1774,21 @@ class RedistributingFilterForm(NetBoxModelFilterSetForm):
 
     tag = TagFilterField(model)
 
+    fieldsets = (
+        FieldSet(
+            "q",
+            "filter_id",
+            "vrf_id",
+            "device_id",
+            "virtualmachine_id",
+            "redistribute_source",
+            "redistribute_policy",
+            "tag"
+        ),
+        FieldSet("region", "site_group", "site", "location", "rack", name=_("Location")),
+        FieldSet("cluster_group", "cluster", name=_("Cluster")),
+        FieldSet("tenant", name=_("Tenancy")),
+    )
 
 class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     device = DynamicModelChoiceField(
@@ -1158,8 +1804,18 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     vrf = DynamicModelChoiceField(
         label=_("VRF"), queryset=VRF.objects.all(), required=False
     )
-    site = DynamicModelChoiceField(
-        label=_("Site"), queryset=Site.objects.all(), required=False
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=VLANGROUP_SCOPE_TYPES),
+        widget=HTMXSelect(method="post", attrs={"hx-select": "#form_fields"}),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),  # Initial queryset
+        required=False,
+        disabled=True,
+        selector=True
     )
     redistribute_source = forms.ChoiceField(
         label=_('Redistribute source'),
@@ -1179,10 +1835,28 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Redistributing
-
+    fieldsets = (
+        FieldSet("description", "vrf", "device", "virtualmachine", "redistribute_source", "redistribute_policy", "tag"),
+        FieldSet("scope_type", "scope",  name=_("Scope")),
+        FieldSet("tenant", name=_("Tenancy")),
+    )
     nullable_fields = [
         "tenant",
         "description",
-        "site",
+        "scope",
         "vrf",
     ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
+            except ObjectDoesNotExist:
+                pass

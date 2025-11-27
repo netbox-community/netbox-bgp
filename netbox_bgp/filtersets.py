@@ -1,5 +1,6 @@
 import django_filters
 import netaddr
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
@@ -15,25 +16,42 @@ from .models import (
 from ipam.models import IPAddress, ASN, VRF
 from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
-
+from utilities.filters import ContentTypeFilter
 
 class ASPathListFilterSet(NetBoxModelFilterSet):
-    site_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__id',
-        queryset=Site.objects.all(),
-        to_field_name='id',
-        label='Site (ID)',
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
     )
-    site = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__name',
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        label='Site (name)',
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
     )
 
     class Meta:
         model = ASPathList
-        fields = ['id', 'name', 'description', 'site']
+        fields = ['id', 'name', 'description', 'scope_id']
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -82,22 +100,39 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
 
 class CommunityListFilterSet(NetBoxModelFilterSet):
-    site_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__id',
-        queryset=Site.objects.all(),
-        to_field_name='id',
-        label='Site (ID)',
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
     )
-    site = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__name',
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        label='Site (name)',
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
     )
 
     class Meta:
         model = CommunityList
-        fields = ('id', 'name', 'description', 'site')
+        fields = ('id', 'name', 'description', 'scope_id')
+
+        def filter_scope(self, queryset, name, value):
+            model_name = name.replace('_', '')
+            return queryset.filter(
+                scope_type=ContentType.objects.get(model=model_name),
+                scope_id=value
+            )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -268,22 +303,39 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
 
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):
-    site_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__id',
-        queryset=Site.objects.all(),
-        to_field_name='id',
-        label='Site (ID)',
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
     )
-    site = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__name',
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        label='Site (name)',
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
     )
 
     class Meta:
         model = RoutingPolicy
-        fields = ('id', 'name', 'description', 'site')
+        fields = ('id', 'name', 'description', 'scope_id')
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -317,10 +369,39 @@ class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
 
 
 class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
+    )
 
     class Meta:
         model = BGPPeerGroup
-        fields = ('id', 'name', 'description', 'site')
+        fields = ('id', 'name', 'description', 'scope_id')
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -334,22 +415,39 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
 
 class PrefixListFilterSet(NetBoxModelFilterSet):
-    site_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__id',
-        queryset=Site.objects.all(),
-        to_field_name='id',
-        label='Site (ID)',
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
     )
-    site = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__name',
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        label='Site (name)',
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
     )
 
     class Meta:
         model = PrefixList
-        fields = ('id', 'name', 'description', 'family', 'site')
+        fields = ('id', 'name', 'description', 'family', 'scope_id')
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -385,6 +483,28 @@ class PrefixListRuleFilterSet(NetBoxModelFilterSet):
 
 
 class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
+    scope_type = ContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    site = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    location = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    rack = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster_group = django_filters.NumberFilter(
+        method='filter_scope'
+    )
+    cluster = django_filters.NumberFilter(
+        method='filter_scope'
+    )
     redistribute_source = django_filters.ChoiceFilter(
         choices=RedistributeSourceChoices,
     )
@@ -415,18 +535,6 @@ class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         to_field_name='name',
         label='VirtualMachine (name)',
     )
-    site_id = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__id',
-        queryset=Site.objects.all(),
-        to_field_name='id',
-        label='Site (ID)',
-    )
-    site = django_filters.ModelMultipleChoiceFilter(
-        field_name='site__name',
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        label='Site (name)',
-    )
     vrf = django_filters.ModelMultipleChoiceFilter(
         field_name='vrf__name',
         queryset=VRF.objects.all(),
@@ -443,6 +551,13 @@ class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
     class Meta:
         model = Redistributing
         fields = ('id', 'name', 'description', 'tenant')
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

@@ -1,8 +1,9 @@
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 from django_tables2.utils import A
 
-from netbox.tables import NetBoxTable
+from netbox.tables import NetBoxTable, columns
 from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
 from .models import (
@@ -36,11 +37,18 @@ SESSION_LINK = """
 
 class ASPathListTable(NetBoxTable):
     name = tables.LinkColumn()
-    site = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
 
     class Meta(NetBoxTable.Meta):
         model = ASPathList
-        fields = ('pk', 'name', 'description', 'site', 'actions')
+        fields = ('pk', 'name', 'description', 'scope_type', 'scope', 'actions')
 
 
 class ASPathListRuleTable(NetBoxTable):
@@ -82,11 +90,18 @@ class CommunityTable(NetBoxTable):
 
 class CommunityListTable(NetBoxTable):
     name = tables.LinkColumn()
-    site = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
 
     class Meta(NetBoxTable.Meta):
         model = CommunityList
-        fields = ('pk', 'name', 'description', 'site', 'actions')
+        fields = ('pk', 'name', 'description', 'scope_type', 'scope', 'actions')
 
 
 class CommunityListRuleTable(NetBoxTable):
@@ -146,10 +161,18 @@ class BGPSessionTable(NetBoxTable):
 
 class RoutingPolicyTable(NetBoxTable):
     name = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
 
     class Meta(NetBoxTable.Meta):
         model = RoutingPolicy
-        fields = ('pk', 'name', 'description', 'site', 'weight', 'actions')
+        fields = ('pk', 'name', 'description', 'scope_type', 'scope', 'weight', 'actions')
 
 
 class BGPPeerGroupTable(NetBoxTable):
@@ -162,7 +185,14 @@ class BGPPeerGroupTable(NetBoxTable):
         template_code=POLICIES,
         orderable=False
     )
-    site = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
     tags = TagColumn(
         url_name='plugins:netbox_bgp:bgppeergroup_list'
     )
@@ -170,7 +200,7 @@ class BGPPeerGroupTable(NetBoxTable):
     class Meta(NetBoxTable.Meta):
         model = BGPPeerGroup
         fields = (
-            'pk', 'name', 'description', 'site', 'tags',
+            'pk', 'name', 'description', 'scope_type', 'scope', 'tags',
             'import_policies', 'export_policies', 'actions'
         )
         default_columns = (
@@ -198,11 +228,18 @@ class RoutingPolicyRuleTable(NetBoxTable):
 class PrefixListTable(NetBoxTable):
     name = tables.LinkColumn()
     family = ChoiceFieldColumn()
-    site = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
 
     class Meta(NetBoxTable.Meta):
         model = PrefixList
-        fields = ('pk', 'name', 'description', 'family', 'site', 'actions')
+        fields = ('pk', 'name', 'description', 'family', 'scope_type', 'scope', 'actions')
 
 
 class PrefixListRuleTable(NetBoxTable):
@@ -234,7 +271,14 @@ class RedistributingTable(NetBoxTable):
         default=AVAILABLE_LABEL
     )
     redistribute_policy = tables.LinkColumn()
-    site = tables.LinkColumn()
+    scope_type = columns.ContentTypeColumn(
+        verbose_name=_('Scope Type'),
+    )
+    scope = tables.Column(
+        verbose_name=_('Scope'),
+        linkify=True,
+        orderable=False
+    )
     vrf = tables.LinkColumn()
 
     tenant = tables.TemplateColumn(
@@ -245,9 +289,9 @@ class RedistributingTable(NetBoxTable):
         model = Redistributing
         fields = (
             'pk', 'name', 'device', 'virtualmachine', 'redistribute_source',
-            'redistribute_policy', 'site', 'vrf', 'description', 'tenant'
+            'redistribute_policy', 'scope_type', 'scope', 'vrf', 'description', 'tenant'
         )
         default_columns = (
             'pk', 'name', 'device', 'virtualmachine', 'redistribute_source',
-            'redistribute_policy', 'site', 'vrf', 'description', 'tenant'
+            'redistribute_policy', 'scope_type', 'scope', 'vrf', 'description', 'tenant'
         )

@@ -1,11 +1,22 @@
-from rest_framework.serializers import CharField, HyperlinkedIdentityField, ValidationError
+from django.contrib.contenttypes.models import ContentType
+from drf_spectacular.utils import extend_schema_field
+from ipam.constants import VLANGROUP_SCOPE_TYPES
+from rest_framework.serializers import (
+    CharField,
+    JSONField,
+    HyperlinkedIdentityField,
+    IntegerField,
+    SerializerMethodField,
+    ValidationError
+)
 from rest_framework.relations import PrimaryKeyRelatedField
-from netbox.api.fields import ChoiceField, SerializedPKRelatedField
+from netbox.api.fields import ChoiceField, ContentTypeField, SerializedPKRelatedField
 from netbox.api.serializers import NetBoxModelSerializer
 from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer, VRFSerializer
 from tenancy.api.serializers import TenantSerializer
 from dcim.api.serializers import SiteSerializer, DeviceSerializer
 from ipam.api.field_serializers import IPNetworkField
+from utilities.api import get_serializer_for_model
 from virtualization.api.serializers import VirtualMachineSerializer
 
 from netbox_bgp.models import (
@@ -29,6 +40,17 @@ from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices, Red
 class ASPathListSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:aspathlist-detail")
 
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
+
     class Meta:
         model = ASPathList
         fields = [
@@ -37,13 +59,22 @@ class ASPathListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "tags",
             "custom_fields",
             "comments",
         ]
         brief_fields = ("id", "url", "display", "name", "description")    
 
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
 
 class ASPathListRuleSerializer(NetBoxModelSerializer):
     aspath_list = ASPathListSerializer(nested=True)
@@ -70,6 +101,17 @@ class ASPathListRuleSerializer(NetBoxModelSerializer):
 class RoutingPolicySerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:routingpolicy-detail")
 
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
+
     class Meta:
         model = RoutingPolicy
         fields = (
@@ -79,7 +121,9 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "name",
             "description",
             "weight",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "redistributing",
             "tags",
             "custom_fields",
@@ -87,9 +131,27 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
 
 class PrefixListSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:prefixlist-detail")
+
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
 
     class Meta:
         model = PrefixList
@@ -99,7 +161,9 @@ class PrefixListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "family",
             "tags",
             "custom_fields",
@@ -107,10 +171,27 @@ class PrefixListSerializer(NetBoxModelSerializer):
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgppeergroup-detail")
 
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=RoutingPolicySerializer,
@@ -136,7 +217,9 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "import_policies",
             "export_policies",
             "comments",
@@ -144,6 +227,13 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
 
 class BGPSessionSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgpsession-detail")
@@ -263,6 +353,17 @@ class CommunitySerializer(NetBoxModelSerializer):
 class CommunityListSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:communitylist-detail")
 
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
+
     class Meta:
         model = CommunityList
         fields = (
@@ -271,13 +372,22 @@ class CommunityListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "tags",
             "custom_fields",
             "comments",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
 
 class CommunityListRuleSerializer(NetBoxModelSerializer):
     community_list = CommunityListSerializer(nested=True)
@@ -399,7 +509,16 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
 class RedistributingSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:redistributing-detail")
     name = CharField(required=True, allow_null=False)
-    site = SiteSerializer(nested=True, required=False, allow_null=True)
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(
+            model__in=VLANGROUP_SCOPE_TYPES
+        ),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = IntegerField(allow_null=True, required=False, default=None)
+    scope = SerializerMethodField(read_only=True)
     vrf = VRFSerializer(nested=True, required=False, allow_null=True)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
@@ -415,7 +534,9 @@ class RedistributingSerializer(NetBoxModelSerializer):
             "tags",
             "custom_fields",
             "display",
-            "site",
+            "scope_type",
+            "scope_id",
+            "scope",
             "vrf",
             "tenant",
             "device",
@@ -429,3 +550,11 @@ class RedistributingSerializer(NetBoxModelSerializer):
             "comments",
         )
         brief_fields = ("id", "url", "name", "display", "device", "virtualmachine", "redistribute_source", "redistribute_policy")
+
+    @extend_schema_field(JSONField(allow_null=True))
+    def get_scope(self, obj):
+        if obj.scope_id is None:
+            return None
+        serializer = get_serializer_for_model(obj.scope)
+        context = {"request": self.context["request"]}
+        return serializer(obj.scope, nested=True, context=context).data
