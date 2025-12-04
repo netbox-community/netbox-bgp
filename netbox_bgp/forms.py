@@ -1584,7 +1584,7 @@ class RedistributingForm(NetBoxModelForm):
     )
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
-        required=True,
+        required=False,
         query_params={"site_id": "$site"},
         widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
@@ -1689,7 +1689,7 @@ class RedistributingImportForm(NetBoxModelImportForm):
     redistribute_policy = CSVModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
         to_field_name="name",
-        required=True,
+        required=False,
         help_text=_("Routing policy name"),
     )
 
@@ -1824,7 +1824,7 @@ class RedistributingBulkEditForm(NetBoxModelBulkEditForm):
     )
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
-        required=True,
+        required=False,
         widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
     description = forms.CharField(

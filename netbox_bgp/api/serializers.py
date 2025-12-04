@@ -524,7 +524,7 @@ class RedistributingSerializer(NetBoxModelSerializer):
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
     virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=True, allow_null=False)
-    redistribute_policy = RoutingPolicySerializer(required=True, allow_null=False)
+    redistribute_policy = RoutingPolicySerializer(required=False, allow_null=True)
 
     class Meta:
         model = Redistributing
