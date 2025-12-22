@@ -4,6 +4,7 @@ from django.db.models import Q
 from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
+from utilities.filtersets import register_filterset
 
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
@@ -14,7 +15,7 @@ from ipam.models import IPAddress, ASN
 from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
 
-
+@register_filterset
 class ASPathListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -31,7 +32,7 @@ class ASPathListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class ASPathListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -49,7 +50,7 @@ class ASPathListRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
         
-
+@register_filterset
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
@@ -66,7 +67,7 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class CommunityListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -83,7 +84,7 @@ class CommunityListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class CommunityListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -101,7 +102,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
@@ -240,7 +241,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         except (AddrFormatError, ValueError):
             return queryset.none()
 
-
+@register_filterset
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -257,7 +258,7 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -277,7 +278,7 @@ class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -294,7 +295,7 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class PrefixListFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -311,6 +312,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
+@register_filterset
 class PrefixListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
