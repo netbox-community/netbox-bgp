@@ -135,6 +135,10 @@ class ASPathListForm(NetBoxModelForm):
         FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
+    nullable_fields = [
+        "scope"
+    ]
+
     class Meta:
         model = ASPathList
         fields = ["name", "description", "tags", "comments"]
@@ -143,25 +147,25 @@ class ASPathListForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()
@@ -377,6 +381,10 @@ class CommunityListForm(NetBoxModelForm):
         FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
+    nullable_fields = [
+        "scope"
+    ]
+
     class Meta:
         model = CommunityList
         fields = ["name", "description", "tags", "comments"]
@@ -385,25 +393,25 @@ class CommunityListForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()
@@ -906,6 +914,10 @@ class RoutingPolicyForm(NetBoxModelForm):
         FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
+    nullable_fields = [
+        "scope"
+    ]
+
     class Meta:
         model = RoutingPolicy
         fields = ["name", "description", "weight", "tags", "comments"]
@@ -914,25 +926,25 @@ class RoutingPolicyForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()
@@ -1072,6 +1084,10 @@ class BGPPeerGroupForm(NetBoxModelForm):
         FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
+    nullable_fields = [
+        "scope"
+    ]
+
     class Meta:
         model = BGPPeerGroup
         fields = [
@@ -1087,25 +1103,25 @@ class BGPPeerGroupForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()
@@ -1393,6 +1409,10 @@ class PrefixListForm(NetBoxModelForm):
         FieldSet("scope_type", "scope", name=_("Scope")),
     )
 
+    nullable_fields = [
+        "scope"
+    ]
+
     class Meta:
         model = PrefixList
         fields = ["name", "description", "family", "tags", "comments"]
@@ -1401,25 +1421,25 @@ class PrefixListForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()
@@ -1584,7 +1604,7 @@ class RedistributingForm(NetBoxModelForm):
     )
     redistribute_policy = DynamicModelChoiceField(
         queryset=RoutingPolicy.objects.all(),
-        required=False,
+        required=True,
         query_params={"site_id": "$site"},
         widget=APISelect(api_url="/api/plugins/bgp/routing-policy/"),
     )
@@ -1607,6 +1627,12 @@ class RedistributingForm(NetBoxModelForm):
         FieldSet("tenant", name=_("Tenancy")),
     )
 
+    nullable_fields = [
+        "tenant",
+        "scope",
+        "vrf",
+    ]
+
     class Meta:
         model = Redistributing
         fields = [
@@ -1626,25 +1652,25 @@ class RedistributingForm(NetBoxModelForm):
         instance = kwargs.get("instance")
         initial = kwargs.get("initial", {})
 
-        if instance is not None and instance.scope:
-            initial["scope"] = instance.scope
+        if instance and getattr(instance, "scope", None):
+            scope = ContentType.objects.get_for_model(instance.scope)
+            initial["scope_type"] = scope.pk
+            initial["scope"] = instance.scope.pk
             kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        if scope_type_id := get_field_value(self, "scope_type"):
+        if scope_type_id := get_field_value(self, 'scope_type'):
             try:
                 scope_type = ContentType.objects.get(pk=scope_type_id)
                 model = scope_type.model_class()
-                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].queryset = model.objects.all().order_by("name")
                 self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
                 self.fields["scope"].disabled = False
                 self.fields["scope"].label = _(bettertitle(model._meta.verbose_name))
             except ObjectDoesNotExist:
-                pass
-
-            if self.instance and scope_type_id != self.instance.scope_type_id:
-                self.initial["scope"] = None
+                self.fields["scope"].queryset = Site.objects.none()
+                self.fields["scope"].disabled = True
 
     def clean(self):
         super().clean()

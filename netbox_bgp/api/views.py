@@ -92,6 +92,6 @@ class ASPathListRuleViewSet(NetBoxModelViewSet):
 
 
 class RedistributingViewSet(NetBoxModelViewSet):
-    queryset = Redistributing.objects.all()
+    queryset = Redistributing.objects.all().order_by('pk')
     serializer_class = RedistributingSerializer
     filterset_class = RedistributingFilterSet

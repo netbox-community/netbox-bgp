@@ -550,7 +550,7 @@ class RedistributingFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = Redistributing
-        fields = ('id', 'name', 'description', 'tenant')
+        fields = ('id', 'name', 'description', 'tenant', 'scope_id')
 
     def filter_scope(self, queryset, name, value):
         model_name = name.replace('_', '')
