@@ -106,6 +106,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>Maximum Prefix</td>
+                        <td>
+                            {% if object.max_prefix %}
+                            {{ object.max_prefix }}
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Prefix List In</td>
                         <td>
                             {% if object.prefix_list_in %}

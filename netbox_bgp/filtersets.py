@@ -209,7 +209,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = BGPSession
-        fields = ('id', 'name', 'description', 'status', 'tenant',)
+        fields = ('id', 'name', 'description', 'status', 'tenant','max_prefix')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

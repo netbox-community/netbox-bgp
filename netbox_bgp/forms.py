@@ -275,6 +275,11 @@ class BGPSessionForm(NetBoxModelForm):
             api_url="/api/plugins/bgp/prefix-list/",
         ),
     )
+    max_prefix = forms.IntegerField(
+        label="Maximum Prefix",
+        required=False,
+        min_value=1,
+    )
     comments = CommentField()
 
 
@@ -294,7 +299,7 @@ class BGPSessionForm(NetBoxModelForm):
         FieldSet("remote_as", "remote_address", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
-        FieldSet("prefix_list_in", "prefix_list_out", name="Prefixes"),
+        FieldSet("max_prefix","prefix_list_in", "prefix_list_out", name="Prefixes"),
     )
 
     class Meta:
@@ -315,6 +320,7 @@ class BGPSessionForm(NetBoxModelForm):
             "tags",
             "import_policies",
             "export_policies",
+            "max_prefix",
             "prefix_list_in",
             "prefix_list_out",
             "comments",
