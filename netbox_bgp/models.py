@@ -398,7 +398,7 @@ class BGPSession(NetBoxModel):
         null=True,
         blank=True,        
     )
-    max_prefix = models.PositiveIntegerField(
+    max_prefixes = models.PositiveIntegerField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1)]
