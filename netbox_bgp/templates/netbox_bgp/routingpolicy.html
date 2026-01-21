@@ -39,6 +39,16 @@
                         <td>Weight</td>
                         <td>{{ object.weight|placeholder }}</td>
                     </tr>
+                    <tr>
+                        <td>Scope</td>
+                        <td>
+                            {% if object.scope %}
+                            <a href="{{ object.scope.get_absolute_url }}">{{ object.scope }}</a>
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -56,6 +66,19 @@
                 {% render_table related_session_table 'inc/table.html' %}
             </div>
             {% plugin_right_page object %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">
+                Related Redistributing
+            </h5>
+            <div class="card-body">
+                {% render_table related_redistributing_table 'inc/table.html' %}
+            </div>
+            {% plugin_full_width_page object %}
         </div>
     </div>
 </div>

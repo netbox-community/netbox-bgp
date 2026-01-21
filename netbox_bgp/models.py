@@ -1,12 +1,19 @@
 from django.urls import reverse
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 
 from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
 
-from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
+from .choices import (
+    IPAddressFamilyChoices,
+    RedistributeSourceChoices,
+    SessionStatusChoices,
+    ActionChoices,
+    CommunityStatusChoices
+)
 
 
 class ASPathList(NetBoxModel):
@@ -20,14 +27,36 @@ class ASPathList(NetBoxModel):
         max_length=200,
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'AS Path Lists'
-        unique_together = ['name', 'description']
         ordering = ['name']
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'description'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -84,6 +113,20 @@ class RoutingPolicy(NetBoxModel):
         max_length=200,
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
     comments = models.TextField(
         blank=True
     )
@@ -94,8 +137,16 @@ class RoutingPolicy(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Routing Policies'
-        unique_together = ['name', 'description']
         ordering = ['weight', 'name']
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'description'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -114,6 +165,20 @@ class BGPPeerGroup(NetBoxModel):
         max_length=200,
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
     import_policies = models.ManyToManyField(
         RoutingPolicy,
         blank=True,
@@ -130,8 +195,16 @@ class BGPPeerGroup(NetBoxModel):
 
     class Meta:
         verbose_name_plural = 'Peer Groups'
-        unique_together = ['name', 'description']
         ordering = ['name']
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'description'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -211,14 +284,36 @@ class CommunityList(NetBoxModel):
         max_length=200,
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'Community Lists'
-        unique_together = ['name', 'description']
         ordering = ['name']
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'description'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -279,14 +374,37 @@ class PrefixList(NetBoxModel):
         max_length=10,
         choices=IPAddressFamilyChoices
     )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
     comments = models.TextField(
         blank=True
     )
 
     class Meta:
         verbose_name_plural = 'Prefix Lists'
-        unique_together = ['name', 'description', 'family']
         ordering = ['name']
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'description', 'family'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
+
 
     def __str__(self):
         return self.name
@@ -500,7 +618,7 @@ class BGPSession(NetBoxModel):
         """
         if self.name:
             return self.name
-        return f'{self.remote_address}:{self.remote_as}'  
+        return f'{self.remote_address}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):
@@ -560,7 +678,6 @@ class RoutingPolicyRule(NetBoxModel):
     )    
 
     class Meta:
-        ordering = ['routing_policy', 'index']
         unique_together = ('routing_policy', 'index')
         ordering = ['routing_policy', 'index']
 
@@ -617,3 +734,96 @@ class RoutingPolicyRule(NetBoxModel):
         if self.set_actions:
             return self.set_actions
         return {}
+
+
+class Redistributing(NetBoxModel):
+    name = models.CharField(
+        max_length=256,
+    )
+    scope_type = models.ForeignKey(
+        to='contenttypes.ContentType',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field='scope_type',
+        fk_field='scope_id'
+    )
+    vrf = models.ForeignKey(
+        to='ipam.VRF',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    tenant = models.ForeignKey(
+        to='tenancy.Tenant',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    device = models.ForeignKey(
+        to='dcim.Device',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    virtualmachine = models.ForeignKey(
+        to='virtualization.VirtualMachine',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+    redistribute_source = models.CharField(
+        max_length=50,
+        choices=RedistributeSourceChoices,
+    )
+    redistribute_policy = models.ForeignKey(
+        RoutingPolicy,
+        related_name='redistributing',
+        on_delete=models.CASCADE,
+    )
+    comments = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        verbose_name_plural = 'Redistributing'
+        indexes = (
+            models.Index(fields=('scope_type', 'scope_id')),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=('scope_type', 'scope_id', 'name', 'device', 'virtualmachine', 'redistribute_source', 'vrf'),
+                name='%(app_label)s_%(class)s_unique_scope_name_description'
+            ),
+        )
+
+    def __str__(self):
+        if self.device:
+            return f'{self.device}:{self.name}'
+        elif self.virtualmachine:
+            return f'{self.virtualmachine}:{self.name}'
+        else:
+            return f':{self.name}'
+
+    def clean(self):
+        super().clean()
+        if not self.device and not self.virtualmachine:
+            raise ValidationError('You need to fill one of required fields: "device" or "virtualmachine".')
+        if self.device and self.virtualmachine:
+            raise ValidationError('You can to fill only one of required fields: "device" or "virtualmachine".')
+
+    def get_redistribute_source_color(self):
+        return RedistributeSourceChoices.colors.get(self.redistribute_source)
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_bgp:redistributing', args=[self.pk])

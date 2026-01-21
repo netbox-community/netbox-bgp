@@ -193,7 +193,26 @@ _menu_items_primary = (
                 permissions=['netbox_bgp.add_bgppeergroup'],
             ),
         ),
-    )
+    ),
+    PluginMenuItem(
+        link='plugins:netbox_bgp:redistributing_list',
+        link_text='Redistributing',
+        permissions=['netbox_bgp.view_redistributing'],
+        buttons=(
+            PluginMenuButton(
+                link='plugins:netbox_bgp:redistributing_add',
+                title='Add',
+                icon_class='mdi mdi-plus-thick',
+                permissions=['netbox_bgp.add_redistributing'],
+            ),
+            PluginMenuButton(
+                link='plugins:netbox_bgp:redistributing_bulk_import',
+                title='Import',
+                icon_class='mdi mdi-upload',
+                permissions=['netbox_bgp.add_redistributing'],
+            )
+        ),
+    ),
 )
 
 

@@ -11,7 +11,7 @@ from .models import (
     Community, BGPSession, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
     PrefixListRule, CommunityList, CommunityListRule,
-    ASPathList, ASPathListRule
+    ASPathList, ASPathListRule, Redistributing
 )
 
 from . import filtersets, forms, tables
@@ -64,7 +64,7 @@ class CommunityBulkImportView(generic.BulkImportView):
 
 @register_model_view(CommunityList, "list", path="", detail=False)
 class CommunityListListView(generic.ObjectListView):
-    queryset = CommunityList.objects.all()
+    queryset = CommunityList.objects.select_related('scope_type').prefetch_related('tags')
     filterset = filtersets.CommunityListFilterSet
     filterset_form = forms.CommunityListFilterForm
     table = tables.CommunityListTable
@@ -149,7 +149,19 @@ class CommunityListRuleView(generic.ObjectView):
 
 @register_model_view(BGPSession, "list", path="", detail=False)
 class BGPSessionListView(generic.ObjectListView):
-    queryset = BGPSession.objects.all()
+    queryset = BGPSession.objects.select_related(
+        'device',
+        'virtualmachine',
+        'local_address',
+        'remote_address',
+        'local_as',
+        'remote_as',
+        'peer_group',
+        'prefix_list_in',
+        'prefix_list_out',
+        'site',
+        'tenant'
+    ).prefetch_related('import_policies', 'export_policies', 'tags')
     filterset = filtersets.BGPSessionFilterSet
     filterset_form = forms.BGPSessionFilterForm
     table = tables.BGPSessionTable
@@ -218,7 +230,7 @@ class BGPSessionDeleteView(generic.ObjectDeleteView):
 
 @register_model_view(RoutingPolicy, "list", path="", detail=False)
 class RoutingPolicyListView(generic.ObjectListView):
-    queryset = RoutingPolicy.objects.all()
+    queryset = RoutingPolicy.objects.select_related('scope_type').prefetch_related('tags')
     filterset = filtersets.RoutingPolicyFilterSet
     filterset_form = forms.RoutingPolicyFilterForm
     table = tables.RoutingPolicyTable
@@ -255,11 +267,17 @@ class RoutingPolicyView(generic.ObjectView):
         )
         sess = sess.distinct()
         sess_table = tables.BGPSessionTable(sess)
+        redistiributing = Redistributing.objects.filter(
+            Q(redistribute_policy=instance)
+        )
+        redistiributing = redistiributing.distinct()
+        redistiributing_table = tables.RedistributingTable(redistiributing)
         rules = instance.rules.all()
         rules_table = tables.RoutingPolicyRuleTable(rules)
         return {
             'rules_table': rules_table,
-            'related_session_table': sess_table
+            'related_session_table': sess_table,
+            'related_redistributing_table': redistiributing_table,
         }
 
 @register_model_view(RoutingPolicy, "delete")
@@ -328,7 +346,9 @@ class RoutingPolicyRuleImportView(generic.BulkImportView):
 
 @register_model_view(BGPPeerGroup, "list", path="", detail=False)
 class BGPPeerGroupListView(generic.ObjectListView):
-    queryset = BGPPeerGroup.objects.all()
+    queryset = BGPPeerGroup.objects.select_related(
+        'scope_type'
+    ).prefetch_related('import_policies', 'export_policies', 'tags')
     filterset = filtersets.BGPPeerGroupFilterSet
     filterset_form = forms.BGPPeerGroupFilterForm
     table = tables.BGPPeerGroupTable
@@ -390,7 +410,7 @@ class BGPPeerGroupBulkEditView(generic.BulkEditView):
 
 @register_model_view(PrefixList, "list", path="", detail=False)
 class PrefixListListView(generic.ObjectListView):
-    queryset = PrefixList.objects.all()
+    queryset = PrefixList.objects.select_related('scope_type').prefetch_related('tags')
     filterset = filtersets.PrefixListFilterSet
     filterset_form = forms.PrefixListFilterForm
     table = tables.PrefixListTable
@@ -501,7 +521,7 @@ class VMBGPSessionView(generic.ObjectChildrenView):
 
 @register_model_view(ASPathList, "list", path="", detail=False)
 class ASPathListListView(generic.ObjectListView):
-    queryset = ASPathList.objects.all()
+    queryset = ASPathList.objects.select_related('scope_type').prefetch_related('tags')
     filterset = filtersets.ASPathListFilterSet
     filterset_form = forms.ASPathListFilterForm
     table = tables.ASPathListTable
@@ -589,3 +609,54 @@ class ASPathListRuleBulkImportView(generic.BulkImportView):
 class ASPathListRuleView(generic.ObjectView):
     queryset = ASPathListRule.objects.all()
     template_name = 'netbox_bgp/aspathlistrule.html'
+
+
+# Redistributing
+
+@register_model_view(Redistributing, "list", path="", detail=False)
+class RedistributingListView(generic.ObjectListView):
+    queryset = Redistributing.objects.all()
+    filterset = filtersets.RedistributingFilterSet
+    filterset_form = forms.RedistributingFilterForm
+    table = tables.RedistributingTable
+
+@register_model_view(Redistributing, "add", detail=False)
+@register_model_view(Redistributing, "edit")
+class RedistributingEditView(generic.ObjectEditView):
+    queryset = Redistributing.objects.all()
+    form = forms.RedistributingForm
+
+@register_model_view(Redistributing, "bulk_import", path="import", detail=False)
+class RedistributingBulkImportView(generic.BulkImportView):
+    queryset = Redistributing.objects.all()
+    model_form = forms.RedistributingImportForm
+
+@register_model_view(Redistributing, "bulk_edit", path="edit", detail=False)
+class RedistributingBulkEditView(generic.BulkEditView):
+    queryset = Redistributing.objects.all()
+    filterset = filtersets.RedistributingFilterSet
+    table = tables.RedistributingTable
+    form = forms.RedistributingBulkEditForm
+
+@register_model_view(Redistributing, "bulk_delete", path="delete", detail=False)
+class RedistributingBulkDeleteView(generic.BulkDeleteView):
+    queryset = Redistributing.objects.all()
+    table = tables.RedistributingTable
+
+@register_model_view(Redistributing)
+class RedistributingView(generic.ObjectView):
+    queryset = Redistributing.objects.select_related(
+        'device',
+        'virtualmachine',
+        'redistribute_policy',
+        'scope_type',
+        'vrf',
+        'tenant'
+    ).prefetch_related('tags')
+    table = tables.RedistributingTable
+    template_name = 'netbox_bgp/redistributing.html'
+
+@register_model_view(Redistributing, "delete")
+class RedistributingDeleteView(generic.ObjectDeleteView):
+    queryset = Redistributing.objects.all()
+    default_return_url = 'plugins:netbox_bgp:redistributing_list'

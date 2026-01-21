@@ -4,7 +4,7 @@ from utilities.urls import get_model_urls
 from .models import (
     BGPSession, Community, RoutingPolicy,
     BGPPeerGroup, RoutingPolicyRule, PrefixList,
-    PrefixListRule, CommunityList, CommunityListRule
+    PrefixListRule, CommunityList, CommunityListRule, Redistributing
 )
 from . import views
 
@@ -117,5 +117,15 @@ urlpatterns = (
     path(
         "prefix-list-rule/<int:pk>/",
         include(get_model_urls("netbox_bgp", "prefixlistrule")),
+    ),
+
+    # Redistributing
+    path(
+        "redistributing/",
+        include(get_model_urls("netbox_bgp", "redistributing", detail=False)),
+    ),
+    path(
+        "redistributing/<int:pk>/",
+        include(get_model_urls("netbox_bgp", "redistributing")),
     ),
 )

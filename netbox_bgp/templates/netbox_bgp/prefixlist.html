@@ -39,6 +39,16 @@
                         <td>Description</td>
                         <td>{{ object.description|placeholder }}</td>
                     </tr>
+                    <tr>
+                        <td>Scope</td>
+                        <td>
+                            {% if object.scope %}
+                            <a href="{{ object.scope.get_absolute_url }}">{{ object.scope }}</a>
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>
