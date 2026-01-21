@@ -12,7 +12,7 @@ This plugin provide following Models:
 
 ## Compatibility
 
-|               |           |
+|NetBox Version | Plugin    |
 |---------------|-----------|
 | NetBox 3.4.x  | >= 0.9.0  |
 | NetBox 3.5.x  | >= 0.10.0 |
@@ -23,6 +23,7 @@ This plugin provide following Models:
 | NetBox 4.2.x  | 0.15.x    |
 | NetBox 4.3.x  | 0.16.x    |
 | NetBox 4.4.x  | 0.17.x    |
+| NetBox 4.5.x  | 0.18.x    |
 
 ## Installation
 

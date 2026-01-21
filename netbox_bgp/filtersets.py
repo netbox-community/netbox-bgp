@@ -5,6 +5,7 @@ from django.db.models import Q
 from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
+from utilities.filtersets import register_filterset
 
 from .choices import RedistributeSourceChoices
 from .models import (
@@ -18,6 +19,8 @@ from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
 from utilities.filters import ContentTypeFilter
 
+
+@register_filterset
 class ASPathListFilterSet(NetBoxModelFilterSet):
     scope_type = ContentTypeFilter()
     region = django_filters.NumberFilter(
@@ -63,7 +66,7 @@ class ASPathListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class ASPathListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -81,7 +84,7 @@ class ASPathListRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
         
-
+@register_filterset
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
@@ -98,7 +101,7 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class CommunityListFilterSet(NetBoxModelFilterSet):
     scope_type = ContentTypeFilter()
     region = django_filters.NumberFilter(
@@ -144,7 +147,7 @@ class CommunityListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class CommunityListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -162,7 +165,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     remote_as = django_filters.ModelMultipleChoiceFilter(
@@ -301,7 +304,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         except (AddrFormatError, ValueError):
             return queryset.none()
 
-
+@register_filterset
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):
     scope_type = ContentTypeFilter()
     region = django_filters.NumberFilter(
@@ -347,7 +350,7 @@ class RoutingPolicyFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
@@ -367,7 +370,7 @@ class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
     scope_type = ContentTypeFilter()
     region = django_filters.NumberFilter(
@@ -413,7 +416,7 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
-
+@register_filterset
 class PrefixListFilterSet(NetBoxModelFilterSet):
     scope_type = ContentTypeFilter()
     region = django_filters.NumberFilter(
@@ -459,6 +462,7 @@ class PrefixListFilterSet(NetBoxModelFilterSet):
         )
         return queryset.filter(qs_filter)
 
+@register_filterset
 class PrefixListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
