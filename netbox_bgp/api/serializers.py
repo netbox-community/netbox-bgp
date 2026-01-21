@@ -76,6 +76,7 @@ class ASPathListSerializer(NetBoxModelSerializer):
         context = {"request": self.context["request"]}
         return serializer(obj.scope, nested=True, context=context).data
 
+
 class ASPathListRuleSerializer(NetBoxModelSerializer):
     aspath_list = ASPathListSerializer(nested=True)
 
@@ -112,6 +113,11 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
     scope_id = IntegerField(allow_null=True, required=False, default=None)
     scope = SerializerMethodField(read_only=True)
 
+    redistributing = PrimaryKeyRelatedField(
+        many=True,
+        read_only=True
+    )
+
     class Meta:
         model = RoutingPolicy
         fields = (
@@ -138,6 +144,7 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
         serializer = get_serializer_for_model(obj.scope)
         context = {"request": self.context["request"]}
         return serializer(obj.scope, nested=True, context=context).data
+
 
 class PrefixListSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:prefixlist-detail")
@@ -178,6 +185,7 @@ class PrefixListSerializer(NetBoxModelSerializer):
         serializer = get_serializer_for_model(obj.scope)
         context = {"request": self.context["request"]}
         return serializer(obj.scope, nested=True, context=context).data
+
 
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgppeergroup-detail")
@@ -234,6 +242,7 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
         serializer = get_serializer_for_model(obj.scope)
         context = {"request": self.context["request"]}
         return serializer(obj.scope, nested=True, context=context).data
+
 
 class BGPSessionSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgpsession-detail")
@@ -389,6 +398,7 @@ class CommunityListSerializer(NetBoxModelSerializer):
         context = {"request": self.context["request"]}
         return serializer(obj.scope, nested=True, context=context).data
 
+
 class CommunityListRuleSerializer(NetBoxModelSerializer):
     community_list = CommunityListSerializer(nested=True)
     community = CommunitySerializer(nested=True, required=False, allow_null=True)
@@ -524,7 +534,7 @@ class RedistributingSerializer(NetBoxModelSerializer):
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
     virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     redistribute_source = ChoiceField(choices=RedistributeSourceChoices, required=True, allow_null=False)
-    redistribute_policy = RoutingPolicySerializer(required=False, allow_null=True)
+    redistribute_policy = RoutingPolicySerializer(required=False, allow_null=True, nested=True)
 
     class Meta:
         model = Redistributing

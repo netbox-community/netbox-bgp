@@ -352,7 +352,7 @@ class RoutingPolicyRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = RoutingPolicyRule
-        fields = ('id', 'index', 'action', 'description', 'routing_policy_id', 'continue_entry')
+        fields = ('id', 'index', 'action', 'description', 'routing_policy', 'routing_policy_id', 'continue_entry')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
