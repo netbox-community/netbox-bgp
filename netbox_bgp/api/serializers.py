@@ -187,6 +187,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "remote_address",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "peer_group",
             "import_policies",
             "export_policies",
