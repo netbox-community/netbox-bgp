@@ -190,6 +190,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "peer_group",
             "import_policies",
             "export_policies",
+            "max_prefixes",
             "prefix_list_in",
             "prefix_list_out",
             "created",

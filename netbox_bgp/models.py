@@ -392,14 +392,17 @@ class BGPSession(NetBoxModel):
         null=True,
         blank=True,
     )
-
     virtualmachine = models.ForeignKey(
         to='virtualization.VirtualMachine',
         on_delete=models.PROTECT,
         null=True,
         blank=True,        
     )
-
+    max_prefixes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)]
+    )
     local_address = models.ForeignKey(
         to='ipam.IPAddress',
         on_delete=models.PROTECT,

@@ -150,7 +150,7 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilter):
         | None
     ) = strawberry_django.filter_field()
 
-
+    max_prefixes: FilterLookup[int] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(BGPPeerGroup, lookups=True)
