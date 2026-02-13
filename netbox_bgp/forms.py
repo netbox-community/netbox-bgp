@@ -238,6 +238,11 @@ class BGPSessionForm(NetBoxModelForm):
     remote_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(), label=_("Remote AS")
     )
+    remote_as_macro = forms.CharField(
+        label=_("Remote AS Macro"),
+        max_length=255,
+        required=False,
+    )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(), query_params={"device_id": "$device"}
     )
@@ -296,7 +301,7 @@ class BGPSessionForm(NetBoxModelForm):
             "tags",
             name="Session",
         ),
-        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("remote_as","remote_as_macro", "remote_address", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
         FieldSet("max_prefixes","prefix_list_in", "prefix_list_out", name="Prefixes"),
@@ -311,6 +316,7 @@ class BGPSessionForm(NetBoxModelForm):
             "virtualmachine",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "local_address",
             "remote_address",
             "description",
@@ -446,6 +452,7 @@ class BGPSessionImportForm(NetBoxModelImportForm):
             "remote_address",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "tags",
             "prefix_list_in",
             "prefix_list_out",
@@ -535,6 +542,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     )
     local_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
     remote_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
+    remote_as_macro = forms.CharField(
+        label=_("Remote AS Macro"), 
+        max_length=255,
+        required=False,
+    )
     peer_group = DynamicModelChoiceField(
         queryset=BGPPeerGroup.objects.all(),
         required=False,
@@ -573,7 +585,7 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
             "tags",
             name="Session",
         ),
-        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("remote_as","remote_as_macro", "remote_address", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
         FieldSet("max_prefixes", "prefix_list_in", "prefix_list_out", name="Prefixes"),

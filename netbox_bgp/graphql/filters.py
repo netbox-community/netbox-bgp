@@ -109,6 +109,8 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilter):
     ) = strawberry_django.filter_field()
     remote_as_id: ID | None = strawberry_django.filter_field()
 
+    remote_as_macro: FilterLookup[str] | None = strawberry_django.filter_field()
+
     local_as: (
         Annotated["ASNFilter", strawberry.lazy("ipam.graphql.filters")] | None
     ) = strawberry_django.filter_field()

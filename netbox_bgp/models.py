@@ -423,6 +423,11 @@ class BGPSession(NetBoxModel):
         on_delete=models.PROTECT,
         related_name='remote_as'
     )
+    remote_as_macro = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
     status = models.CharField(
         max_length=50,
         choices=SessionStatusChoices,

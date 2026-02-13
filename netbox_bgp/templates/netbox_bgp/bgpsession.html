@@ -90,6 +90,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>Remote AS-MACRO</td>
+                        <td>
+                            {% if object.remote_as_macro %}
+                            {{ object.remote_as_macro }}
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Remote IP</td>
                         <td>
                             {% if object.remote_address %}
