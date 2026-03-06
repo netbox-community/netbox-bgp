@@ -40,7 +40,7 @@ class ASPathListSerializer(NetBoxModelSerializer):
             "custom_fields",
             "comments",
         ]
-        brief_fields = ("id", "url", "display", "name", "description")    
+        brief_fields = ("id", "url", "display", "name", "description")
 
 
 class ASPathListRuleSerializer(NetBoxModelSerializer):
@@ -338,7 +338,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         required=False,
         allow_null=True,
         many=True,
-    )  
+    )
 
     class Meta:
         model = RoutingPolicyRule

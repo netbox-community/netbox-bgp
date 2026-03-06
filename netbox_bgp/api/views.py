@@ -23,7 +23,7 @@ from netbox_bgp.filtersets import (
 class RootView(APIRootView):
     def get_view_name(self):
         return 'BGP'
-    
+
 
 class BGPSessionViewSet(NetBoxModelViewSet):
     queryset = BGPSession.objects.all()

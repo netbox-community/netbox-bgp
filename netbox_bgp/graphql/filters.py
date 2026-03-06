@@ -120,12 +120,12 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilter):
         Annotated["IPAddressFilter", strawberry.lazy("ipam.graphql.filters")] | None
     ) = strawberry_django.filter_field()
     local_address_id: ID | None = strawberry_django.filter_field()
-    
+
     remote_address: (
         Annotated["IPAddressFilter", strawberry.lazy("ipam.graphql.filters")] | None
     ) = strawberry_django.filter_field()
     remote_address_id: ID | None = strawberry_django.filter_field()
-    
+
     device: (
         Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None
     ) = strawberry_django.filter_field()
@@ -167,7 +167,7 @@ class NetBoxBGPRoutingPolicyFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(RoutingPolicyRule, lookups=True)
 class NetBoxBGPRoutingPolicyRuleFilter(NetBoxModelFilter):
-    description: FilterLookup[str] | None = strawberry_django.filter_field()   
+    description: FilterLookup[str] | None = strawberry_django.filter_field()
     routing_policy: (
         Annotated[
             "NetBoxBGPRoutingPolicyFilter", strawberry.lazy("netbox_bgp.graphql.filters")
@@ -187,7 +187,7 @@ class NetBoxBGPRoutingPolicyRuleFilter(NetBoxModelFilter):
         ]
         | None
     ) = strawberry_django.filter_field()
-    aspath_list_id: ID | None = strawberry_django.filter_field()  
+    aspath_list_id: ID | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(PrefixList, lookups=True)

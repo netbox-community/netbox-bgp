@@ -396,7 +396,7 @@ class BGPSession(NetBoxModel):
         to='virtualization.VirtualMachine',
         on_delete=models.PROTECT,
         null=True,
-        blank=True,        
+        blank=True,
     )
     max_prefixes = models.PositiveIntegerField(
         null=True,
@@ -508,7 +508,7 @@ class BGPSession(NetBoxModel):
         """
         if self.name:
             return self.name
-        return f'{self.remote_address}:{self.remote_as}'  
+        return f'{self.remote_address}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):
@@ -565,7 +565,7 @@ class RoutingPolicyRule(NetBoxModel):
     )
     comments = models.TextField(
         blank=True
-    )    
+    )
 
     class Meta:
         ordering = ['routing_policy', 'index']

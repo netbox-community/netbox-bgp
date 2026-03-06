@@ -64,7 +64,7 @@ class ASPathListRuleFilterForm(NetBoxModelFilterSetForm):
     aspath_list = DynamicModelChoiceField(queryset=ASPathList.objects.all(), required=False)
     tag = TagFilterField(model)
 
-    
+
 class ASPathListForm(NetBoxModelForm):
 
     comments = CommentField()
@@ -103,7 +103,7 @@ class ASPathListRuleImportForm(NetBoxModelImportForm):
 
     class Meta:
         model = ASPathListRule
-        fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]   
+        fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]
 
 
 class ASPathListRuleForm(NetBoxModelForm):
@@ -543,7 +543,7 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     local_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
     remote_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
     remote_as_macro = forms.CharField(
-        label=_("Remote AS Macro"), 
+        label=_("Remote AS Macro"),
         max_length=255,
         required=False,
     )
@@ -720,7 +720,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         queryset=CommunityList.objects.all(),
         required=False,
     )
-    
+
     match_ip_address = DynamicModelMultipleChoiceField(
         queryset=PrefixList.objects.all(),
         required=False,
@@ -740,7 +740,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     match_aspath_list = DynamicModelMultipleChoiceField(
         queryset=ASPathList.objects.all(),
         required=False,
-    )   
+    )
 
     match_custom = forms.JSONField(
         label="Custom Match",
@@ -910,7 +910,7 @@ class PrefixListRuleImportForm(NetBoxModelImportForm):
             "tags",
             "comments",
         )
-        
+
 class PrefixListRuleForm(NetBoxModelForm):
     prefix = DynamicModelChoiceField(
         queryset=Prefix.objects.all(),

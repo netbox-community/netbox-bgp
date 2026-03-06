@@ -7,7 +7,7 @@ This plugin provide following Models:
 * BGP Sessions
 * BGP Peer Groups
 * Routing Policy
-* Prefix Lists 
+* Prefix Lists
 * AS Path Lists
 
 ## Compatibility
@@ -27,7 +27,7 @@ This plugin provide following Models:
 
 ## Installation
 
-The plugin is available as a Python package in pypi and can be installed with pip  
+The plugin is available as a Python package in pypi and can be installed with pip
 
 ```
 pip install netbox-bgp
@@ -43,13 +43,13 @@ See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing
 ## Configuration
 
 The following options are available:
-* `device_ext_page`: String (default right) Device related BGP sessions display mode. The following values are available:  
+* `device_ext_page`: String (default right) Device related BGP sessions display mode. The following values are available:
   - `left`: Display BGP sessions in the left column of the device detail page
-  - `right`: Display BGP sessions in the right column of the device detail page  
+  - `right`: Display BGP sessions in the right column of the device detail page
   - `full_width`: Display BGP sessions in full width at the bottom of the device detail page
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
-* `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin. 
+* `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
 
 ## Screenshots
 

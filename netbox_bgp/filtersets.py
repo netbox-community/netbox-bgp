@@ -49,7 +49,7 @@ class ASPathListRuleFilterSet(NetBoxModelFilterSet):
                 | Q(aspath_list_id__icontains=value)
         )
         return queryset.filter(qs_filter)
-        
+
 @register_filterset
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
@@ -197,7 +197,7 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         queryset=Site.objects.all(),
         to_field_name='name',
         label='DSite (name)',
-    )    
+    )
     by_remote_address = django_filters.CharFilter(
         method='search_by_remote_ip',
         label='Remote Address',
