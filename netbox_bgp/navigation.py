@@ -41,7 +41,7 @@ _menu_items_primary = (
                 permissions=['netbox_bgp.add_communitylist'],
             ),
         ),
-    ),    
+    ),
     PluginMenuItem(
         link='plugins:netbox_bgp:bgpsession_list',
         link_text='Sessions',
@@ -155,7 +155,7 @@ _menu_items_primary = (
                 permissions=['netbox_bgp.add_aspathlist'],
             ),
         ),
-    ),    
+    ),
     PluginMenuItem(
         link='plugins:netbox_bgp:aspathlistrule_list',
         link_text='AS Path List Rules',
@@ -174,7 +174,7 @@ _menu_items_primary = (
                 permissions=['netbox_bgp.add_aspathlistrule'],
             ),
         ),
-    ),    
+    ),
     PluginMenuItem(
         link='plugins:netbox_bgp:bgppeergroup_list',
         link_text='Peer Groups',
@@ -235,7 +235,7 @@ _menu_items_grouped = (
                 permissions=['netbox_bgp.add_communitylist'],
             ),
         ),
-    ),    
+    ),
     PluginMenuItem(
         link='plugins:netbox_bgp:bgpsession_list',
         link_text='Sessions',
@@ -296,7 +296,7 @@ _aspath_list_menu = (
                 permissions=['netbox_bgp.add_aspathlist'],
             ),
         ),
-    ),  
+    ),
     PluginMenuItem(
         link='plugins:netbox_bgp:aspathlistrule_list',
         link_text='AS Path List Rules',
@@ -315,8 +315,8 @@ _aspath_list_menu = (
                 permissions=['netbox_bgp.add_aspathlistrule'],
             ),
         ),
-    ),   
-)   
+    ),
+)
 
 _routing_policy_menu = (
     PluginMenuItem(
@@ -404,7 +404,7 @@ _prefix_list_menu = (
 plugin_settings = settings.PLUGINS_CONFIG.get('netbox_bgp', {})
 
 if plugin_settings.get('top_level_menu'):
-    menu = PluginMenu(  
+    menu = PluginMenu(
         label="BGP",
         groups=(
             ("BGP", _menu_items_grouped),
