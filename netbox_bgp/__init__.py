@@ -15,8 +15,9 @@ class BGPConfig(PluginConfig):
     max_version = '4.5.99'
     default_settings = {
         'device_ext_page': 'right',
-        'top_level_menu' : False,
+        'top_level_menu': False,
+        'remote_address_strict': False,
     }
 
 
-config = BGPConfig # noqa
+config = BGPConfig  # noqa
