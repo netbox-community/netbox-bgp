@@ -50,6 +50,7 @@ The following options are available:
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
+* `remote_address_strict`: Bool (default False) Enable strict validation of remote address field in BGP session. If enabled, the remote address must be a existing IP address in NetBox. If disabled, any valid IP address can be used as remote address.
 
 ## Screenshots
 
