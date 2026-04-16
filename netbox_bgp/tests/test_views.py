@@ -21,7 +21,7 @@ class ASPathListRuleTestCase(ViewTestCases.BulkImportObjectsViewTestCase):
             self.model._meta.app_label,
             self.model._meta.model_name
         )
- 
+
     @classmethod
     def setUpTestData(cls):
         aspathlists = [
@@ -51,7 +51,7 @@ class PrefixListRuleTestCase(ViewTestCases.BulkImportObjectsViewTestCase):
             self.model._meta.app_label,
             self.model._meta.model_name
         )
- 
+
     @classmethod
     def setUpTestData(cls):
         prefixes = [
@@ -86,7 +86,7 @@ class RoutingPolicyRuleTestCase(ViewTestCases.BulkImportObjectsViewTestCase):
             self.model._meta.app_label,
             self.model._meta.model_name
         )
- 
+
     @classmethod
     def setUpTestData(cls):
         aspathlists = [

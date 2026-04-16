@@ -90,6 +90,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>Remote AS-MACRO</td>
+                        <td>
+                            {% if object.remote_as_macro %}
+                            {{ object.remote_as_macro }}
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Remote IP</td>
                         <td>
                             {% if object.remote_address %}
@@ -103,6 +113,16 @@
                         <td>Status</td>
                         <td>
                             {% badge object.get_status_display bg_color=object.get_status_color %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Maximum Prefixes</td>
+                        <td>
+                            {% if object.max_prefixes %}
+                            {{ object.max_prefixes }}
+                            {% else %}
+                            <span class="text-muted">None</span>
+                            {% endif %}
                         </td>
                     </tr>
                     <tr>
@@ -124,7 +144,7 @@
                             <span class="text-muted">None</span>
                             {% endif %}
                         </td>
-                    </tr>                                        
+                    </tr>
                     <tr>
                         <td>Description</td>
                         <td>{{ object.description|placeholder }}</td>

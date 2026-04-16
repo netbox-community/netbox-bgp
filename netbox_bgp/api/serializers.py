@@ -36,11 +36,13 @@ class ASPathListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
+            "comments",
             "tags",
             "custom_fields",
-            "comments",
+            "created",
+            "last_updated",
         ]
-        brief_fields = ("id", "url", "display", "name", "description")    
+        brief_fields = ("id", "url", "display", "name", "description")
 
 
 class ASPathListRuleSerializer(NetBoxModelSerializer):
@@ -51,16 +53,16 @@ class ASPathListRuleSerializer(NetBoxModelSerializer):
         fields = [
             "id",
             "description",
-            "tags",
-            "custom_fields",
             "display",
             "aspath_list",
-            "created",
-            "last_updated",
             "index",
             "action",
             "pattern",
             "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         ]
         brief_fields = ("id", "display", "description")
 
@@ -77,9 +79,11 @@ class RoutingPolicySerializer(NetBoxModelSerializer):
             "name",
             "description",
             "weight",
+            "comments",
             "tags",
             "custom_fields",
-            "comments",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -96,9 +100,11 @@ class PrefixListSerializer(NetBoxModelSerializer):
             "display",
             "description",
             "family",
+            "comments",
             "tags",
             "custom_fields",
-            "comments",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -134,7 +140,10 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "import_policies",
             "export_policies",
             "comments",
+            "tags",
             "custom_fields",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -175,8 +184,6 @@ class BGPSessionSerializer(NetBoxModelSerializer):
         fields = (
             "id",
             "url",
-            "tags",
-            "custom_fields",
             "display",
             "status",
             "site",
@@ -187,16 +194,20 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "remote_address",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "peer_group",
             "import_policies",
             "export_policies",
+            "max_prefixes",
             "prefix_list_in",
             "prefix_list_out",
-            "created",
-            "last_updated",
             "name",
             "description",
             "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -238,18 +249,18 @@ class CommunitySerializer(NetBoxModelSerializer):
         fields = (
             "id",
             "url",
-            "tags",
-            "custom_fields",
             "display",
             "status",
             "tenant",
-            "created",
-            "last_updated",
             "description",
             "value",
             "site",
             "role",
             "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "value", "description")
 
@@ -265,9 +276,11 @@ class CommunityListSerializer(NetBoxModelSerializer):
             "name",
             "display",
             "description",
+            "comments",
             "tags",
             "custom_fields",
-            "comments",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -280,16 +293,16 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
         model = CommunityListRule
         fields = (
             "id",
-            "tags",
-            "custom_fields",
             "display",
             "description",
             "community_list",
-            "created",
-            "last_updated",
             "action",
             "community",
             "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "display", "description")
 
@@ -336,7 +349,7 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
         required=False,
         allow_null=True,
         many=True,
-    )  
+    )
 
     class Meta:
         model = RoutingPolicyRule
@@ -355,9 +368,11 @@ class RoutingPolicyRuleSerializer(NetBoxModelSerializer):
             "match_ipv6_address",
             "description",
             "continue_entry",
+            "comments",
             "tags",
             "custom_fields",
-            "comments",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "display", "description")
 
@@ -372,12 +387,8 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
         fields = (
             "id",
             "description",
-            "tags",
-            "custom_fields",
             "display",
             "prefix_list",
-            "created",
-            "last_updated",
             "index",
             "action",
             "prefix_custom",
@@ -385,6 +396,10 @@ class PrefixListRuleSerializer(NetBoxModelSerializer):
             "le",
             "prefix",
             "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         )
         brief_fields = ("id", "display", "description")
 

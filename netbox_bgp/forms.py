@@ -64,7 +64,7 @@ class ASPathListRuleFilterForm(NetBoxModelFilterSetForm):
     aspath_list = DynamicModelChoiceField(queryset=ASPathList.objects.all(), required=False)
     tag = TagFilterField(model)
 
-    
+
 class ASPathListForm(NetBoxModelForm):
 
     comments = CommentField()
@@ -103,7 +103,7 @@ class ASPathListRuleImportForm(NetBoxModelImportForm):
 
     class Meta:
         model = ASPathListRule
-        fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]   
+        fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]
 
 
 class ASPathListRuleForm(NetBoxModelForm):
@@ -238,6 +238,11 @@ class BGPSessionForm(NetBoxModelForm):
     remote_as = DynamicModelChoiceField(
         queryset=ASN.objects.all(), label=_("Remote AS")
     )
+    remote_as_macro = forms.CharField(
+        label=_("Remote AS Macro"),
+        max_length=255,
+        required=False,
+    )
     local_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(), query_params={"device_id": "$device"}
     )
@@ -275,6 +280,11 @@ class BGPSessionForm(NetBoxModelForm):
             api_url="/api/plugins/bgp/prefix-list/",
         ),
     )
+    max_prefixes = forms.IntegerField(
+        label=_("Maximum Prefixes"),
+        required=False,
+        min_value=1,
+    )
     comments = CommentField()
 
 
@@ -291,10 +301,10 @@ class BGPSessionForm(NetBoxModelForm):
             "tags",
             name="Session",
         ),
-        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("remote_as","remote_as_macro", "remote_address", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
-        FieldSet("prefix_list_in", "prefix_list_out", name="Prefixes"),
+        FieldSet("max_prefixes","prefix_list_in", "prefix_list_out", name="Prefixes"),
     )
 
     class Meta:
@@ -306,6 +316,7 @@ class BGPSessionForm(NetBoxModelForm):
             "virtualmachine",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "local_address",
             "remote_address",
             "description",
@@ -315,6 +326,7 @@ class BGPSessionForm(NetBoxModelForm):
             "tags",
             "import_policies",
             "export_policies",
+            "max_prefixes",
             "prefix_list_in",
             "prefix_list_out",
             "comments",
@@ -440,9 +452,11 @@ class BGPSessionImportForm(NetBoxModelImportForm):
             "remote_address",
             "local_as",
             "remote_as",
+            "remote_as_macro",
             "tags",
             "prefix_list_in",
             "prefix_list_out",
+            "max_prefixes",
         ]
 
 
@@ -528,6 +542,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
     )
     local_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
     remote_as = DynamicModelChoiceField(queryset=ASN.objects.all(), required=False)
+    remote_as_macro = forms.CharField(
+        label=_("Remote AS Macro"),
+        max_length=255,
+        required=False,
+    )
     peer_group = DynamicModelChoiceField(
         queryset=BGPPeerGroup.objects.all(),
         required=False,
@@ -545,6 +564,11 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
     )
+    max_prefixes = forms.IntegerField(
+        label=_("Maximum Prefixes"),
+        required=False,
+        min_value=1,
+    )
 
     model = BGPSession
 
@@ -561,10 +585,10 @@ class BGPSessionBulkEditForm(NetBoxModelBulkEditForm):
             "tags",
             name="Session",
         ),
-        FieldSet("remote_as", "remote_address", name="Remote"),
+        FieldSet("remote_as","remote_as_macro", "remote_address", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
-        FieldSet("prefix_list_in", "prefix_list_out", name="Prefixes"),
+        FieldSet("max_prefixes", "prefix_list_in", "prefix_list_out", name="Prefixes"),
     )
 
     nullable_fields = [
@@ -696,7 +720,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
         queryset=CommunityList.objects.all(),
         required=False,
     )
-    
+
     match_ip_address = DynamicModelMultipleChoiceField(
         queryset=PrefixList.objects.all(),
         required=False,
@@ -716,7 +740,7 @@ class RoutingPolicyRuleForm(NetBoxModelForm):
     match_aspath_list = DynamicModelMultipleChoiceField(
         queryset=ASPathList.objects.all(),
         required=False,
-    )   
+    )
 
     match_custom = forms.JSONField(
         label="Custom Match",
@@ -886,7 +910,7 @@ class PrefixListRuleImportForm(NetBoxModelImportForm):
             "tags",
             "comments",
         )
-        
+
 class PrefixListRuleForm(NetBoxModelForm):
     prefix = DynamicModelChoiceField(
         queryset=Prefix.objects.all(),

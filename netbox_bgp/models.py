@@ -392,14 +392,17 @@ class BGPSession(NetBoxModel):
         null=True,
         blank=True,
     )
-
     virtualmachine = models.ForeignKey(
         to='virtualization.VirtualMachine',
         on_delete=models.PROTECT,
         null=True,
-        blank=True,        
+        blank=True,
     )
-
+    max_prefixes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)]
+    )
     local_address = models.ForeignKey(
         to='ipam.IPAddress',
         on_delete=models.PROTECT,
@@ -419,6 +422,11 @@ class BGPSession(NetBoxModel):
         to='ipam.ASN',
         on_delete=models.PROTECT,
         related_name='remote_as'
+    )
+    remote_as_macro = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
     )
     status = models.CharField(
         max_length=50,
@@ -500,7 +508,7 @@ class BGPSession(NetBoxModel):
         """
         if self.name:
             return self.name
-        return f'{self.remote_address}:{self.remote_as}'  
+        return f'{self.remote_address}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):
@@ -557,7 +565,7 @@ class RoutingPolicyRule(NetBoxModel):
     )
     comments = models.TextField(
         blank=True
-    )    
+    )
 
     class Meta:
         ordering = ['routing_policy', 'index']

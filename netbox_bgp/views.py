@@ -549,7 +549,7 @@ class ASPathListBulkImportView(generic.BulkImportView):
     queryset = ASPathList.objects.all()
     model_form = forms.ASPathListImportForm
 
-# AS Path List Rule 
+# AS Path List Rule
 
 @register_model_view(ASPathListRule, "list", path="", detail=False)
 class ASPathListRuleListView(generic.ObjectListView):
