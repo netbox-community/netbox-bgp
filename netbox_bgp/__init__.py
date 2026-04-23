@@ -16,6 +16,7 @@ class BGPConfig(PluginConfig):
     default_settings = {
         'device_ext_page': 'right',
         'top_level_menu' : False,
+        'remote_address_strict': False,
     }
 
 

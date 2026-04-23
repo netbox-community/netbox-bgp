@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from utilities.forms.rendering import FieldSet
 from django.core.exceptions import (
     MultipleObjectsReturned,
@@ -337,10 +338,28 @@ class BGPSessionForm(NetBoxModelForm):
         }
 
 
+def _remote_address_strict():
+    return settings.PLUGINS_CONFIG.get("netbox_bgp", {}).get(
+        "remote_address_strict", False
+    )
+
+
 class BGPSessionAddForm(BGPSessionForm):
     remote_address = IPNetworkFormField()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if _remote_address_strict():
+            # Replace the free-text CIDR input with a selector limited to
+            # existing IPs, matching BGPSessionForm's edit behaviour.
+            self.fields["remote_address"] = DynamicModelChoiceField(
+                queryset=IPAddress.objects.all(),
+                label=_("Remote Address"),
+            )
+
     def clean_remote_address(self):
+        if _remote_address_strict():
+            return self.cleaned_data["remote_address"]
         try:
             ip = IPAddress.objects.get(address=str(self.cleaned_data["remote_address"]))
         except MultipleObjectsReturned:
