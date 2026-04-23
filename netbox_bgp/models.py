@@ -152,6 +152,10 @@ class BGPPeerGroup(NetBoxModel):
         null=True,
         blank=True,
     )
+    extra_attributes = models.JSONField(
+        default=dict,
+        blank=True,
+    )
     comments = models.TextField(
         blank=True
     )
@@ -494,6 +498,10 @@ class BGPSession(NetBoxModel):
         null=True,
         on_delete=models.SET_NULL,
         related_name='session_prefix_out'
+    )
+    extra_attributes = models.JSONField(
+        default=dict,
+        blank=True,
     )
     comments = models.TextField(
         blank=True

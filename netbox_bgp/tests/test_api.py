@@ -678,6 +678,57 @@ class PrefixListRuleAPITestCase(
         ]
 
 
+class ExtraAttributesDefaultTestCase(APITestCase):
+    """extra_attributes must always be a dict (never NULL) on both
+    BGPSession and BGPPeerGroup, even when the caller omits it."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_extra")
+        cls.local_as = ASN.objects.create(asn=65050, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65051, rir=rir)
+        cls.local_ip = IPAddress.objects.create(address="203.0.113.1/32")
+        cls.remote_ip = IPAddress.objects.create(address="203.0.113.2/32")
+
+    def test_peer_group_default_is_empty_dict(self):
+        pg = BGPPeerGroup.objects.create(name="pg_extra_default")
+        pg.refresh_from_db()
+        self.assertEqual(pg.extra_attributes, {})
+
+    def test_session_default_is_empty_dict(self):
+        session = BGPSession.objects.create(
+            name="session_extra_default",
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            local_address=self.local_ip,
+            remote_address=self.remote_ip,
+            status=SessionStatusChoices.STATUS_ACTIVE,
+        )
+        session.refresh_from_db()
+        self.assertEqual(session.extra_attributes, {})
+
+    def test_peer_group_roundtrips_via_api(self):
+        self.add_permissions(
+            "netbox_bgp.add_bgppeergroup",
+            "netbox_bgp.view_bgppeergroup",
+        )
+        url = reverse("plugins-api:netbox_bgp-api:bgppeergroup-list")
+        payload = {
+            "name": "pg_extra_api",
+            "extra_attributes": {"vendor": "juniper", "knob": 42},
+        }
+        response = self.client.post(
+            url, data=payload, format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(
+            response.data["extra_attributes"],
+            {"vendor": "juniper", "knob": 42},
+        )
+        created = BGPPeerGroup.objects.get(pk=response.data["id"])
+        self.assertEqual(created.extra_attributes, {"vendor": "juniper", "knob": 42})
+
+
 class BGPPeerGroupExtendedFieldsAPITestCase(APITestCase):
     """Issue #230 — peer-groups must expose local_as, remote_as, prefix_list_in,
     and prefix_list_out alongside the existing import/export policy fields."""

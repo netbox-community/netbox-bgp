@@ -17,6 +17,7 @@ from utilities.forms.fields import (
     CSVModelChoiceField,
     CSVModelMultipleChoiceField,
     DynamicModelMultipleChoiceField,
+    JSONField,
     TagFilterField,
     CSVChoiceField,
     CommentField,
@@ -286,6 +287,7 @@ class BGPSessionForm(NetBoxModelForm):
         required=False,
         min_value=1,
     )
+    extra_attributes = JSONField(required=False, label=_("Extra Attributes"))
     comments = CommentField()
 
 
@@ -306,6 +308,7 @@ class BGPSessionForm(NetBoxModelForm):
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
         FieldSet("max_prefixes","prefix_list_in", "prefix_list_out", name="Prefixes"),
+        FieldSet("extra_attributes", name="Extra Attributes"),
     )
 
     class Meta:
@@ -330,6 +333,7 @@ class BGPSessionForm(NetBoxModelForm):
             "max_prefixes",
             "prefix_list_in",
             "prefix_list_out",
+            "extra_attributes",
             "comments",
         ]
 
@@ -691,6 +695,7 @@ class BGPPeerGroupForm(NetBoxModelForm):
         required=False,
         widget=APISelect(api_url="/api/plugins/bgp/prefix-list/"),
     )
+    extra_attributes = JSONField(required=False, label=_("Extra Attributes"))
     comments = CommentField()
 
     class Meta:
@@ -704,6 +709,7 @@ class BGPPeerGroupForm(NetBoxModelForm):
             "export_policies",
             "prefix_list_in",
             "prefix_list_out",
+            "extra_attributes",
             "tags",
             "comments",
         ]
