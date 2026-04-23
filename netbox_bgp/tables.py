@@ -152,6 +152,10 @@ class RoutingPolicyTable(NetBoxTable):
 
 class BGPPeerGroupTable(NetBoxTable):
     name = tables.LinkColumn()
+    local_as = tables.Column(linkify=True, verbose_name='Local AS')
+    remote_as = tables.Column(linkify=True, verbose_name='Remote AS')
+    prefix_list_in = tables.Column(linkify=True, verbose_name='Prefix List (in)')
+    prefix_list_out = tables.Column(linkify=True, verbose_name='Prefix List (out)')
     import_policies = tables.TemplateColumn(
         template_code=POLICIES,
         orderable=False
@@ -168,7 +172,10 @@ class BGPPeerGroupTable(NetBoxTable):
         model = BGPPeerGroup
         fields = (
             'pk', 'name', 'description', 'tags',
-            'import_policies', 'export_policies', 'actions'
+            'local_as', 'remote_as',
+            'import_policies', 'export_policies',
+            'prefix_list_in', 'prefix_list_out',
+            'actions'
         )
         default_columns = (
             'pk', 'name', 'description'

@@ -661,6 +661,16 @@ class BGPPeerGroupFilterForm(NetBoxModelFilterSetForm):
 
 
 class BGPPeerGroupForm(NetBoxModelForm):
+    local_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False,
+        label=_("Local AS"),
+    )
+    remote_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False,
+        label=_("Remote AS"),
+    )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
@@ -671,6 +681,16 @@ class BGPPeerGroupForm(NetBoxModelForm):
         required=False,
         widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
     )
+    prefix_list_in = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(api_url="/api/plugins/bgp/prefix-list/"),
+    )
+    prefix_list_out = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(api_url="/api/plugins/bgp/prefix-list/"),
+    )
     comments = CommentField()
 
     class Meta:
@@ -678,8 +698,12 @@ class BGPPeerGroupForm(NetBoxModelForm):
         fields = [
             "name",
             "description",
+            "local_as",
+            "remote_as",
             "import_policies",
             "export_policies",
+            "prefix_list_in",
+            "prefix_list_out",
             "tags",
             "comments",
         ]
@@ -687,6 +711,18 @@ class BGPPeerGroupForm(NetBoxModelForm):
 
 class BGPPeerGroupImportForm(NetBoxModelImportForm):
 
+    local_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name="asn",
+        required=False,
+        help_text=_("Local ASN"),
+    )
+    remote_as = CSVModelChoiceField(
+        queryset=ASN.objects.all(),
+        to_field_name="asn",
+        required=False,
+        help_text=_("Remote ASN"),
+    )
     import_policies = CSVModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         to_field_name="name",
@@ -699,15 +735,47 @@ class BGPPeerGroupImportForm(NetBoxModelImportForm):
         required=False,
         help_text=_("Export policies name"),
     )
+    prefix_list_in = CSVModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Inbound prefix list name"),
+    )
+    prefix_list_out = CSVModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text=_("Outbound prefix list name"),
+    )
 
     class Meta:
         model = BGPPeerGroup
-        fields = ("name", "description", "import_policies", "export_policies", "tags")
+        fields = (
+            "name",
+            "description",
+            "local_as",
+            "remote_as",
+            "import_policies",
+            "export_policies",
+            "prefix_list_in",
+            "prefix_list_out",
+            "tags",
+        )
 
 
 class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
     description = forms.CharField(max_length=200, required=False)
 
+    local_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False,
+        label=_("Local AS"),
+    )
+    remote_as = DynamicModelChoiceField(
+        queryset=ASN.objects.all(),
+        required=False,
+        label=_("Remote AS"),
+    )
     import_policies = DynamicModelMultipleChoiceField(
         queryset=RoutingPolicy.objects.all(),
         required=False,
@@ -718,10 +786,26 @@ class BGPPeerGroupBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         widget=APISelectMultiple(api_url="/api/plugins/bgp/routing-policy/"),
     )
+    prefix_list_in = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(api_url="/api/plugins/bgp/prefix-list/"),
+    )
+    prefix_list_out = DynamicModelChoiceField(
+        queryset=PrefixList.objects.all(),
+        required=False,
+        widget=APISelect(api_url="/api/plugins/bgp/prefix-list/"),
+    )
 
     model = BGPPeerGroup
     nullable_fields = [
-        "description", "import_policies", "export_policies"
+        "description",
+        "local_as",
+        "remote_as",
+        "import_policies",
+        "export_policies",
+        "prefix_list_in",
+        "prefix_list_out",
     ]
 
 

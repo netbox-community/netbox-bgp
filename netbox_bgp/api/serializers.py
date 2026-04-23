@@ -112,6 +112,10 @@ class PrefixListSerializer(NetBoxModelSerializer):
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgppeergroup-detail")
 
+    local_as = ASNSerializer(nested=True, required=False, allow_null=True)
+    remote_as = ASNSerializer(nested=True, required=False, allow_null=True)
+    prefix_list_in = PrefixListSerializer(nested=True, required=False, allow_null=True)
+    prefix_list_out = PrefixListSerializer(nested=True, required=False, allow_null=True)
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=RoutingPolicySerializer,
@@ -137,8 +141,12 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
+            "local_as",
+            "remote_as",
             "import_policies",
             "export_policies",
+            "prefix_list_in",
+            "prefix_list_out",
             "comments",
             "tags",
             "custom_fields",

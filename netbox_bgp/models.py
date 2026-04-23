@@ -114,6 +114,20 @@ class BGPPeerGroup(NetBoxModel):
         max_length=200,
         blank=True
     )
+    local_as = models.ForeignKey(
+        to='ipam.ASN',
+        on_delete=models.SET_NULL,
+        related_name='group_local_as',
+        null=True,
+        blank=True,
+    )
+    remote_as = models.ForeignKey(
+        to='ipam.ASN',
+        on_delete=models.SET_NULL,
+        related_name='group_remote_as',
+        null=True,
+        blank=True,
+    )
     import_policies = models.ManyToManyField(
         RoutingPolicy,
         blank=True,
@@ -123,6 +137,20 @@ class BGPPeerGroup(NetBoxModel):
         RoutingPolicy,
         blank=True,
         related_name='group_export_policies'
+    )
+    prefix_list_in = models.ForeignKey(
+        to='netbox_bgp.PrefixList',
+        on_delete=models.SET_NULL,
+        related_name='group_prefix_in',
+        null=True,
+        blank=True,
+    )
+    prefix_list_out = models.ForeignKey(
+        to='netbox_bgp.PrefixList',
+        on_delete=models.SET_NULL,
+        related_name='group_prefix_out',
+        null=True,
+        blank=True,
     )
     comments = models.TextField(
         blank=True

@@ -27,6 +27,22 @@
                         <td>Description</td>
                         <td>{{ object.description|placeholder }}</td>
                     </tr>
+                    <tr>
+                        <td>Local AS</td>
+                        <td>{{ object.local_as|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Remote AS</td>
+                        <td>{{ object.remote_as|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prefix List (in)</td>
+                        <td>{{ object.prefix_list_in|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prefix List (out)</td>
+                        <td>{{ object.prefix_list_out|linkify|placeholder }}</td>
+                    </tr>
                 </table>
             </div>
         </div>

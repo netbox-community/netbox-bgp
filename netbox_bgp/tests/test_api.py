@@ -678,6 +678,69 @@ class PrefixListRuleAPITestCase(
         ]
 
 
+class BGPPeerGroupExtendedFieldsAPITestCase(APITestCase):
+    """Issue #230 — peer-groups must expose local_as, remote_as, prefix_list_in,
+    and prefix_list_out alongside the existing import/export policy fields."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_230")
+        cls.local_as = ASN.objects.create(asn=65040, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65041, rir=rir)
+        cls.pl_in = PrefixList.objects.create(
+            name="pl_in_230", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        cls.pl_out = PrefixList.objects.create(
+            name="pl_out_230", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        cls.peer_group = BGPPeerGroup.objects.create(
+            name="pg_230",
+            description="peer group with session-level fields",
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            prefix_list_in=cls.pl_in,
+            prefix_list_out=cls.pl_out,
+        )
+
+    def test_get_returns_new_fields(self):
+        self.add_permissions("netbox_bgp.view_bgppeergroup")
+        url = reverse(
+            "plugins-api:netbox_bgp-api:bgppeergroup-detail",
+            kwargs={"pk": self.peer_group.pk},
+        )
+        response = self.client.get(url, **self.header)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["local_as"]["id"], self.local_as.pk)
+        self.assertEqual(response.data["remote_as"]["id"], self.remote_as.pk)
+        self.assertEqual(response.data["prefix_list_in"]["id"], self.pl_in.pk)
+        self.assertEqual(response.data["prefix_list_out"]["id"], self.pl_out.pk)
+
+    def test_create_with_new_fields(self):
+        self.add_permissions(
+            "netbox_bgp.add_bgppeergroup",
+            "netbox_bgp.view_bgppeergroup",
+            "ipam.view_asn",
+        )
+        url = reverse("plugins-api:netbox_bgp-api:bgppeergroup-list")
+        payload = {
+            "name": "pg_230_create",
+            "description": "via api",
+            "local_as": self.local_as.pk,
+            "remote_as": self.remote_as.pk,
+            "prefix_list_in": self.pl_in.pk,
+            "prefix_list_out": self.pl_out.pk,
+        }
+        response = self.client.post(
+            url, data=payload, format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        created = BGPPeerGroup.objects.get(pk=response.data["id"])
+        self.assertEqual(created.local_as, self.local_as)
+        self.assertEqual(created.remote_as, self.remote_as)
+        self.assertEqual(created.prefix_list_in, self.pl_in)
+        self.assertEqual(created.prefix_list_out, self.pl_out)
+
+
 class BGPSessionPolicyInheritanceAPITestCase(APITestCase):
     """Regression test for issue #222 — the session API must return the
     session's own import/export policies, not the union with peer-group
