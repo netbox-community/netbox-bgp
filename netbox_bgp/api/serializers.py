@@ -211,33 +211,6 @@ class BGPSessionSerializer(NetBoxModelSerializer):
         )
         brief_fields = ("id", "url", "display", "name", "description")
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if instance is not None:
-            if instance.peer_group:
-                for pol in instance.peer_group.import_policies.difference(
-                    instance.import_policies.all()
-                ):
-                    ret["import_policies"].append(
-                        RoutingPolicySerializer(
-                            pol,
-                            context={"request": self.context["request"]},
-                            nested=True,
-                        ).data
-                    )
-                for pol in instance.peer_group.export_policies.difference(
-                    instance.export_policies.all()
-                ):
-                    ret["export_policies"].append(
-                        RoutingPolicySerializer(
-                            pol,
-                            context={"request": self.context["request"]},
-                            nested=True,
-                        ).data
-                    )
-        return ret
-
 
 class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=CommunityStatusChoices, required=False)

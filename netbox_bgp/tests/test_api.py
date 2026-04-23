@@ -678,6 +678,59 @@ class PrefixListRuleAPITestCase(
         ]
 
 
+class BGPSessionPolicyInheritanceAPITestCase(APITestCase):
+    """Regression test for issue #222 — the session API must return the
+    session's own import/export policies, not the union with peer-group
+    policies. (Previously the BGPSessionSerializer merged inherited peer-group
+    policies into the response, diverging from the GUI which shows session-only.)"""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_222")
+        local_as = ASN.objects.create(asn=65010, rir=rir)
+        remote_as = ASN.objects.create(asn=65011, rir=rir)
+        local_ip = IPAddress.objects.create(address="10.0.0.1/32")
+        remote_ip = IPAddress.objects.create(address="10.0.0.2/32")
+
+        cls.pg_policy_in = RoutingPolicy.objects.create(name="pg_in_222")
+        cls.pg_policy_out = RoutingPolicy.objects.create(name="pg_out_222")
+        cls.sess_policy_in = RoutingPolicy.objects.create(name="sess_in_222")
+        cls.sess_policy_out = RoutingPolicy.objects.create(name="sess_out_222")
+
+        cls.peer_group = BGPPeerGroup.objects.create(name="pg_222")
+        cls.peer_group.import_policies.add(cls.pg_policy_in)
+        cls.peer_group.export_policies.add(cls.pg_policy_out)
+
+        cls.session = BGPSession.objects.create(
+            name="session_222",
+            local_as=local_as,
+            remote_as=remote_as,
+            local_address=local_ip,
+            remote_address=remote_ip,
+            peer_group=cls.peer_group,
+            status=SessionStatusChoices.STATUS_ACTIVE,
+        )
+        cls.session.import_policies.add(cls.sess_policy_in)
+        cls.session.export_policies.add(cls.sess_policy_out)
+
+    def test_session_policies_exclude_peer_group(self):
+        self.add_permissions("netbox_bgp.view_bgpsession")
+        url = reverse(
+            "plugins-api:netbox_bgp-api:bgpsession-detail",
+            kwargs={"pk": self.session.pk},
+        )
+        response = self.client.get(url, **self.header)
+        self.assertEqual(response.status_code, 200)
+
+        import_ids = {p["id"] for p in response.data["import_policies"]}
+        export_ids = {p["id"] for p in response.data["export_policies"]}
+
+        self.assertEqual(import_ids, {self.sess_policy_in.pk})
+        self.assertEqual(export_ids, {self.sess_policy_out.pk})
+        self.assertNotIn(self.pg_policy_in.pk, import_ids)
+        self.assertNotIn(self.pg_policy_out.pk, export_ids)
+
+
 class TestAPISchema(APITestCase):
     def test_api_schema(self):
         url = reverse("plugins-api:netbox_bgp-api:api-root")
