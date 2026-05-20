@@ -174,6 +174,12 @@
         </div>
         {% include 'inc/panels/custom_fields.html' %}
         {% include 'inc/panels/tags.html' %}
+        <div class="card">
+            <h5 class="card-header">Extra Attributes</h5>
+            <div class="card-body">
+                <pre class="mb-0">{{ object.extra_attributes|pprint }}</pre>
+            </div>
+        </div>
         {% include 'inc/panels/comments.html' %}
         {% plugin_left_page object %}
     </div>

@@ -1,5 +1,5 @@
 PYTHON_VER?=3.12
-NETBOX_VER?=v4.5.5
+NETBOX_VER?=v4.6.1
 
 NAME=netbox-bgp
 
@@ -74,4 +74,4 @@ endif
 
 
 test:
-	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run netbox python manage.py test ${BUILD_NAME}
+	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run --rm --remove-orphans netbox python manage.py test ${BUILD_NAME}

@@ -27,11 +27,33 @@
                         <td>Description</td>
                         <td>{{ object.description|placeholder }}</td>
                     </tr>
+                    <tr>
+                        <td>Local AS</td>
+                        <td>{{ object.local_as|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Remote AS</td>
+                        <td>{{ object.remote_as|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prefix List (in)</td>
+                        <td>{{ object.prefix_list_in|linkify|placeholder }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prefix List (out)</td>
+                        <td>{{ object.prefix_list_out|linkify|placeholder }}</td>
+                    </tr>
                 </table>
             </div>
         </div>
         {% include 'inc/panels/custom_fields.html' %}
         {% include 'inc/panels/tags.html' %}
+        <div class="card">
+            <h5 class="card-header">Extra Attributes</h5>
+            <div class="card-body">
+                <pre class="mb-0">{{ object.extra_attributes|pprint }}</pre>
+            </div>
+        </div>
         {% include 'inc/panels/comments.html' %}
         {% plugin_left_page object %}
     </div>

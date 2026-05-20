@@ -206,38 +206,6 @@ class InterfaceBGPSessionsView(generic.ObjectChildrenView):
         return InterfaceBGPSessionsView._get_interface_bgp_sessions(parent)
 
 
-# Register only when device_ext_page is set to 'tab';
-class DeviceBGPSessionsView(generic.ObjectChildrenView):
-    """View to display BGP sessions associated with a device."""
-
-    queryset = Device.objects.all()
-    child_model = BGPSession
-    filterset = BGPSessionFilterSet
-    table = BGPSessionTable
-    template_name = "generic/object_children.html"
-    hide_if_empty = False
-
-    tab = ViewTab(
-        label="BGP Sessions",
-        badge=lambda obj: BGPSession.objects.filter(device=obj).count(),
-        permission="netbox_bgp.view_bgpsession",
-    )
-
-    def get_children(
-        self, request: HttpRequest, parent: Device
-    ) -> QuerySet[BGPSession]:
-        """Get BGP sessions for the device."""
-        return BGPSession.objects.filter(device=parent)
-
-
-# Register the BGP sessions tab view only if device_ext_page is set to 'tab';
-# otherwise, use the PluginTemplateExtension for inline display (left, right, full_width).
-if settings.PLUGINS_CONFIG.get("netbox_bgp", {}).get("device_ext_page") == "tab":
-    DeviceBGPSessionsView = register_model_view(
-        Device, name="bgp-sessions", path="bgp-sessions"
-    )(DeviceBGPSessionsView)
-
-
 class DeviceBGPSession(PluginTemplateExtension):
     models = ("dcim.device",)
 
