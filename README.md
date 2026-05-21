@@ -40,6 +40,7 @@ The following options are available:
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
+* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches.
 
 ## Screenshots
 

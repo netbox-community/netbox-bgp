@@ -18,7 +18,7 @@ Common commands (all run via `make`):
 - `make debug` / `make start` / `make stop` — run the stack in foreground / detached / stop.
 - `make destroy` — stop the stack **and drop the Postgres volume** (`netbox_bgp_pgdata_netbox_bgp`). Use when migrations get wedged.
 - `make migrations` — generate Django migrations for the plugin (writes into `netbox_bgp/migrations/`). Required after any `models.py` change.
-- `make test` — run `python manage.py test netbox_bgp` inside the container. Tests live in `netbox_bgp/tests/` (`test_api.py`, `test_forms.py`, `test_models.py`, `test_views.py`). Run a single test with: `docker compose -f develop/docker-compose.yml -p netbox_bgp run netbox python manage.py test netbox_bgp.tests.test_api.SomeTestCase.test_method`.
+- `make test` — run `python manage.py test netbox_bgp` inside the container. Tests live in `netbox_bgp/tests/` (`test_api.py`, `test_filtersets.py`, `test_forms.py`, `test_models.py`, `test_views.py`). Run a single test with: `docker compose -f develop/docker-compose.yml -p netbox_bgp run netbox python manage.py test netbox_bgp.tests.test_api.SomeTestCase.test_method`.
 - `make nbshell` / `make shell` — NetBox shell / Django shell.
 - `make adduser` — create a superuser.
 - `make pbuild` / `make pypipub` — build sdist/wheel / upload to PyPI.
@@ -35,7 +35,7 @@ This is a standard NetBox plugin — `netbox_bgp/__init__.py` exposes a `PluginC
 All models inherit from `netbox.models.NetBoxModel` (giving them change-logging, tags, custom fields, journaling). Two shapes are used heavily:
 
 - **List / Rule pairs**: `PrefixList` ↔ `PrefixListRule`, `CommunityList` ↔ `CommunityListRule`, `ASPathList` ↔ `ASPathListRule`, `RoutingPolicy` ↔ `RoutingPolicyRule`. Rules are ordered by `(parent, index)` and `on_delete=CASCADE` from the parent.
-- **`BGPBase` abstract**: provides `site`, `tenant`, `status`, `role`, `description`, `comments`. Currently only `Community` inherits it; `BGPSession` is a standalone model with its own richer FK set (device/vm, local/remote IP + AS, peer group, import/export policies, prefix lists in/out, `remote_as_macro`).
+- **`BGPBase` abstract**: provides `site`, `tenant`, `status`, `role`, `description`, `comments`. Currently only `Community` inherits it; `BGPSession` is a standalone model with its own richer FK set (device/vm, local/remote IP + AS, peer group, import/export policies, prefix lists in/out, `remote_as_macro`, `extra_attributes`). `BGPPeerGroup` also carries session-level config fields (`local_as`, `remote_as`, `prefix_list_in`, `prefix_list_out`, `extra_attributes`) that serve as group-wide defaults.
 
 `BGPSession.label` falls back to `f'{remote_address}:{remote_as}'` when `name` is unset — don't introduce code that assumes `name` is always populated. `BGPSession.Meta.unique_together` covers both device- and VM-scoped tuples; a session must have exactly one of device/VM in practice (the `clean()` enforcement is currently commented out — see `models.py:489`).
 
@@ -51,7 +51,7 @@ All models inherit from `netbox.models.NetBoxModel` (giving them change-logging,
 - `template_content.py` — registers extra tabs/pages on NetBox core objects (Device, Interface, Site, Tenant, VirtualMachine, ASN, IPAddress) using `register_model_view` + `ViewTab`. **Reads `PLUGINS_CONFIG['netbox_bgp']['device_ext_page']` at import time** to decide whether to register a Device tab; changing that config requires a restart. The Device-specific inline (`left`/`right`/`full_width`) uses a `PluginTemplateExtension` instead.
 - `navigation.py` — menu items; honours `top_level_menu` setting.
 - `templates/netbox_bgp/` — per-object detail templates.
-- `migrations/` — 0001 through 0039 at time of writing. Always add new ones via `make migrations`, don't hand-write.
+- `migrations/` — 0001 through 0041 at time of writing. Always add new ones via `make migrations`, don't hand-write.
 
 ### Plugin settings
 
@@ -59,6 +59,7 @@ Defined in `BGPConfig.default_settings`:
 
 - `device_ext_page` (default `"right"`): `"left"` / `"right"` / `"full_width"` / `"tab"` / `""` (disabled).
 - `top_level_menu` (default `False`).
+- `remote_address_strict` (default `False`): when `True`, `BGPSessionAddForm` replaces the free-text CIDR field for `remote_address` with a `DynamicModelChoiceField` limited to existing `IPAddress` objects. When `False` (default), typing a CIDR that doesn't match an existing IP will auto-create one.
 
 Access at runtime via `settings.PLUGINS_CONFIG['netbox_bgp']`.
 
@@ -73,7 +74,7 @@ Inherited from NetBox core (https://github.com/netbox-community/netbox/blob/main
 - **Filtersets**: `<app>/filtersets.py` — used for both UI filtering and API `?filter=` params.
 - **Tables**: `django-tables2` used for all object list views (`<app>/tables.py`).
 - **Templates**: Django templates in `netbox/templates/<app>/` (in this plugin: `netbox_bgp/templates/netbox_bgp/`).
-- **Tests**: Mirror the app structure in `<app>/tests/`. Use `netbox.configuration_testing` for test config.
+- **Tests**: Mirror the app structure in `<app>/tests/`. Use `netbox.configuration_testing` for test config. The suite currently has ~623 tests across five files.
 
 ## Coding Standards
 
@@ -87,6 +88,41 @@ Inherited from NetBox core:
 - Avoid adding new dependencies without strong justification.
 - Avoid running `ruff format` on existing files, as this tends to introduce unnecessary style changes.
 - Don't craft Django database migrations manually: Prompt the user to run `make migrations` instead (which runs `manage.py makemigrations` inside the dev container).
+
+## Test conventions and known quirks
+
+### Test file layout
+
+| File | What it covers |
+|---|---|
+| `test_models.py` | Model `__str__`, `clean()` validation, property logic, unique constraints |
+| `test_api.py` | REST API + GraphQL via `APIViewTestCases` base classes |
+| `test_views.py` | UI views via `ViewTestCases` base classes |
+| `test_filtersets.py` | FilterSet `search()` and explicit filter fields |
+| `test_forms.py` | Form-level logic not exercised by view tests (e.g. `remote_address_strict`) |
+
+### ViewTestCases patterns
+
+- `_get_base_url()` must return `'plugins:netbox_bgp:{model_name}_{{}}'` (the `{}` is the action placeholder filled by the base class).
+- Use `setUpTestData` for all fixtures; set dynamic `cls.form_data` (FK PKs) inside `setUpTestData`, not as a class attribute.
+- Rule models (`ASPathListRule`, `CommunityListRule`, `RoutingPolicyRule`, `PrefixListRule`) have no `BulkEditView` registered — don't include `BulkEditObjectsViewTestCase` for them.
+- `CommunityListRule` has no `BulkImportView` — don't include `BulkImportObjectsViewTestCase` for it.
+- **`BGPSession` Create/Edit incompatibility**: the Add view uses `BGPSessionAddForm` (`IPNetworkFormField` for `remote_address`) while the Edit view uses `BGPSessionForm` (`DynamicModelChoiceField`). A single `form_data` cannot satisfy both, so omit `CreateObjectViewTestCase` and `EditObjectViewTestCase` for `BGPSession`.
+- `PrefixListRule.prefix_custom` is stored as `IPNetwork`, not a string; add `validation_excluded_fields = ['prefix_custom']` to skip the post-save value comparison in Create/Edit tests.
+
+### FilterSet filter formats
+
+`NetBoxModelFilterSet` generates different filter types from `class Meta: fields`:
+
+- **`CharField`** (name, description, pattern, …) → `MultiValueCharFilter` — pass a **list**: `{'name': ['my-value']}`
+- **`CharField` with `choices`** (status, family, action) → `ChoiceFilter` — pass a **single string**: `{'status': 'active'}`
+- Explicitly declared `ModelMultipleChoiceFilter` fields accept lists of lookup values: `{'local_as': [65001]}`, `{'device': ['router1']}`.
+
+### Known bugs / rough edges
+
+- Several `search()` methods in filtersets use `Q(fk_field__icontains=value)` or `Q(integer_field__icontains=value)` (e.g. `ASPathListRuleFilterSet`, `CommunityListRuleFilterSet`, `RoutingPolicyRuleFilterSet`, `PrefixListRuleFilterSet`). These are potentially broken on PostgreSQL — avoid adding similar patterns; write explicit field lookups instead.
+- `BGPSessionFilterSet.search()` includes `Q(remote_as__asn__icontains=value)` where `asn` is a `BigIntegerField`. Skip testing the `q` parameter for `BGPSessionFilterSet`; test the explicit `by_remote_address` / `by_local_address` methods and declared `ModelMultipleChoiceFilter` fields instead.
+- `develop/configuration.py` sets `DEBUG = 'test' not in sys.argv` so that `debug_toolbar` is excluded from `INSTALLED_APPS` during test runs (NetBox's settings.py removes it only when `DEBUG=False` at import time).
 
 ## Conventions to preserve
 

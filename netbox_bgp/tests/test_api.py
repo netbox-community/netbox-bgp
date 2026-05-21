@@ -17,6 +17,8 @@ from netbox_bgp.models import (
     RoutingPolicyRule,
     PrefixList,
     PrefixListRule,
+    ASPathList,
+    ASPathListRule,
 )
 
 from netbox_bgp.choices import (
@@ -24,6 +26,109 @@ from netbox_bgp.choices import (
     IPAddressFamilyChoices,
     ActionChoices,
 )
+
+
+class ASPathListAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    APIViewTestCases.GraphQLTestCase,
+):
+    model = ASPathList
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_aspathlist"
+
+    create_data = [
+        {"name": "test_aspathlist1", "description": "desc1"},
+        {"name": "test_aspathlist2", "description": "desc2"},
+        {"name": "test_aspathlist3", "description": "desc3"},
+    ]
+
+    bulk_update_data = {"description": "updated via bulk"}
+
+    @classmethod
+    def setUpTestData(cls):
+        aspathlists = (
+            ASPathList(name="aspathlist1", description="aspathlist1"),
+            ASPathList(name="aspathlist2", description="aspathlist2"),
+            ASPathList(name="aspathlist3", description="aspathlist3"),
+        )
+        ASPathList.objects.bulk_create(aspathlists)
+
+
+class ASPathListRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    APIViewTestCases.GraphQLTestCase,
+):
+    model = ASPathListRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
+    graphql_base_name = "netbox_bgp_aspathlist_rule"
+
+    bulk_update_data = {"description": "updated via bulk", "action": "deny"}
+
+    user_permissions = ["netbox_bgp.view_aspathlist"]
+
+    @classmethod
+    def setUpTestData(cls):
+        apl1 = ASPathList.objects.create(name="apl_rule_src1", description="src1")
+        apl2 = ASPathList.objects.create(name="apl_rule_src2", description="src2")
+
+        rules = (
+            ASPathListRule(
+                aspath_list=apl1,
+                index=10,
+                action=ActionChoices._choices[0][0],
+                pattern="65000",
+                description="rule1",
+            ),
+            ASPathListRule(
+                aspath_list=apl1,
+                index=20,
+                action=ActionChoices._choices[0][0],
+                pattern="65001",
+                description="rule2",
+            ),
+            ASPathListRule(
+                aspath_list=apl1,
+                index=30,
+                action=ActionChoices._choices[0][1],
+                pattern="65002",
+                description="rule3",
+            ),
+        )
+        ASPathListRule.objects.bulk_create(rules)
+
+        cls.create_data = [
+            {
+                "aspath_list": apl2.id,
+                "index": 10,
+                "action": "permit",
+                "pattern": "65100",
+                "description": "rule4",
+            },
+            {
+                "aspath_list": apl2.id,
+                "index": 20,
+                "action": "permit",
+                "pattern": "65101",
+                "description": "rule5",
+            },
+            {
+                "aspath_list": apl2.id,
+                "index": 30,
+                "action": "deny",
+                "pattern": "65102",
+                "description": "rule6",
+            },
+        ]
 
 
 class CommunityAPITestCase(

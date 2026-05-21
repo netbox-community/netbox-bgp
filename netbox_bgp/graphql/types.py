@@ -35,7 +35,7 @@ from .filters import (
 class ASPathListType(NetBoxObjectType):
     name: str
     description: str
-    rules: List[
+    aspathlistrules: List[
          Annotated["ASPathListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
