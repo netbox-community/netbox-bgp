@@ -35,7 +35,7 @@ This is a standard NetBox plugin — `netbox_bgp/__init__.py` exposes a `PluginC
 All models inherit from `netbox.models.NetBoxModel` (giving them change-logging, tags, custom fields, journaling). Two shapes are used heavily:
 
 - **List / Rule pairs**: `PrefixList` ↔ `PrefixListRule`, `CommunityList` ↔ `CommunityListRule`, `ASPathList` ↔ `ASPathListRule`, `RoutingPolicy` ↔ `RoutingPolicyRule`. Rules are ordered by `(parent, index)` and `on_delete=CASCADE` from the parent.
-- **`BGPBase` abstract**: provides `site`, `tenant`, `status`, `role`, `description`, `comments`. Currently only `Community` inherits it; `BGPSession` is a standalone model with its own richer FK set (device/vm, local/remote IP + AS, peer group, import/export policies, prefix lists in/out, `remote_as_macro`).
+- **`BGPBase` abstract**: provides `site`, `tenant`, `status`, `role`, `description`, `comments`. Currently only `Community` inherits it; `BGPSession` is a standalone model with its own richer FK set (device/vm, local/remote IP + AS, peer group, import/export policies, prefix lists in/out, `remote_as_macro`, `extra_attributes`). `BGPPeerGroup` also carries session-level config fields (`local_as`, `remote_as`, `prefix_list_in`, `prefix_list_out`, `extra_attributes`) that serve as group-wide defaults.
 
 `BGPSession.label` falls back to `f'{remote_address}:{remote_as}'` when `name` is unset — don't introduce code that assumes `name` is always populated. `BGPSession.Meta.unique_together` covers both device- and VM-scoped tuples; a session must have exactly one of device/VM in practice (the `clean()` enforcement is currently commented out — see `models.py:489`).
 
@@ -51,7 +51,7 @@ All models inherit from `netbox.models.NetBoxModel` (giving them change-logging,
 - `template_content.py` — registers extra tabs/pages on NetBox core objects (Device, Interface, Site, Tenant, VirtualMachine, ASN, IPAddress) using `register_model_view` + `ViewTab`. **Reads `PLUGINS_CONFIG['netbox_bgp']['device_ext_page']` at import time** to decide whether to register a Device tab; changing that config requires a restart. The Device-specific inline (`left`/`right`/`full_width`) uses a `PluginTemplateExtension` instead.
 - `navigation.py` — menu items; honours `top_level_menu` setting.
 - `templates/netbox_bgp/` — per-object detail templates.
-- `migrations/` — 0001 through 0039 at time of writing. Always add new ones via `make migrations`, don't hand-write.
+- `migrations/` — 0001 through 0041 at time of writing. Always add new ones via `make migrations`, don't hand-write.
 
 ### Plugin settings
 
@@ -59,6 +59,7 @@ Defined in `BGPConfig.default_settings`:
 
 - `device_ext_page` (default `"right"`): `"left"` / `"right"` / `"full_width"` / `"tab"` / `""` (disabled).
 - `top_level_menu` (default `False`).
+- `remote_address_strict` (default `False`): when `True`, `BGPSessionAddForm` replaces the free-text CIDR field for `remote_address` with a `DynamicModelChoiceField` limited to existing `IPAddress` objects. When `False` (default), typing a CIDR that doesn't match an existing IP will auto-create one.
 
 Access at runtime via `settings.PLUGINS_CONFIG['netbox_bgp']`.
 
