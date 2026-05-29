@@ -112,6 +112,10 @@ class PrefixListSerializer(NetBoxModelSerializer):
 class BGPPeerGroupSerializer(NetBoxModelSerializer):
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:bgppeergroup-detail")
 
+    local_as = ASNSerializer(nested=True, required=False, allow_null=True)
+    remote_as = ASNSerializer(nested=True, required=False, allow_null=True)
+    prefix_list_in = PrefixListSerializer(nested=True, required=False, allow_null=True)
+    prefix_list_out = PrefixListSerializer(nested=True, required=False, allow_null=True)
     import_policies = SerializedPKRelatedField(
         queryset=RoutingPolicy.objects.all(),
         serializer=RoutingPolicySerializer,
@@ -137,8 +141,13 @@ class BGPPeerGroupSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "description",
+            "local_as",
+            "remote_as",
             "import_policies",
             "export_policies",
+            "prefix_list_in",
+            "prefix_list_out",
+            "extra_attributes",
             "comments",
             "tags",
             "custom_fields",
@@ -201,6 +210,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "max_prefixes",
             "prefix_list_in",
             "prefix_list_out",
+            "extra_attributes",
             "name",
             "description",
             "comments",
@@ -210,33 +220,6 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "last_updated",
         )
         brief_fields = ("id", "url", "display", "name", "description")
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if instance is not None:
-            if instance.peer_group:
-                for pol in instance.peer_group.import_policies.difference(
-                    instance.import_policies.all()
-                ):
-                    ret["import_policies"].append(
-                        RoutingPolicySerializer(
-                            pol,
-                            context={"request": self.context["request"]},
-                            nested=True,
-                        ).data
-                    )
-                for pol in instance.peer_group.export_policies.difference(
-                    instance.export_policies.all()
-                ):
-                    ret["export_policies"].append(
-                        RoutingPolicySerializer(
-                            pol,
-                            context={"request": self.context["request"]},
-                            nested=True,
-                        ).data
-                    )
-        return ret
 
 
 class CommunitySerializer(NetBoxModelSerializer):

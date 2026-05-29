@@ -4,9 +4,14 @@ from django.test import TestCase
 
 from tenancy.models import Tenant
 from dcim.models import Site, Device, Manufacturer, DeviceRole, DeviceType
-from ipam.models import IPAddress, ASN, RIR
+from ipam.models import IPAddress, ASN, RIR, Prefix
 
-from netbox_bgp.models import BGPSession, Community, CommunityList, RoutingPolicy, BGPPeerGroup
+from netbox_bgp.models import (
+    BGPSession, Community, CommunityList, CommunityListRule,
+    RoutingPolicy, BGPPeerGroup, RoutingPolicyRule,
+    ASPathList, ASPathListRule, PrefixList, PrefixListRule,
+)
+from netbox_bgp.choices import ActionChoices, IPAddressFamilyChoices
 
 
 class RoutingPolicyTestCase(TestCase):
@@ -202,8 +207,212 @@ class BGPSessionTestCase(TestCase):
         self.assertTrue(isinstance(self.session, BGPSession))
         self.assertEqual(self.session.__str__(), f'{self.session.device}:{self.session.name}')
 
+    def test_label_with_name(self):
+        self.assertEqual(self.session.label, 'session')
+
+    def test_label_without_name(self):
+        extra_ip = IPAddress.objects.create(address='1.1.1.3/32')
+        nameless = BGPSession.objects.create(
+            local_address=self.local_ip,
+            remote_address=extra_ip,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        self.assertIn(str(extra_ip), nameless.label)
+
     def test_policies(self):
-        pass
+        self.session.import_policies.add(self.routing_policy_in)
+        self.session.export_policies.add(self.routing_policy_out)
+        self.assertIn(self.routing_policy_in, self.session.import_policies.all())
+        self.assertIn(self.routing_policy_out, self.session.export_policies.all())
 
     def test_unique_together(self):
-        pass
+        dup = BGPSession(
+            device=self.device,
+            local_address=self.local_ip,
+            remote_address=self.remote_ip,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        with self.assertRaises(IntegrityError):
+            dup.save()
+
+
+class ASPathListTestCase(TestCase):
+    def setUp(self):
+        self.apl = ASPathList.objects.create(name='apl1', description='test apl')
+
+    def test_str(self):
+        self.assertEqual(str(self.apl), 'apl1')
+
+    def test_unique_together(self):
+        dup = ASPathList(name='apl1', description='test apl')
+        with self.assertRaises(IntegrityError):
+            dup.save()
+
+
+class ASPathListRuleTestCase(TestCase):
+    def setUp(self):
+        self.apl = ASPathList.objects.create(name='apl_rule_parent')
+        self.rule = ASPathListRule.objects.create(
+            aspath_list=self.apl,
+            index=10,
+            action=ActionChoices._choices[0][0],
+            pattern='65000',
+        )
+
+    def test_str(self):
+        self.assertEqual(
+            str(self.rule),
+            f'{self.apl}: {self.rule.action} {self.rule.pattern}',
+        )
+
+    def test_get_action_color(self):
+        self.assertIsNotNone(self.rule.get_action_color())
+
+
+class PrefixListTestCase(TestCase):
+    def setUp(self):
+        self.pl = PrefixList.objects.create(
+            name='pl1',
+            family=IPAddressFamilyChoices.FAMILY_4,
+        )
+
+    def test_str(self):
+        self.assertEqual(str(self.pl), 'pl1')
+
+    def test_unique_together(self):
+        dup = PrefixList(name='pl1', description='', family=IPAddressFamilyChoices.FAMILY_4)
+        with self.assertRaises(IntegrityError):
+            dup.save()
+
+
+class PrefixListRuleTestCase(TestCase):
+    def setUp(self):
+        self.pl = PrefixList.objects.create(
+            name='pl_for_rules',
+            family=IPAddressFamilyChoices.FAMILY_4,
+        )
+        self.prefix = Prefix.objects.create(prefix='10.0.0.0/8')
+
+    def test_str(self):
+        rule = PrefixListRule(prefix_list=self.pl, index=10, action='permit', prefix=self.prefix)
+        self.assertEqual(str(rule), f'{self.pl}: Rule 10')
+
+    def test_network_returns_prefix_fk(self):
+        rule = PrefixListRule.objects.create(
+            prefix_list=self.pl, index=10, action='permit', prefix=self.prefix
+        )
+        self.assertEqual(rule.network, self.prefix)
+
+    def test_network_returns_prefix_custom(self):
+        rule = PrefixListRule.objects.create(
+            prefix_list=self.pl, index=20, action='permit', prefix_custom='0.0.0.0/0'
+        )
+        self.assertIsNotNone(rule.network)
+
+    def test_get_action_color(self):
+        rule = PrefixListRule.objects.create(
+            prefix_list=self.pl, index=30, action='permit', prefix=self.prefix
+        )
+        self.assertIsNotNone(rule.get_action_color())
+
+    def test_clean_rejects_both_prefix_fields_set(self):
+        rule = PrefixListRule(
+            prefix_list=self.pl,
+            index=40,
+            action='permit',
+            prefix=self.prefix,
+            prefix_custom='0.0.0.0/0',
+        )
+        with self.assertRaises(ValidationError):
+            rule.clean()
+
+    def test_clean_rejects_neither_prefix_field_set(self):
+        rule = PrefixListRule(
+            prefix_list=self.pl,
+            index=50,
+            action='permit',
+        )
+        with self.assertRaises(ValidationError):
+            rule.clean()
+
+    def test_clean_accepts_prefix_fk_only(self):
+        rule = PrefixListRule(
+            prefix_list=self.pl, index=60, action='permit', prefix=self.prefix
+        )
+        rule.clean()  # must not raise
+
+    def test_clean_accepts_prefix_custom_only(self):
+        rule = PrefixListRule(
+            prefix_list=self.pl, index=70, action='permit', prefix_custom='0.0.0.0/0'
+        )
+        rule.clean()  # must not raise
+
+
+class RoutingPolicyRuleTestCase(TestCase):
+    def setUp(self):
+        self.rp = RoutingPolicy.objects.create(name='rp_rule_test')
+        self.rule = RoutingPolicyRule.objects.create(
+            routing_policy=self.rp,
+            index=10,
+            action=ActionChoices._choices[0][0],
+        )
+
+    def test_str(self):
+        self.assertEqual(str(self.rule), f'{self.rp}: Rule 10')
+
+    def test_get_action_color(self):
+        self.assertIsNotNone(self.rule.get_action_color())
+
+    def test_set_statements_empty(self):
+        self.assertEqual(self.rule.set_statements, {})
+
+    def test_set_statements_with_actions(self):
+        self.rule.set_actions = {'local-preference': 100}
+        self.rule.save()
+        self.assertEqual(self.rule.set_statements, {'local-preference': 100})
+
+    def test_match_statements_empty(self):
+        self.assertEqual(self.rule.match_statements, {})
+
+    def test_match_statements_with_community(self):
+        community = Community.objects.create(value='65000:100')
+        self.rule.match_community.add(community)
+        stmts = self.rule.match_statements
+        self.assertIn('community', stmts)
+        self.assertIn('65000:100', stmts['community'])
+
+    def test_match_statements_with_prefix_list(self):
+        pl = PrefixList.objects.create(name='pl_match', family=IPAddressFamilyChoices.FAMILY_4)
+        self.rule.match_ip_address.add(pl)
+        stmts = self.rule.match_statements
+        self.assertIn('ip address', stmts)
+        self.assertIn('pl_match', stmts['ip address'])
+
+    def test_match_statements_with_aspath_list(self):
+        apl = ASPathList.objects.create(name='apl_match')
+        self.rule.match_aspath_list.add(apl)
+        stmts = self.rule.match_statements
+        self.assertIn('as-path', stmts)
+        self.assertIn('apl_match', stmts['as-path'])
+
+
+class CommunityListRuleTestCase(TestCase):
+    def setUp(self):
+        self.cl = CommunityList.objects.create(name='cl1')
+        self.community = Community.objects.create(value='65001:100')
+        self.rule = CommunityListRule.objects.create(
+            community_list=self.cl,
+            action=ActionChoices._choices[0][0],
+            community=self.community,
+        )
+
+    def test_str(self):
+        expected = f'{self.cl}: {self.rule.action} {self.community}'
+        self.assertEqual(str(self.rule), expected)
+
+    def test_get_action_color(self):
+        self.assertIsNotNone(self.rule.get_action_color())

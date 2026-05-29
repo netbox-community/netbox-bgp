@@ -1,8 +1,9 @@
 # NetBox BGP Plugin
-[Netbox](https://github.com/netbox-community/netbox) plugin for BGP related objects documentation.
 
-## Features
-This plugin provide following Models:
+This [Netbox](http://netboxlabs.com/oss/netbox/) plugin introduces support for BGP related objects documentation.
+
+Models include:
+
 * BGP Communities
 * BGP Sessions
 * BGP Peer Groups
@@ -12,18 +13,7 @@ This plugin provide following Models:
 
 ## Compatibility
 
-|NetBox Version | Plugin    |
-|---------------|-----------|
-| NetBox 3.4.x  | >= 0.9.0  |
-| NetBox 3.5.x  | >= 0.10.0 |
-| NetBox 3.6.x  | >= 0.11.0 |
-| NetBox 3.7.x  | >= 0.12.0 |
-| NetBox 4.0.x  | >= 0.13.3 |
-| NetBox 4.1.x  | >= 0.14.0 |
-| NetBox 4.2.x  | 0.15.x    |
-| NetBox 4.3.x  | 0.16.x    |
-| NetBox 4.4.x  | 0.17.x    |
-| NetBox 4.5.x  | 0.18.x    |
+See the [compatibility matrix](COMPATIBILITY.md) for supported NetBox versions.
 
 ## Installation
 
@@ -50,6 +40,7 @@ The following options are available:
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
+* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches.
 
 ## Screenshots
 
