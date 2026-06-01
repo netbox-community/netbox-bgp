@@ -74,4 +74,7 @@ endif
 
 
 test:
-	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run --rm --remove-orphans netbox python manage.py test ${BUILD_NAME}
+	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run --rm --remove-orphans netbox python manage.py test ${BUILD_NAME}; \
+	status=$$?; \
+	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} down; \
+	exit $$status
