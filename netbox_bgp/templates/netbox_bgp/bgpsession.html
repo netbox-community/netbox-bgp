@@ -17,160 +17,158 @@
             <h5 class="card-header">
                 BGP Session
             </h5>
-            <div class="card-body">
-                <table class="table table-hover attr-table">
-                    <tr>
-                        <td>Name</td>
-                        <td>
-                            {% if object.name %}
-                            {{ object.name }}
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Device</td>
-                        <td>
-                            {% if object.device %}
-                            <a href="{{ object.device.get_absolute_url }}">{{ object.device }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Virtual Machine</td>
-                        <td>
-                            {% if object.virtualmachine %}
-                            <a href="{{ object.virtualmachine.get_absolute_url }}">{{ object.virtualmachine }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Site</td>
-                        <td>
-                            {% if object.site %}
-                            <a href="{{ object.device.get_absolute_url }}">{{ object.site }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Local AS</td>
-                        <td>
-                            {% if object.local_as %}
-                            <a href="{{ object.local_as.get_absolute_url }}">{{ object.local_as }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Local IP</td>
-                        <td>
-                            {% if object.local_address %}
-                            <a href="{{ object.local_address.get_absolute_url }}">{{ object.local_address }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Remote AS</td>
-                        <td>
-                            {% if object.remote_as %}
-                            <a href="{{ object.remote_as.get_absolute_url }}">{{ object.remote_as }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Remote AS-MACRO</td>
-                        <td>
-                            {% if object.remote_as_macro %}
-                            {{ object.remote_as_macro }}
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Remote IP</td>
-                        <td>
-                            {% if object.remote_address %}
-                            <a href="{{ object.remote_address.get_absolute_url }}">{{ object.remote_address }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Status</td>
-                        <td>
-                            {% badge object.get_status_display bg_color=object.get_status_color %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Maximum Prefixes</td>
-                        <td>
-                            {% if object.max_prefixes %}
-                            {{ object.max_prefixes }}
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Prefix List In</td>
-                        <td>
-                            {% if object.prefix_list_in %}
-                            <a href="{{ object.prefix_list_in.get_absolute_url }}">{{ object.prefix_list_in }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Prefix List Out</td>
-                        <td>
-                            {% if object.prefix_list_out %}
-                            <a href="{{ object.prefix_list_out.get_absolute_url }}">{{ object.prefix_list_out }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Description</td>
-                        <td>{{ object.description|placeholder }}</td>
-                    </tr>
-                    <tr>
-                        <td>Peer Group</td>
-                        <td>
-                            {% if object.peer_group %}
-                            <a href="{{ object.peer_group.get_absolute_url }}">{{ object.peer_group }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Tenant</td>
-                        <td>
-                            {% if object.tenant %}
-                            <a href="{{ object.tenant.get_absolute_url }}">{{ object.tenant }}</a>
-                            {% else %}
-                            <span class="text-muted">None</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            <table class="table table-hover attr-table">
+                <tr>
+                    <td>Name</td>
+                    <td>
+                        {% if object.name %}
+                        {{ object.name }}
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Device</td>
+                    <td>
+                        {% if object.device %}
+                        <a href="{{ object.device.get_absolute_url }}">{{ object.device }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Virtual Machine</td>
+                    <td>
+                        {% if object.virtualmachine %}
+                        <a href="{{ object.virtualmachine.get_absolute_url }}">{{ object.virtualmachine }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Site</td>
+                    <td>
+                        {% if object.site %}
+                        <a href="{{ object.device.get_absolute_url }}">{{ object.site }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Local AS</td>
+                    <td>
+                        {% if object.local_as %}
+                        <a href="{{ object.local_as.get_absolute_url }}">{{ object.local_as }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Local IP</td>
+                    <td>
+                        {% if object.local_address %}
+                        <a href="{{ object.local_address.get_absolute_url }}">{{ object.local_address }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Remote AS</td>
+                    <td>
+                        {% if object.remote_as %}
+                        <a href="{{ object.remote_as.get_absolute_url }}">{{ object.remote_as }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Remote AS-MACRO</td>
+                    <td>
+                        {% if object.remote_as_macro %}
+                        {{ object.remote_as_macro }}
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Remote IP</td>
+                    <td>
+                        {% if object.remote_address %}
+                        <a href="{{ object.remote_address.get_absolute_url }}">{{ object.remote_address }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        {% badge object.get_status_display bg_color=object.get_status_color %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Maximum Prefixes</td>
+                    <td>
+                        {% if object.max_prefixes %}
+                        {{ object.max_prefixes }}
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Prefix List In</td>
+                    <td>
+                        {% if object.prefix_list_in %}
+                        <a href="{{ object.prefix_list_in.get_absolute_url }}">{{ object.prefix_list_in }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Prefix List Out</td>
+                    <td>
+                        {% if object.prefix_list_out %}
+                        <a href="{{ object.prefix_list_out.get_absolute_url }}">{{ object.prefix_list_out }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>{{ object.description|placeholder }}</td>
+                </tr>
+                <tr>
+                    <td>Peer Group</td>
+                    <td>
+                        {% if object.peer_group %}
+                        <a href="{{ object.peer_group.get_absolute_url }}">{{ object.peer_group }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tenant</td>
+                    <td>
+                        {% if object.tenant %}
+                        <a href="{{ object.tenant.get_absolute_url }}">{{ object.tenant }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
         </div>
         {% include 'inc/panels/custom_fields.html' %}
         {% include 'inc/panels/tags.html' %}
@@ -188,7 +186,7 @@
             <h5 class="card-header">
                 Import Policies
             </h5>
-            <div class="card-body">
+            <div class="table-responsive">
                 {% render_table import_policies_table 'inc/table.html' %}
             </div>
         </div>
@@ -196,7 +194,7 @@
             <h5 class="card-header">
                 Export Policies
             </h5>
-            <div class="card-body">
+            <div class="table-responsive">
                 {% render_table export_policies_table 'inc/table.html' %}
             </div>
         </div>
