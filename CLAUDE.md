@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `netbox-bgp` is a [NetBox](https://github.com/netbox-community/netbox) plugin that adds BGP-related objects (Sessions, Peer Groups, Communities, Community Lists, Routing Policies + Rules, Prefix Lists + Rules, AS Path Lists + Rules). The plugin is distributed on PyPI as `netbox-bgp` and installs as a Django app named `netbox_bgp`.
 
-The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and summarised in `README.md`). The current branch (`0.19.0`) targets NetBox 4.5.x. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals.
+The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and tabulated in `COMPATIBILITY.md`, linked from `README.md`). The current release (`0.19.0`, version in `netbox_bgp/version.py`) targets NetBox 4.6.x (`min_version = '4.6.0'`, `max_version = '4.6.99'`); development happens on the `develop` branch. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals — add a new row to `COMPATIBILITY.md` when you do.
 
 ## Development workflow
 
@@ -18,7 +18,7 @@ Common commands (all run via `make`):
 - `make debug` / `make start` / `make stop` — run the stack in foreground / detached / stop.
 - `make destroy` — stop the stack **and drop the Postgres volume** (`netbox_bgp_pgdata_netbox_bgp`). Use when migrations get wedged.
 - `make migrations` — generate Django migrations for the plugin (writes into `netbox_bgp/migrations/`). Required after any `models.py` change.
-- `make test` — run `python manage.py test netbox_bgp` inside the container. Tests live in `netbox_bgp/tests/` (`test_api.py`, `test_filtersets.py`, `test_forms.py`, `test_models.py`, `test_views.py`). Run a single test with: `docker compose -f develop/docker-compose.yml -p netbox_bgp run netbox python manage.py test netbox_bgp.tests.test_api.SomeTestCase.test_method`.
+- `make test` — run `python manage.py test netbox_bgp` inside the container. Tests live in `netbox_bgp/tests/` (`test_api.py`, `test_filtersets.py`, `test_forms.py`, `test_models.py`, `test_search.py`, `test_views.py`). Run a single test with: `docker compose -f develop/docker-compose.yml -p netbox_bgp run netbox python manage.py test netbox_bgp.tests.test_api.SomeTestCase.test_method`.
 - `make nbshell` / `make shell` — NetBox shell / Django shell.
 - `make adduser` — create a superuser.
 - `make pbuild` / `make pypipub` — build sdist/wheel / upload to PyPI.
@@ -50,6 +50,7 @@ All models inherit from `netbox.models.NetBoxModel` (giving them change-logging,
 - `views.py` — model views. Registered via `get_model_urls()` discovery, not manual URL conf.
 - `template_content.py` — registers extra tabs/pages on NetBox core objects (Device, Interface, Site, Tenant, VirtualMachine, ASN, IPAddress) using `register_model_view` + `ViewTab`. **Reads `PLUGINS_CONFIG['netbox_bgp']['device_ext_page']` at import time** to decide whether to register a Device tab; changing that config requires a restart. The Device-specific inline (`left`/`right`/`full_width`) uses a `PluginTemplateExtension` instead.
 - `navigation.py` — menu items; honours `top_level_menu` setting.
+- `search.py` — `SearchIndex` subclasses registering each model with NetBox global search (`BGPSessionIndex`, `BGPPeerGroupIndex`, `CommunityIndex`, `CommunityListIndex`, `RoutingPolicyIndex`, `PrefixListIndex`, `ASPathListIndex`). Indexed fields declared here must exist on the model; covered by `tests/test_search.py`.
 - `templates/netbox_bgp/` — per-object detail templates.
 - `migrations/` — 0001 through 0041 at time of writing. Always add new ones via `make migrations`, don't hand-write.
 
@@ -74,7 +75,7 @@ Inherited from NetBox core (https://github.com/netbox-community/netbox/blob/main
 - **Filtersets**: `<app>/filtersets.py` — used for both UI filtering and API `?filter=` params.
 - **Tables**: `django-tables2` used for all object list views (`<app>/tables.py`).
 - **Templates**: Django templates in `netbox/templates/<app>/` (in this plugin: `netbox_bgp/templates/netbox_bgp/`).
-- **Tests**: Mirror the app structure in `<app>/tests/`. Use `netbox.configuration_testing` for test config. The suite currently has ~623 tests across five files.
+- **Tests**: Mirror the app structure in `<app>/tests/`. Use `netbox.configuration_testing` for test config. The suite spans six files (`test_api.py`, `test_filtersets.py`, `test_forms.py`, `test_models.py`, `test_search.py`, `test_views.py`); most of the count comes from NetBox's `APIViewTestCases`/`ViewTestCases` base classes rather than explicit `def test_*` methods.
 
 ## Coding Standards
 
@@ -100,6 +101,7 @@ Inherited from NetBox core:
 | `test_views.py` | UI views via `ViewTestCases` base classes |
 | `test_filtersets.py` | FilterSet `search()` and explicit filter fields |
 | `test_forms.py` | Form-level logic not exercised by view tests (e.g. `remote_address_strict`) |
+| `test_search.py` | `SearchIndex` registration and `to_cache()` field capture (`search.py`) |
 
 ### ViewTestCases patterns
 
@@ -126,6 +128,6 @@ Inherited from NetBox core:
 
 ## Conventions to preserve
 
-- When adding a model, add it across **all** of: `models.py`, `forms.py`, `tables.py`, `filtersets.py`, `api/serializers.py`, `api/views.py`, `api/urls.py`, `graphql/types.py`, `graphql/filters.py`, `graphql/schema.py`, `navigation.py`, `urls.py`, `templates/netbox_bgp/<name>.html`, and a migration. Missing any of these breaks either the UI, REST API, or GraphQL.
+- When adding a model, add it across **all** of: `models.py`, `forms.py`, `tables.py`, `filtersets.py`, `api/serializers.py`, `api/views.py`, `api/urls.py`, `graphql/types.py`, `graphql/filters.py`, `graphql/schema.py`, `navigation.py`, `urls.py`, `search.py` (if it should appear in global search), `templates/netbox_bgp/<name>.html`, and a migration. Missing any of these breaks either the UI, REST API, GraphQL, or global search.
 - API URL registration keeps legacy aliases (`session` + `bgpsession`, `peer-group` + `bgppeergroup`). Don't remove them without a deprecation cycle — external tooling depends on these paths.
 - Verbose plural names are set explicitly on several models (`Communities`, `Routing Policies`, `Peer Groups`, `Prefix Lists`, `AS Path Lists`) because Django's default pluraliser gets them wrong. Preserve these when editing `Meta`.
