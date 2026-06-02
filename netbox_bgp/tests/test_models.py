@@ -465,7 +465,7 @@ class CommunityScopeTestCase(TestCase):
     def test_community_scope_change(self):
         from dcim.models import Site
         from django.contrib.contenttypes.models import ContentType
-        site2 = Site.objects.create(name='Test Site 2')
+        site2 = Site.objects.create(name='Test Site 2', slug='test-site-2')
         self.community_with_scope.scope_type = ContentType.objects.get_for_model(Site)
         self.community_with_scope.scope_id = site2.pk
         self.community_with_scope.save()

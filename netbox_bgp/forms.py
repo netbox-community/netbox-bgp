@@ -10,7 +10,7 @@ from django.core.exceptions import (
 from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
-from dcim.models import Device, Site
+from dcim.models import Device, Site, Region, SiteGroup, Location, Rack, RackGroup
 from dcim.forms.mixins import ScopedForm
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
@@ -181,28 +181,55 @@ class CommunityForm(ScopedForm, NetBoxModelForm):
 
 
 class CommunityFilterForm(NetBoxModelFilterSetForm):
+    fieldsets = (
+        FieldSet('q', 'filter_id', 'tag'),
+        FieldSet(
+            'tenant',
+            'status',
+            'region',
+            'site_group',
+            'site',
+            'location',
+            'rack_group',
+            'rack',
+            name=_('Location'),
+        ),
+    )
+    model = Community
     q = forms.CharField(required=False, label="Search")
-    tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
+    tenant = DynamicModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+    )
     status = forms.MultipleChoiceField(
         choices=CommunityStatusChoices,
         required=False,
     )
-    site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
-    scope_type = ContentTypeChoiceField(
-        queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+    region = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(),
         required=False,
-        label=_("Scope type")
     )
-    scope = DynamicModelChoiceField(
-        label=_("Scope"),
-        queryset=Site.objects.none(),
+    site_group = DynamicModelMultipleChoiceField(
+        queryset=SiteGroup.objects.all(),
         required=False,
-        selector=True
     )
-
+    site = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+    )
+    location = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+    )
+    rack_group = DynamicModelMultipleChoiceField(
+        queryset=RackGroup.objects.all(),
+        required=False,
+    )
+    rack = DynamicModelMultipleChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+    )
     tag = TagFilterField(Community)
-
-    model = Community
 
 
 class CommunityBulkEditForm(NetBoxModelBulkEditForm):

@@ -7,6 +7,7 @@ from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
 from utilities.filtersets import register_filterset
+from utilities.filters import MultiValueContentTypeFilter
 
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
@@ -54,11 +55,7 @@ class ASPathListRuleFilterSet(NetBoxModelFilterSet):
 
 @register_filterset
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
-    scope_type = django_filters.ModelMultipleChoiceFilter(
-        field_name="scope_type",
-        queryset=ContentType.objects.all(),
-        label=_("Scope type"),
-    )
+    scope_type = MultiValueContentTypeFilter()
     region = django_filters.NumberFilter(
         method="filter_scope"
     )
@@ -80,7 +77,7 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = Community
-        fields = ('id', 'value', 'description', 'status', 'tenant', 'scope_type')
+        fields = ('id', 'value', 'description', 'status', 'tenant', 'scope_id')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -93,9 +90,9 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         return queryset.filter(qs_filter)
 
     def filter_scope(self, queryset, name, value):
-        """Filter by scope."""
+        model_name = name.replace('_', '')
         return queryset.filter(
-            scope_type__model=name.replace("_", ""),
+            scope_type=ContentType.objects.get(model=model_name),
             scope_id=value
         )
 
