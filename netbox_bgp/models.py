@@ -2,11 +2,13 @@ from django.urls import reverse
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
 
-from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
+from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices, COMMUNITY_SCOPE_TYPES
 
 
 class ASPathList(NetBoxModel):
@@ -206,10 +208,29 @@ class BGPBase(NetBoxModel):
     comments = models.TextField(
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to="contenttypes.ContentType",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field="scope_type",
+        fk_field="scope_id"
+    )
 
     class Meta:
         abstract = True
+        indexes = (
+            models.Index(fields=("scope_type", "scope_id")),
+        )
 
+    def __str__(self):
+        return f'{self.value}'
 
 class Community(BGPBase):
     """

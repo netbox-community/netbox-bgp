@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from utilities.forms.rendering import FieldSet
 from django.core.exceptions import (
     MultipleObjectsReturned,
@@ -10,9 +11,11 @@ from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
 from dcim.models import Device, Site
+from dcim.forms.mixins import ScopedForm
 from ipam.models import IPAddress, Prefix, ASN
 from ipam.formfields import IPNetworkFormField
 from utilities.forms.fields import (
+    ContentTypeChoiceField,
     DynamicModelChoiceField,
     CSVModelChoiceField,
     CSVModelMultipleChoiceField,
@@ -23,14 +26,15 @@ from utilities.forms.fields import (
     CommentField,
 )
 from utilities.forms import add_blank_choice
-from utilities.forms.widgets import APISelect, APISelectMultiple
+from utilities.forms.widgets import APISelect, APISelectMultiple, HTMXSelect
 from netbox.forms import (
     NetBoxModelForm,
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
     NetBoxModelImportForm,
 )
-from .choices import SessionStatusChoices, ActionChoices
+from utilities.forms.utils import get_field_value
+from .choices import SessionStatusChoices, ActionChoices, COMMUNITY_SCOPE_TYPES
 
 from .models import (
     Community,
@@ -116,17 +120,64 @@ class ASPathListRuleForm(NetBoxModelForm):
         fields = ["aspath_list", "index", "action", "pattern", "description", "tags", "comments"]
 
 
-class CommunityForm(NetBoxModelForm):
+class CommunityForm(ScopedForm, NetBoxModelForm):
     status = forms.ChoiceField(
         required=False,
         choices=CommunityStatusChoices,
     )
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=False)
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+        widget=HTMXSelect(),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),
+        required=False,
+        disabled=True,
+        selector=True
+    )
     comments = CommentField()
+
+    fieldsets = (
+        FieldSet("value", "description", "status", "tags", name=_("Community")),
+        FieldSet("scope_type", "scope", name=_("Scope")),
+        FieldSet("tenant", name=_("Tenancy")),
+    )
 
     class Meta:
         model = Community
-        fields = ["value", "description", "status", "tenant", "tags", "comments"]
+        fields = ["value", "description", "status", "tenant", "scope_type", "tags", "comments"]
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {})
+
+        if instance is not None and instance.scope:
+            initial["scope"] = instance.scope
+            kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(model._meta.verbose_name.title())
+            except ObjectDoesNotExist:
+                pass
+
+            if self.instance and scope_type_id != self.instance.scope_type_id:
+                self.initial["scope"] = None
+
+    def clean(self):
+        super().clean()
+        self.instance.scope = self.cleaned_data.get("scope")
 
 
 class CommunityFilterForm(NetBoxModelFilterSetForm):
@@ -137,6 +188,17 @@ class CommunityFilterForm(NetBoxModelFilterSetForm):
         required=False,
     )
     site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),
+        required=False,
+        selector=True
+    )
 
     tag = TagFilterField(Community)
 
@@ -150,11 +212,23 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         choices=CommunityStatusChoices,
     )
+    scope_type = ContentTypeChoiceField(
+        queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+        required=False,
+        label=_("Scope type")
+    )
+    scope = DynamicModelChoiceField(
+        label=_("Scope"),
+        queryset=Site.objects.none(),
+        required=False,
+        selector=True
+    )
 
     model = Community
     nullable_fields = [
         "tenant",
         "description",
+        "scope",
     ]
 
 
