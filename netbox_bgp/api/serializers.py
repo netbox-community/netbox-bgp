@@ -1,6 +1,9 @@
 from rest_framework.serializers import HyperlinkedIdentityField, ValidationError
+from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
-from netbox.api.fields import ChoiceField, SerializedPKRelatedField
+from netbox.api.fields import ChoiceField, SerializedPKRelatedField, ContentTypeField
+from django.contrib.contenttypes.models import ContentType
+from netbox.api.gfk_fields import GFKSerializerField
 from netbox.api.serializers import NetBoxModelSerializer
 from ipam.api.serializers import IPAddressSerializer, ASNSerializer, PrefixSerializer
 from tenancy.api.serializers import TenantSerializer
@@ -22,7 +25,7 @@ from netbox_bgp.models import (
     ASPathListRule
 )
 
-from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices
+from netbox_bgp.choices import CommunityStatusChoices, SessionStatusChoices, COMMUNITY_SCOPE_TYPES
 
 
 class ASPathListSerializer(NetBoxModelSerializer):
@@ -226,6 +229,15 @@ class CommunitySerializer(NetBoxModelSerializer):
     status = ChoiceField(choices=CommunityStatusChoices, required=False)
     tenant = TenantSerializer(nested=True, required=False, allow_null=True)
     url = HyperlinkedIdentityField(view_name="plugins-api:netbox_bgp-api:community-detail")
+    scope_type = ContentTypeField(
+        queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+        allow_null=True,
+        required=False,
+        default=None
+    )
+    scope_id = serializers.IntegerField(allow_null=True, required=False, default=None)
+    scope = GFKSerializerField(read_only=True)
+
 
     class Meta:
         model = Community
@@ -239,6 +251,9 @@ class CommunitySerializer(NetBoxModelSerializer):
             "value",
             "site",
             "role",
+            "scope_type",
+            "scope_id",
+            "scope",
             "comments",
             "tags",
             "custom_fields",
