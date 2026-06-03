@@ -97,6 +97,24 @@ class NetBoxBGPCommunityFilter(TenancyFilterMixin, NetBoxModelFilter):
         ]
         | None
     ) = strawberry_django.filter_field()
+    scope_type: Annotated['ContentTypeFilter', strawberry.lazy('core.graphql.filters')] | None = (
+        strawberry_django.filter_field()
+    )
+    scope_id: ID | None = strawberry_django.filter_field()
+
+    # Cached relations
+    _location: Annotated['LocationFilter', strawberry.lazy('dcim.graphql.filters')] | None = (
+        strawberry_django.filter_field(name='location')
+    )
+    _region: Annotated['RegionFilter', strawberry.lazy('dcim.graphql.filters')] | None = (
+        strawberry_django.filter_field(name='region')
+    )
+    _site_group: Annotated['SiteGroupFilter', strawberry.lazy('dcim.graphql.filters')] | None = (
+        strawberry_django.filter_field(name='site_group')
+    )
+    _site: Annotated['SiteFilter', strawberry.lazy('dcim.graphql.filters')] | None = (
+        strawberry_django.filter_field(name='site')
+    )
 
 
 @strawberry_django.filter_type(BGPSession, lookups=True)
