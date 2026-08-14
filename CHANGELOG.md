@@ -3,7 +3,8 @@
 All notable changes to this project are documented in this file.
 
 This changelog starts at 0.20.0. For earlier releases, see the
-[compatibility matrix](COMPATIBILITY.md) and the git history.
+[compatibility matrix](https://github.com/netbox-community/netbox-bgp/blob/main/COMPATIBILITY.md)
+and the git history.
 
 ## 0.20.0
 

@@ -140,6 +140,11 @@ search will be silently incomplete. Add it to all of:
 `graphql/schema.py`, `navigation.py`, `urls.py`, `search.py` (if it should be
 searchable), `templates/netbox_bgp/<name>.html`, a migration, and tests.
 
+Then document it: add `docs/models/<name>.md` and a matching entry under **Data Model** in
+the `nav` section of `mkdocs.yml`. A page that is not listed in the nav is built but
+unreachable. If the model gets a REST endpoint or GraphQL field, add its rows to
+`docs/rest-api.md` and `docs/graphql-api.md` too.
+
 Two conventions that are easy to miss:
 
 * GraphQL filter classes are declared with a `NetBoxBGP` prefix to keep type names
@@ -154,6 +159,29 @@ Two conventions that are easy to miss:
 
 See [CLAUDE.md](CLAUDE.md) for a fuller description of the architecture and the
 test-suite quirks.
+
+## Documentation
+
+Prose documentation lives in `docs/` and is built with
+[MkDocs](https://www.mkdocs.org/) using the Material theme. `mkdocs.yml` at the repository
+root defines the theme and the navigation tree.
+
+The build tooling is not part of the plugin's dependencies. To preview locally:
+
+```
+pip install mkdocs-material
+mkdocs serve
+```
+
+`README.md` is deliberately kept short: it covers what the plugin is, a brief install, and
+a table of contents pointing into `docs/`. Anything longer belongs on a docs page rather
+than in the README, so there is one copy to keep correct.
+
+Two files are shared rather than duplicated:
+
+* `docs/changelog.md` pulls in the root `CHANGELOG.md` via a snippet include, so release
+  notes are written in one place only.
+* `COMPATIBILITY.md` stays at the root and is linked to, for the same reason.
 
 ## Coding standards
 
