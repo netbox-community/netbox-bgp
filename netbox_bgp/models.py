@@ -673,37 +673,37 @@ class RoutingPolicyRule(NetBoxModel):
             result = self.match_custom
         return result
 
+    # Match keys the model represents with its own fields. Values supplied under these
+    # keys in match_custom are merged with the modelled ones; any other key is passed
+    # through untouched.
+    MERGED_MATCH_KEYS = ('community', 'ip address', 'ipv6 address', 'as-path')
+
     @property
     def match_statements(self):
-        result = {}
-        # add communities
-        result.update(
-            {'community': list(self.match_community.all().values_list('value', flat=True))}
-        )
-        if self.match_community_list.all().exists():
-            result.update(
-                {'community': list(self.match_community_list.all().values_list('name', flat=True))}
+        result = {
+            'community': list(self.match_community.all().values_list('value', flat=True)),
+            'ip address': list(self.match_ip_address.all().values_list('name', flat=True)),
+            'ipv6 address': list(self.match_ipv6_address.all().values_list('name', flat=True)),
+            'as-path': list(self.match_aspath_list.all().values_list('name', flat=True)),
+        }
+        # a community list, where one is set, stands in for directly matched communities
+        if self.match_community_list.exists():
+            result['community'] = list(
+                self.match_community_list.all().values_list('name', flat=True)
             )
-        result.update(
-            {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
-        )
-        result.update(
-            {'ipv6 address': [str(prefix_list) for prefix_list in self.match_ipv6_address.all().values_list('name', flat=True)]}
-        )
-        result.update(
-            {'as-path': list(self.match_aspath_list.all().values_list('name', flat=True))}
-        )
 
         custom_match = self.get_match_custom()
-        # update community from custom
-        result['community'].extend(custom_match.get('community', []))
-        result['ip address'].extend(custom_match.get('ip address', []))
-        result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
-        result['as-path'].extend(custom_match.get('as-path', []))
+        for key in self.MERGED_MATCH_KEYS:
+            result[key].extend(custom_match.get(key, []))
+        # Pass through the custom keys the model has no field for. The merged keys are
+        # deliberately excluded: assigning them here would replace the values gathered
+        # above rather than adding to them.
+        result.update({
+            key: value for key, value in custom_match.items()
+            if key not in self.MERGED_MATCH_KEYS
+        })
         # remove empty matches
-        result = {k: v for k, v in result.items() if v}
-        result.update(custom_match)
-        return result
+        return {k: v for k, v in result.items() if v}
 
     @property
     def set_statements(self):

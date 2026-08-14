@@ -54,16 +54,19 @@ respectively. The plugin does not check that the referenced list's
 
 ### Match Custom
 
-An optional free-form JSON object for match conditions the plugin does not model. Keys it
-does not share with a modelled match are passed through unchanged.
+An optional free-form JSON object for match conditions the plugin does not model, such as
+`{"extcommunity": ["rt:65000:1"]}`. Keys it does not share with a modelled match are passed
+through unchanged.
 
-!!! warning
-    For the four keys that *do* overlap — `community`, `ip address`, `ipv6 address`, and
-    `as-path` — a value in Match Custom **replaces** the modelled match rather than adding
-    to it. Setting `{"community": ["65001:1"]}` on a rule that also has Match Community
-    entries drops those entries from the derived
-    [`match_statements`](#derived-values). Keep custom keys disjoint from the modelled
-    fields, or put all of a given match type in one place.
+For the four keys that *do* overlap — `community`, `ip address`, `ipv6 address`, and
+`as-path` — the custom values are added to the modelled ones. A rule with a Match Community
+of `65000:100` and a Match Custom of `{"community": ["65000:200"]}` yields both in the
+derived [`match_statements`](#derived-values).
+
+!!! note
+    Prior to 0.20.0 a custom value under one of those four keys silently *replaced* the
+    modelled match instead of adding to it. If you worked around that by duplicating
+    modelled matches into Match Custom, those entries will now appear twice.
 
 ### Set Actions
 
@@ -80,8 +83,8 @@ models.
 Two read-only properties assemble the rule for consumption by templating or automation:
 
 * **`match_statements`** assembles the modelled matches keyed by vendor term (`community`,
-  `ip address`, `ipv6 address`, `as-path`), drops the empty ones, then overlays
-  `match_custom` — see the warning above for what that overlay does to overlapping keys.
+  `ip address`, `ipv6 address`, `as-path`), merges in the matching keys from
+  `match_custom`, adds any unmodelled custom keys, and drops whatever is left empty.
 * **`set_statements`** returns `set_actions`, or an empty object when it is unset.
 
 !!! note

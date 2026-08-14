@@ -63,6 +63,18 @@ and the git history.
 
 ### Fixed
 
+- **`RoutingPolicyRule.match_statements` no longer discards modelled matches.** Values
+  supplied under `match_custom`'s `community`, `ip address`, `ipv6 address`, or `as-path`
+  keys were merged with the rule's own Match Community / Match IP Address / Match IPv6
+  Address / Match AS Path List entries, and then immediately overwritten by a final
+  `dict.update()` — so the modelled matches were dropped from the derived statement
+  whenever the corresponding custom key was present. They are now genuinely merged, and
+  custom keys the model has no field for are still passed through untouched.
+
+  This affects the Routing Policy Rule detail view and anything consuming
+  `match_statements` for configuration generation. If you duplicated modelled matches into
+  `match_custom` to work around the old behaviour, those entries will now appear twice.
+
 - **Auto-created remote addresses no longer leak on rejected forms.** With
   `remote_address_strict` disabled (the default), `BGPSessionAddForm` created the
   `ipam.IPAddress` during field validation. Django validates outside the view's
