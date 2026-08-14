@@ -15,6 +15,7 @@ from .models import (
 )
 
 from . import filtersets, forms, tables
+from netbox.object_actions import AddObject, BulkDelete, BulkExport, BulkImport
 
 
 # Community
@@ -121,7 +122,7 @@ class CommunityListRuleListView(generic.ObjectListView):
     filterset = filtersets.CommunityListRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.CommunityListRuleTable
-    actions = {'add': {'add'}, 'bulk_delete': {'delete'}}
+    actions = (AddObject, BulkDelete)
 
 @register_model_view(CommunityListRule, "add", detail=False)
 @register_model_view(CommunityListRule, "edit")
@@ -281,7 +282,7 @@ class RoutingPolicyRuleListView(generic.ObjectListView):
     filterset = filtersets.RoutingPolicyRuleFilterSet
     # filterset_form = RoutingPolicyRuleFilterForm
     table = tables.RoutingPolicyRuleTable
-    actions = {'add': {'add'}, 'bulk_import': {'add'}, 'export': {'export'}, 'bulk_delete': {'delete'}}
+    actions = (AddObject, BulkImport, BulkExport, BulkDelete)
 
 @register_model_view(RoutingPolicyRule, "add", detail=False)
 @register_model_view(RoutingPolicyRule, "edit")
@@ -450,7 +451,7 @@ class PrefixListRuleListView(generic.ObjectListView):
     queryset = PrefixListRule.objects.all()
     filterset = filtersets.PrefixListRuleFilterSet
     table = tables.PrefixListRuleTable
-    actions = {'add': {'add'}, 'bulk_import': {'add'}, 'export': {'export'}, 'bulk_delete': {'delete'}}
+    actions = (AddObject, BulkImport, BulkExport, BulkDelete)
 
 @register_model_view(PrefixListRule, "add", detail=False)
 @register_model_view(PrefixListRule, "edit")
@@ -557,7 +558,7 @@ class ASPathListRuleListView(generic.ObjectListView):
     filterset = filtersets.ASPathListRuleFilterSet
     # filterset_form = ASPathListRuleFilterForm
     table = tables.ASPathListRuleTable
-    actions = {'add': {'add'}, 'bulk_import': {'add'}, 'export': {'export'}, 'bulk_delete': {'delete'}}
+    actions = (AddObject, BulkImport, BulkExport, BulkDelete)
 
 
 @register_model_view(ASPathListRule, "add", detail=False)

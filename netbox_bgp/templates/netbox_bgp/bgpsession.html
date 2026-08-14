@@ -109,6 +109,16 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Remote Prefix</td>
+                    <td>
+                        {% if object.remote_prefix %}
+                        <a href="{{ object.remote_prefix.get_absolute_url }}">{{ object.remote_prefix }}</a>
+                        {% else %}
+                        <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <td>Status</td>
                     <td>
                         {% badge object.get_status_display bg_color=object.get_status_color %}

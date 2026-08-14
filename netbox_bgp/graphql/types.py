@@ -68,7 +68,8 @@ class BGPSessionType(NetBoxObjectType):
     device: Annotated["DeviceType", strawberry.lazy("dcim.graphql.types")] | None
     virtualmachine: Annotated["VirtualMachineType", strawberry.lazy("virtualization.graphql.types")] | None
     local_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
-    remote_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")]
+    remote_address: Annotated["IPAddressType", strawberry.lazy("ipam.graphql.types")] | None
+    remote_prefix: Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")] | None
     local_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")]
     remote_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")]
     status: str

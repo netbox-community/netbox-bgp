@@ -165,7 +165,8 @@ class BGPSessionSerializer(NetBoxModelSerializer):
     device = DeviceSerializer(nested=True, required=False, allow_null=True)
     virtualmachine = VirtualMachineSerializer(nested=True, required=False, allow_null=True)
     local_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
-    remote_address = IPAddressSerializer(nested=True, required=True, allow_null=False)
+    remote_address = IPAddressSerializer(nested=True, required=False, allow_null=True)
+    remote_prefix = PrefixSerializer(nested=True, required=False, allow_null=True)
     local_as = ASNSerializer(nested=True, required=True, allow_null=False)
     remote_as = ASNSerializer(nested=True, required=True, allow_null=False)
     peer_group = BGPPeerGroupSerializer(nested=True, required=False, allow_null=True)
@@ -201,6 +202,7 @@ class BGPSessionSerializer(NetBoxModelSerializer):
             "virtualmachine",
             "local_address",
             "remote_address",
+            "remote_prefix",
             "local_as",
             "remote_as",
             "remote_as_macro",
