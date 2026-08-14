@@ -144,6 +144,11 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilter):
     ) = strawberry_django.filter_field()
     remote_address_id: ID | None = strawberry_django.filter_field()
 
+    remote_prefix: (
+        Annotated["PrefixFilter", strawberry.lazy("ipam.graphql.filters")] | None
+    ) = strawberry_django.filter_field()
+    remote_prefix_id: ID | None = strawberry_django.filter_field()
+
     device: (
         Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None
     ) = strawberry_django.filter_field()

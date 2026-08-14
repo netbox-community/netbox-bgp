@@ -443,7 +443,18 @@ class BGPSession(NetBoxModel):
     remote_address = models.ForeignKey(
         to='ipam.IPAddress',
         on_delete=models.PROTECT,
-        related_name='remote_address'
+        related_name='remote_address',
+        blank=True,
+        null=True
+    )
+    remote_prefix = models.ForeignKey(
+        to='ipam.Prefix',
+        on_delete=models.PROTECT,
+        related_name='remote_prefix',
+        blank=True,
+        null=True,
+        help_text='Peer subnet, for dynamic (listen range) peering. '
+                  'Mutually exclusive with Remote Address.'
     )
     local_as = models.ForeignKey(
         to='ipam.ASN',
@@ -512,6 +523,22 @@ class BGPSession(NetBoxModel):
     class Meta:
         verbose_name_plural = 'BGP Sessions'
         unique_together = [['device', 'local_address', 'local_as', 'remote_address', 'remote_as'], ['virtualmachine', 'local_address', 'local_as', 'remote_address', 'remote_as']]
+        # remote_prefix is deliberately kept out of unique_together above: it is
+        # nullable, and a NULL member makes Postgres treat every row as distinct,
+        # which would silently disable the address-based constraints. Prefix-based
+        # sessions get their own constraints, conditioned so no member is ever NULL.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['device', 'local_address', 'local_as', 'remote_prefix', 'remote_as'],
+                condition=models.Q(remote_prefix__isnull=False, device__isnull=False),
+                name='netbox_bgp_bgpsession_unique_device_remote_prefix',
+            ),
+            models.UniqueConstraint(
+                fields=['virtualmachine', 'local_address', 'local_as', 'remote_prefix', 'remote_as'],
+                condition=models.Q(remote_prefix__isnull=False, virtualmachine__isnull=False),
+                name='netbox_bgp_bgpsession_unique_vm_remote_prefix',
+            ),
+        ]
         ordering = ('name', 'pk')  # Name may be null
 
     def __str__(self):
@@ -531,11 +558,33 @@ class BGPSession(NetBoxModel):
     #    self.clean()
     #    super().save(*args, **kwargs)
 
+    def clean(self):
+        super().clean()
+        # the remote peer is either a single address or a subnet, never both
+        if self.remote_address and self.remote_prefix:
+            raise ValidationError({
+                'remote_address': 'Cannot set both Remote Address and Remote Prefix',
+                'remote_prefix': 'Cannot set both Remote Address and Remote Prefix',
+            })
+        # at least one must be set
+        if self.remote_address is None and self.remote_prefix is None:
+            raise ValidationError({
+                'remote_address': 'Either a Remote Address or a Remote Prefix is required',
+                'remote_prefix': 'Either a Remote Address or a Remote Prefix is required',
+            })
+
     def get_status_color(self):
         return SessionStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
+
+    @property
+    def remote_peer(self):
+        """
+        Return the remote peer, which is either a single address or a subnet.
+        """
+        return self.remote_address or self.remote_prefix
 
     @property
     def label(self):
@@ -544,7 +593,7 @@ class BGPSession(NetBoxModel):
         """
         if self.name:
             return self.name
-        return f'{self.remote_address}:{self.remote_as}'
+        return f'{self.remote_peer}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):

@@ -158,6 +158,9 @@ must be kept in step:
 2. The table in `COMPATIBILITY.md`
 3. The `compatibility` list in `netbox-plugin.yaml`
 
+User-visible changes go in `CHANGELOG.md` under the target release, with breaking changes
+called out explicitly and an upgrade note where one is needed.
+
 Changing the supported NetBox range usually also means migrations and adjustments to
 imports from NetBox internals.
 

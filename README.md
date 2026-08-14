@@ -14,7 +14,8 @@ Models include:
 
 ## Compatibility
 
-See the [compatibility matrix](COMPATIBILITY.md) for supported NetBox versions.
+See the [compatibility matrix](COMPATIBILITY.md) for supported NetBox versions, and the
+[changelog](CHANGELOG.md) for release notes and upgrade instructions.
 
 ## Installation
 
@@ -41,7 +42,7 @@ The following options are available:
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
-* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches.
+* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches. This setting applies to Remote Address only; a Remote Prefix must always reference an existing Prefix.
 
 `device_ext_page` is read when the plugin is loaded, so changing it requires a NetBox
 restart (and a worker restart) rather than taking effect on the next request.
@@ -59,6 +60,7 @@ viewing:
 | Interface | Sessions whose local or remote address is an IP assigned to this interface |
 | IP Address | Sessions whose local **or** remote address is this IP |
 | ASN | Sessions whose local **or** remote AS is this ASN |
+| Prefix | Sessions whose Remote Prefix is this prefix |
 | Site | Sessions whose Site is this site |
 | Tenant | Sessions whose Tenant is this tenant |
 
@@ -79,6 +81,13 @@ worth calling out:
   macro / IRR as-set name (e.g. `AS-EXAMPLE`) for the remote side. The plugin stores it
   as a label only — it performs no validation, expansion, or IRR lookup — and it is
   available for filtering and global search.
+* `remote_address` / `remote_prefix` (Sessions): The remote peer. Set **exactly one** of
+  the two — setting both, or neither, is rejected in the UI, the REST API, and bulk
+  import. Use `remote_address` for a conventional session with a single neighbour, and
+  `remote_prefix` to document dynamic peering, where the device accepts sessions from any
+  address in a subnet (`bgp listen range` on Cisco/Arista, `allow` on Juniper). Unlike
+  `remote_address`, a `remote_prefix` is never auto-created: the `ipam.Prefix` must
+  already exist, regardless of the `remote_address_strict` setting.
 
 A Peer Group carries its own `local_as`, `remote_as`, `prefix_list_in`,
 `prefix_list_out`, import/export policies, and `extra_attributes`. These describe
