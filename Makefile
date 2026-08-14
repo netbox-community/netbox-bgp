@@ -1,5 +1,5 @@
 PYTHON_VER?=3.12
-NETBOX_VER?=v4.6.1
+NETBOX_VER?=feature
 
 NAME=netbox-bgp
 
@@ -73,8 +73,19 @@ endif
 	git checkout develop
 
 
-test:
+test: cbuild
 	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run --rm --remove-orphans netbox python manage.py test ${BUILD_NAME}; \
+	status=$$?; \
+	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} down; \
+	exit $$status
+
+
+# Record the SQL query-count baselines in netbox_bgp/tests/query_counts.json.
+# Must run serially (UPDATE_QUERY_COUNTS is incompatible with --parallel).
+# Commit the regenerated file.
+update-query-counts: cbuild
+	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} run --rm --remove-orphans \
+		-e UPDATE_QUERY_COUNTS=1 netbox python manage.py test ${BUILD_NAME}; \
 	status=$$?; \
 	docker compose -f ${COMPOSE_FILE} -p ${BUILD_NAME} down; \
 	exit $$status
