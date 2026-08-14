@@ -291,7 +291,11 @@ class BGPPeerGroupFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = BGPPeerGroup
-        fields = ('id', 'name', 'description',)
+        fields = (
+            'id', 'name', 'description',
+            'local_as', 'remote_as',
+            'prefix_list_in', 'prefix_list_out',
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

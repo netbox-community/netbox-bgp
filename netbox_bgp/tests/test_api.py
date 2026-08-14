@@ -17,6 +17,8 @@ from netbox_bgp.models import (
     RoutingPolicyRule,
     PrefixList,
     PrefixListRule,
+    ASPathList,
+    ASPathListRule,
 )
 
 from netbox_bgp.choices import (
@@ -24,6 +26,109 @@ from netbox_bgp.choices import (
     IPAddressFamilyChoices,
     ActionChoices,
 )
+
+
+class ASPathListAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    APIViewTestCases.GraphQLTestCase,
+):
+    model = ASPathList
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id", "name", "url"]
+    graphql_base_name = "netbox_bgp_aspathlist"
+
+    create_data = [
+        {"name": "test_aspathlist1", "description": "desc1"},
+        {"name": "test_aspathlist2", "description": "desc2"},
+        {"name": "test_aspathlist3", "description": "desc3"},
+    ]
+
+    bulk_update_data = {"description": "updated via bulk"}
+
+    @classmethod
+    def setUpTestData(cls):
+        aspathlists = (
+            ASPathList(name="aspathlist1", description="aspathlist1"),
+            ASPathList(name="aspathlist2", description="aspathlist2"),
+            ASPathList(name="aspathlist3", description="aspathlist3"),
+        )
+        ASPathList.objects.bulk_create(aspathlists)
+
+
+class ASPathListRuleAPITestCase(
+    APIViewTestCases.GetObjectViewTestCase,
+    APIViewTestCases.ListObjectsViewTestCase,
+    APIViewTestCases.CreateObjectViewTestCase,
+    APIViewTestCases.UpdateObjectViewTestCase,
+    APIViewTestCases.DeleteObjectViewTestCase,
+    APIViewTestCases.GraphQLTestCase,
+):
+    model = ASPathListRule
+    view_namespace = "plugins-api:netbox_bgp"
+    brief_fields = ["description", "display", "id"]
+    graphql_base_name = "netbox_bgp_aspathlist_rule"
+
+    bulk_update_data = {"description": "updated via bulk", "action": "deny"}
+
+    user_permissions = ["netbox_bgp.view_aspathlist"]
+
+    @classmethod
+    def setUpTestData(cls):
+        apl1 = ASPathList.objects.create(name="apl_rule_src1", description="src1")
+        apl2 = ASPathList.objects.create(name="apl_rule_src2", description="src2")
+
+        rules = (
+            ASPathListRule(
+                aspath_list=apl1,
+                index=10,
+                action=ActionChoices._choices[0][0],
+                pattern="65000",
+                description="rule1",
+            ),
+            ASPathListRule(
+                aspath_list=apl1,
+                index=20,
+                action=ActionChoices._choices[0][0],
+                pattern="65001",
+                description="rule2",
+            ),
+            ASPathListRule(
+                aspath_list=apl1,
+                index=30,
+                action=ActionChoices._choices[0][1],
+                pattern="65002",
+                description="rule3",
+            ),
+        )
+        ASPathListRule.objects.bulk_create(rules)
+
+        cls.create_data = [
+            {
+                "aspath_list": apl2.id,
+                "index": 10,
+                "action": "permit",
+                "pattern": "65100",
+                "description": "rule4",
+            },
+            {
+                "aspath_list": apl2.id,
+                "index": 20,
+                "action": "permit",
+                "pattern": "65101",
+                "description": "rule5",
+            },
+            {
+                "aspath_list": apl2.id,
+                "index": 30,
+                "action": "deny",
+                "pattern": "65102",
+                "description": "rule6",
+            },
+        ]
 
 
 class CommunityAPITestCase(
@@ -676,6 +781,173 @@ class PrefixListRuleAPITestCase(
                 "prefix_custom": "0.0.0.0/0",
             },
         ]
+
+
+class ExtraAttributesDefaultTestCase(APITestCase):
+    """extra_attributes must always be a dict (never NULL) on both
+    BGPSession and BGPPeerGroup, even when the caller omits it."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_extra")
+        cls.local_as = ASN.objects.create(asn=65050, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65051, rir=rir)
+        cls.local_ip = IPAddress.objects.create(address="203.0.113.1/32")
+        cls.remote_ip = IPAddress.objects.create(address="203.0.113.2/32")
+
+    def test_peer_group_default_is_empty_dict(self):
+        pg = BGPPeerGroup.objects.create(name="pg_extra_default")
+        pg.refresh_from_db()
+        self.assertEqual(pg.extra_attributes, {})
+
+    def test_session_default_is_empty_dict(self):
+        session = BGPSession.objects.create(
+            name="session_extra_default",
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            local_address=self.local_ip,
+            remote_address=self.remote_ip,
+            status=SessionStatusChoices.STATUS_ACTIVE,
+        )
+        session.refresh_from_db()
+        self.assertEqual(session.extra_attributes, {})
+
+    def test_peer_group_roundtrips_via_api(self):
+        self.add_permissions(
+            "netbox_bgp.add_bgppeergroup",
+            "netbox_bgp.view_bgppeergroup",
+        )
+        url = reverse("plugins-api:netbox_bgp-api:bgppeergroup-list")
+        payload = {
+            "name": "pg_extra_api",
+            "extra_attributes": {"vendor": "juniper", "knob": 42},
+        }
+        response = self.client.post(
+            url, data=payload, format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(
+            response.data["extra_attributes"],
+            {"vendor": "juniper", "knob": 42},
+        )
+        created = BGPPeerGroup.objects.get(pk=response.data["id"])
+        self.assertEqual(created.extra_attributes, {"vendor": "juniper", "knob": 42})
+
+
+class BGPPeerGroupExtendedFieldsAPITestCase(APITestCase):
+    """Issue #230 — peer-groups must expose local_as, remote_as, prefix_list_in,
+    and prefix_list_out alongside the existing import/export policy fields."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_230")
+        cls.local_as = ASN.objects.create(asn=65040, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65041, rir=rir)
+        cls.pl_in = PrefixList.objects.create(
+            name="pl_in_230", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        cls.pl_out = PrefixList.objects.create(
+            name="pl_out_230", family=IPAddressFamilyChoices.FAMILY_4
+        )
+        cls.peer_group = BGPPeerGroup.objects.create(
+            name="pg_230",
+            description="peer group with session-level fields",
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            prefix_list_in=cls.pl_in,
+            prefix_list_out=cls.pl_out,
+        )
+
+    def test_get_returns_new_fields(self):
+        self.add_permissions("netbox_bgp.view_bgppeergroup")
+        url = reverse(
+            "plugins-api:netbox_bgp-api:bgppeergroup-detail",
+            kwargs={"pk": self.peer_group.pk},
+        )
+        response = self.client.get(url, **self.header)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["local_as"]["id"], self.local_as.pk)
+        self.assertEqual(response.data["remote_as"]["id"], self.remote_as.pk)
+        self.assertEqual(response.data["prefix_list_in"]["id"], self.pl_in.pk)
+        self.assertEqual(response.data["prefix_list_out"]["id"], self.pl_out.pk)
+
+    def test_create_with_new_fields(self):
+        self.add_permissions(
+            "netbox_bgp.add_bgppeergroup",
+            "netbox_bgp.view_bgppeergroup",
+            "ipam.view_asn",
+        )
+        url = reverse("plugins-api:netbox_bgp-api:bgppeergroup-list")
+        payload = {
+            "name": "pg_230_create",
+            "description": "via api",
+            "local_as": self.local_as.pk,
+            "remote_as": self.remote_as.pk,
+            "prefix_list_in": self.pl_in.pk,
+            "prefix_list_out": self.pl_out.pk,
+        }
+        response = self.client.post(
+            url, data=payload, format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        created = BGPPeerGroup.objects.get(pk=response.data["id"])
+        self.assertEqual(created.local_as, self.local_as)
+        self.assertEqual(created.remote_as, self.remote_as)
+        self.assertEqual(created.prefix_list_in, self.pl_in)
+        self.assertEqual(created.prefix_list_out, self.pl_out)
+
+
+class BGPSessionPolicyInheritanceAPITestCase(APITestCase):
+    """Regression test for issue #222 — the session API must return the
+    session's own import/export policies, not the union with peer-group
+    policies. (Previously the BGPSessionSerializer merged inherited peer-group
+    policies into the response, diverging from the GUI which shows session-only.)"""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_222")
+        local_as = ASN.objects.create(asn=65010, rir=rir)
+        remote_as = ASN.objects.create(asn=65011, rir=rir)
+        local_ip = IPAddress.objects.create(address="10.0.0.1/32")
+        remote_ip = IPAddress.objects.create(address="10.0.0.2/32")
+
+        cls.pg_policy_in = RoutingPolicy.objects.create(name="pg_in_222")
+        cls.pg_policy_out = RoutingPolicy.objects.create(name="pg_out_222")
+        cls.sess_policy_in = RoutingPolicy.objects.create(name="sess_in_222")
+        cls.sess_policy_out = RoutingPolicy.objects.create(name="sess_out_222")
+
+        cls.peer_group = BGPPeerGroup.objects.create(name="pg_222")
+        cls.peer_group.import_policies.add(cls.pg_policy_in)
+        cls.peer_group.export_policies.add(cls.pg_policy_out)
+
+        cls.session = BGPSession.objects.create(
+            name="session_222",
+            local_as=local_as,
+            remote_as=remote_as,
+            local_address=local_ip,
+            remote_address=remote_ip,
+            peer_group=cls.peer_group,
+            status=SessionStatusChoices.STATUS_ACTIVE,
+        )
+        cls.session.import_policies.add(cls.sess_policy_in)
+        cls.session.export_policies.add(cls.sess_policy_out)
+
+    def test_session_policies_exclude_peer_group(self):
+        self.add_permissions("netbox_bgp.view_bgpsession")
+        url = reverse(
+            "plugins-api:netbox_bgp-api:bgpsession-detail",
+            kwargs={"pk": self.session.pk},
+        )
+        response = self.client.get(url, **self.header)
+        self.assertEqual(response.status_code, 200)
+
+        import_ids = {p["id"] for p in response.data["import_policies"]}
+        export_ids = {p["id"] for p in response.data["export_policies"]}
+
+        self.assertEqual(import_ids, {self.sess_policy_in.pk})
+        self.assertEqual(export_ids, {self.sess_policy_out.pk})
+        self.assertNotIn(self.pg_policy_in.pk, import_ids)
+        self.assertNotIn(self.pg_policy_out.pk, export_ids)
 
 
 class TestAPISchema(APITestCase):

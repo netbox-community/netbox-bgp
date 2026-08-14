@@ -1,8 +1,11 @@
 version: 0.1
 package_name: netbox-bgp
 compatibility:
-  - release: 0.18.0
-    netbox_min: 4.5.0-beta1
+  - release: 0.19.0
+    netbox_min: 4.6.0
+    netbox_max: 4.6.99
+  - release: 0.18.1
+    netbox_min: 4.5.0
     netbox_max: 4.5.99
   - release: 0.17.0
     netbox_min: 4.4.0

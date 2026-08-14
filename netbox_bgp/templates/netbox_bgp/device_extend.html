@@ -5,6 +5,8 @@
         Related BGP Sessions
     </h5>
     <div class="card-body">
-        {% htmx_table 'plugins:netbox_bgp:bgpsession_list' device_id=object.id %}
+        <div class="table-responsive">
+            {% htmx_table 'plugins:netbox_bgp:bgpsession_list' device_id=object.id %}
+        </div>
     </div>
 </div>

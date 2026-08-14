@@ -35,7 +35,7 @@ from .filters import (
 class ASPathListType(NetBoxObjectType):
     name: str
     description: str
-    rules: List[
+    aspathlistrules: List[
          Annotated["ASPathListRuleType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
 
@@ -91,12 +91,16 @@ class BGPSessionType(NetBoxObjectType):
 class BGPPeerGroupType(NetBoxObjectType):
     name: str
     description: str
+    local_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")] | None
+    remote_as: Annotated["ASNType", strawberry.lazy("ipam.graphql.types")] | None
     import_policies: List[
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
     export_policies: List[
         Annotated["RoutingPolicyType", strawberry.lazy("netbox_bgp.graphql.types")]
     ]
+    prefix_list_in: Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")] | None
+    prefix_list_out: Annotated["PrefixListType", strawberry.lazy("netbox_bgp.graphql.types")] | None
 
 
 @strawberry_django.type(RoutingPolicy, fields="__all__", filters=NetBoxBGPRoutingPolicyFilter)
