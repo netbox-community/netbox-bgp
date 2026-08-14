@@ -108,6 +108,28 @@ make migrations
 This runs `makemigrations` inside the container and writes into
 `netbox_bgp/migrations/`. Commit the generated file with the model change.
 
+### Data migrations and branching
+
+Schema-only migrations need nothing special. A migration that also *moves data* — a
+`RunPython` or `RunSQL` operation — must declare how it behaves inside a
+[netbox-branching](https://github.com/netboxlabs/netbox-branching) branch schema, by
+setting `fake_on_branch` on the `Migration` class:
+
+```python
+class Migration(migrations.Migration):
+    # Data already migrated in main; branch schemas inherit the result.
+    fake_on_branch = True
+```
+
+`True` always fakes the migration on a branch, `False` always runs it, and leaving it
+unset falls back to netbox-branching's heuristic. Set it explicitly rather than relying
+on the heuristic: a data migration that re-runs against a branch schema can operate on
+the wrong rows.
+
+There is one existing data migration, `0026_netbox_bgp.py` (the 2022 move from the
+plugin's own ASN model to `ipam.ASN`). It predates branching and carries no flag; it is
+long since applied everywhere, so it is left alone.
+
 ## Adding a model
 
 A model has to be wired through every layer, or the UI, REST API, GraphQL, or global

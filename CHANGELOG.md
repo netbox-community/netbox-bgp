@@ -7,8 +7,7 @@ This changelog starts at 0.20.0. For earlier releases, see the
 
 ## 0.20.0
 
-**Requires NetBox 4.7.** This release drops support for NetBox 4.6 and earlier; see
-[Upgrading](#upgrading-to-0200) below.
+**Targets NetBox 4.7.** See [Upgrading](#upgrading-to-0200) below.
 
 ### Added
 
@@ -61,6 +60,16 @@ This changelog starts at 0.20.0. For earlier releases, see the
 - `MANIFEST.in` now ships `netbox_bgp/tests/*.json`, so the query-count baselines are
   included in the built distribution.
 
+### Fixed
+
+- **Auto-created remote addresses no longer leak on rejected forms.** With
+  `remote_address_strict` disabled (the default), `BGPSessionAddForm` created the
+  `ipam.IPAddress` during field validation. Django validates outside the view's
+  transaction, so any later failure — most easily `Model.clean()` rejecting a session
+  that set both Remote Address and Remote Prefix — left an orphan IPAddress committed
+  even though no session was created. The address is now created in `save()`, once the
+  whole form is known to be valid.
+
 ### Breaking changes
 
 - **GraphQL: `BGPSessionType.remote_address` is now nullable.** It changes from
@@ -73,7 +82,10 @@ This changelog starts at 0.20.0. For earlier releases, see the
   always send `remote_address` are unaffected — but responses may now contain
   `"remote_address": null` for prefix-based sessions.
 
-- **NetBox 4.6 and earlier are no longer supported.**
+- **NetBox 4.7 is required in practice.** This release is developed and tested only
+  against 4.7, and uses 4.7-only APIs (the object-actions classes and the GraphQL filter
+  discovery described above). `min_version` is deliberately not pinned, so installation
+  on 4.6 is not blocked, but it is not supported and will not work.
 
 ### Upgrading to 0.20.0
 

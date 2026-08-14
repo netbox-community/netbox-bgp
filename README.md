@@ -42,10 +42,35 @@ The following options are available:
   - `tab`: Display BGP sessions in a dedicated tab on the device detail page
   - Set empty value to disable device BGP sessions display
 * `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
-* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches. This setting applies to Remote Address only; a Remote Prefix must always reference an existing Prefix.
+* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments: a free-text CIDR is matched by address alone, so it resolves to the first match when the same address exists in several VRFs, and any address it creates is created without a VRF. This setting applies to Remote Address only; a Remote Prefix must always reference an existing Prefix, and is never auto-created.
 
 `device_ext_page` is read when the plugin is loaded, so changing it requires a NetBox
 restart (and a worker restart) rather than taking effect on the next request.
+
+### Branching
+
+The plugin works with
+[netbox-branching](https://github.com/netboxlabs/netbox-branching) with no additional
+configuration. Every BGP model inherits `NetBoxModel`, and therefore `ChangeLoggingMixin`,
+so all of them are branch-aware automatically.
+
+**Do not add this plugin to `exempt_models`.** BGP objects hold foreign keys to
+branch-aware core data — Devices, Virtual Machines, IP Addresses, Prefixes, ASNs, Sites,
+and Tenants — so exempting them breaks referential integrity between a branch and main:
+
+```python
+# Unsupported — will corrupt relations between branches and main
+PLUGINS_CONFIG = {
+    'netbox_branching': {
+        'exempt_models': ['netbox_bgp.*'],
+    },
+}
+```
+
+As with any plugin, install or upgrade `netbox-bgp` *before* creating branches where you
+can. Branches provisioned against an older schema do not receive new migrations
+automatically; they enter "Pending Migrations" and need the Migrate action before they
+can be activated or merged.
 
 ## Integrations with core NetBox objects
 

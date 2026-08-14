@@ -64,9 +64,18 @@ class RemoteAddressStrictTestCase(TestCase):
         before = IPAddress.objects.count()
         form = BGPSessionAddForm(data=self._form_data("198.51.100.7/32"))
         self.assertTrue(form.is_valid())
-        self.assertIsInstance(form.cleaned_data.get("remote_address"), IPAddress)
-        self.assertTrue(IPAddress.objects.filter(address="198.51.100.7/32").exists())
+        ip = form.cleaned_data.get("remote_address")
+        self.assertIsInstance(ip, IPAddress)
+        # Validation must not write: the IPAddress is created by save(), so that
+        # a form which fails a later check leaves nothing behind.
+        self.assertIsNone(ip.pk)
+        self.assertEqual(IPAddress.objects.count(), before)
+
+        session = form.save()
         self.assertEqual(IPAddress.objects.count(), before + 1)
+        self.assertTrue(IPAddress.objects.filter(address="198.51.100.7/32").exists())
+        self.assertEqual(str(session.remote_address.address), "198.51.100.7/32")
+        self.assertIsNotNone(session.remote_address.pk)
 
     @override_settings(
         PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": False}}
@@ -149,6 +158,21 @@ class RemotePrefixTestCase(TestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn("remote_prefix", form.errors)
+
+    def test_rejected_form_does_not_leave_orphan_remote_address(self):
+        """An unknown remote_address combined with a remote_prefix is rejected by
+        Model.clean(). The address must not have been created along the way."""
+        before = IPAddress.objects.count()
+        form = BGPSessionAddForm(
+            data=self._form_data(
+                remote_address="198.51.100.99/32", remote_prefix=self.prefix.pk
+            )
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(IPAddress.objects.count(), before)
+        self.assertFalse(
+            IPAddress.objects.filter(address="198.51.100.99/32").exists()
+        )
 
     def test_neither_remote_address_nor_prefix_rejected(self):
         form = BGPSessionAddForm(data=self._form_data())

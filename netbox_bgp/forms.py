@@ -1,11 +1,7 @@
 from django import forms
 from django.conf import settings
 from utilities.forms.rendering import FieldSet
-from django.core.exceptions import (
-    MultipleObjectsReturned,
-    ObjectDoesNotExist,
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
@@ -378,18 +374,30 @@ class BGPSessionAddForm(BGPSessionForm):
             return None
         if _remote_address_strict():
             return self.cleaned_data["remote_address"]
-        try:
-            ip = IPAddress.objects.get(address=str(self.cleaned_data["remote_address"]))
-        except MultipleObjectsReturned:
-            ip = IPAddress.objects.filter(
-                address=str(self.cleaned_data["remote_address"])
-            ).first()
-        except ObjectDoesNotExist:
-            ip = IPAddress.objects.create(
-                address=str(self.cleaned_data["remote_address"])
-            )
+        address = str(self.cleaned_data["remote_address"])
+        # filter().first() rather than get(): the same address may exist in more
+        # than one VRF, in which case the first match is used.
+        ip = IPAddress.objects.filter(address=address).first()
+        if ip is None:
+            # Deliberately left unsaved. Validation is not wrapped in a
+            # transaction, so creating the row here would leave an orphan
+            # IPAddress behind whenever a later check fails — e.g. Model.clean()
+            # rejecting a session that set both remote_address and
+            # remote_prefix. save() persists it instead, inside the view's
+            # transaction, once the whole form is known to be valid.
+            ip = IPAddress(address=address)
         self.cleaned_data["remote_address"] = ip
         return self.cleaned_data["remote_address"]
+
+    def save(self, *args, **kwargs):
+        # Persist the auto-created remote address, if any, before the session
+        # that points at it. Done regardless of commit: an unsaved FK target
+        # would make the caller's own instance.save() raise.
+        ip = self.instance.remote_address
+        if ip is not None and ip.pk is None:
+            ip.save()
+            self.instance.remote_address = ip
+        return super().save(*args, **kwargs)
 
 
 class BGPSessionImportForm(NetBoxModelImportForm):
