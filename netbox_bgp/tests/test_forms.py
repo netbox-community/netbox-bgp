@@ -1,11 +1,27 @@
 from http import HTTPStatus
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from ipam.models import IPAddress, ASN, RIR, VRF, Prefix
 
 from netbox_bgp.choices import SessionStatusChoices
 from netbox_bgp.forms import BGPSessionAddForm, CommunityForm
+
+
+def plugins_config(**overrides):
+    """
+    Return PLUGINS_CONFIG with this plugin's settings replaced by ``overrides``.
+
+    Passing a bare ``{"netbox_bgp": ...}`` to override_settings would replace the whole
+    setting, discarding the configuration of every other installed plugin. Any of those
+    plugins which looks up its own settings then fails with a KeyError — and one that hooks
+    into query execution, such as netbox_branching, fails on the next queryset evaluated,
+    which makes these tests break purely because of what else is installed alongside.
+    """
+    config = {name: dict(cfg) for name, cfg in settings.PLUGINS_CONFIG.items()}
+    config['netbox_bgp'] = {**config.get('netbox_bgp', {}), **overrides}
+    return config
 
 
 class TestCommunityFormCase(TestCase):
@@ -57,9 +73,7 @@ class RemoteAddressStrictTestCase(TestCase):
             "status": SessionStatusChoices.STATUS_ACTIVE,
         }
 
-    @override_settings(
-        PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": False}}
-    )
+    @override_settings(PLUGINS_CONFIG=plugins_config(remote_address_strict=False))
     def test_non_strict_auto_creates_remote_address(self):
         before = IPAddress.objects.count()
         form = BGPSessionAddForm(data=self._form_data("198.51.100.7/32"))
@@ -77,9 +91,7 @@ class RemoteAddressStrictTestCase(TestCase):
         self.assertEqual(str(session.remote_address.address), "198.51.100.7/32")
         self.assertIsNotNone(session.remote_address.pk)
 
-    @override_settings(
-        PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": False}}
-    )
+    @override_settings(PLUGINS_CONFIG=plugins_config(remote_address_strict=False))
     def test_non_strict_reuses_existing_remote_address(self):
         before = IPAddress.objects.count()
         form = BGPSessionAddForm(data=self._form_data("192.0.2.2/32"))
@@ -87,9 +99,7 @@ class RemoteAddressStrictTestCase(TestCase):
         self.assertEqual(form.cleaned_data.get("remote_address"), self.existing_remote_ip)
         self.assertEqual(IPAddress.objects.count(), before)
 
-    @override_settings(
-        PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": False}}
-    )
+    @override_settings(PLUGINS_CONFIG=plugins_config(remote_address_strict=False))
     def test_non_strict_duplicate_address_picks_first_without_creating(self):
         before = IPAddress.objects.count()
         form = BGPSessionAddForm(data=self._form_data("192.0.2.3/32"))
@@ -97,9 +107,7 @@ class RemoteAddressStrictTestCase(TestCase):
         self.assertIsInstance(form.cleaned_data.get("remote_address"), IPAddress)
         self.assertEqual(IPAddress.objects.count(), before)
 
-    @override_settings(
-        PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": True}}
-    )
+    @override_settings(PLUGINS_CONFIG=plugins_config(remote_address_strict=True))
     def test_strict_rejects_unknown_remote_address(self):
         before = IPAddress.objects.count()
         form = BGPSessionAddForm(data=self._form_data("198.51.100.8/32"))
@@ -107,9 +115,7 @@ class RemoteAddressStrictTestCase(TestCase):
         self.assertIn("remote_address", form.errors)
         self.assertEqual(IPAddress.objects.count(), before)
 
-    @override_settings(
-        PLUGINS_CONFIG={"netbox_bgp": {"remote_address_strict": True}}
-    )
+    @override_settings(PLUGINS_CONFIG=plugins_config(remote_address_strict=True))
     def test_strict_accepts_existing_remote_address(self):
         form = BGPSessionAddForm(data=self._form_data(self.existing_remote_ip.pk))
         self.assertTrue(form.is_valid())

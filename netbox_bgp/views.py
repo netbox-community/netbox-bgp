@@ -2,8 +2,21 @@ from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 from utilities.views import register_model_view, ViewTab
 from netbox.views import generic
+from extras.ui.panels import CustomFieldsPanel, TagsPanel
+from netbox.ui import layout
+# Aliased: this module already imports a different AddObject from netbox.object_actions,
+# which supplies list-view buttons rather than panel actions.
+from netbox.ui import actions as panel_actions
+from netbox.ui.panels import (
+    CommentsPanel,
+    ContextTablePanel,
+    JSONPanel,
+    PluginContentPanel,
+    TemplatePanel,
+)
 from ipam.models import ASN
 from virtualization.models import VirtualMachine
 
@@ -15,6 +28,7 @@ from .models import (
 )
 
 from . import filtersets, forms, tables
+from .ui import panels
 from netbox.object_actions import AddObject, BulkDelete, BulkExport, BulkImport
 
 
@@ -30,7 +44,22 @@ class CommunityListView(generic.ObjectListView):
 @register_model_view(Community)
 class CommunityView(generic.ObjectView):
     queryset = Community.objects.all()
-    template_name = 'netbox_bgp/community.html'
+    template_name = 'generic/object.html'
+    layout = layout.SimpleLayout(
+        left_panels=[
+            panels.CommunityPanel(),
+            CustomFieldsPanel(),
+            TagsPanel(),
+            CommentsPanel(),
+            PluginContentPanel('left_page'),
+        ],
+        right_panels=[
+            PluginContentPanel('right_page'),
+        ],
+        bottom_panels=[
+            PluginContentPanel('full_width_page'),
+        ],
+    )
 
 @register_model_view(Community, "add", detail=False)
 @register_model_view(Community, "edit")
@@ -91,13 +120,46 @@ class CommunityListBulkEditView(generic.BulkEditView):
 @register_model_view(CommunityList)
 class CommListView(generic.ObjectView):
     queryset = CommunityList.objects.all()
-    template_name = 'netbox_bgp/communitylist.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.CommunityListPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel(
+                    'rprules_table', title=_('Related Routing Policy Rules')
+                ),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                ContextTablePanel(
+                    'rules_table',
+                    title=_('Rules'),
+                    actions=[
+                        panel_actions.AddObject(
+                            'netbox_bgp.communitylistrule',
+                            url_params={'community_list': lambda ctx: ctx['object'].pk},
+                            label=_('Rule'),
+                        ),
+                    ],
+                ),
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
-        rprules = instance.cmrules.all()
-        rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.commlistrules.all()
-        rules_table = tables.CommunityListRuleTable(rules)
+        rprules_table = tables.RoutingPolicyRuleTable(instance.cmrules.all())
+        rprules_table.configure(request)
+        rules_table = tables.CommunityListRuleTable(instance.commlistrules.all())
+        rules_table.configure(request)
         return {
             'rules_table': rules_table,
             'rprules_table': rprules_table
@@ -143,7 +205,22 @@ class CommunityListRuleDeleteView(generic.ObjectDeleteView):
 @register_model_view(CommunityListRule)
 class CommunityListRuleView(generic.ObjectView):
     queryset = CommunityListRule.objects.all()
-    template_name = 'netbox_bgp/communitylistrule.html'
+    template_name = 'generic/object.html'
+    layout = layout.SimpleLayout(
+        left_panels=[
+            panels.CommunityListRulePanel(),
+            CustomFieldsPanel(),
+            TagsPanel(),
+            CommentsPanel(),
+            PluginContentPanel('left_page'),
+        ],
+        right_panels=[
+            PluginContentPanel('right_page'),
+        ],
+        bottom_panels=[
+            PluginContentPanel('full_width_page'),
+        ],
+    )
 
 
 # Session
@@ -185,7 +262,29 @@ class BGPSessionBulkDeleteView(generic.BulkDeleteView):
 @register_model_view(BGPSession)
 class BGPSessionView(generic.ObjectView):
     queryset = BGPSession.objects.all()
-    template_name = 'netbox_bgp/bgpsession.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.BGPSessionPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                JSONPanel('extra_attributes', title=_('Extra Attributes')),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel('import_policies_table', title=_('Import Policies')),
+                ContextTablePanel('export_policies_table', title=_('Export Policies')),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
         import_policies_qs = instance.import_policies.all()
@@ -199,10 +298,12 @@ class BGPSessionView(generic.ObjectView):
             import_policies_qs,
             orderable=False
         )
+        import_policies_table.configure(request)
         export_policies_table = tables.RoutingPolicyTable(
             export_policies_qs,
             orderable=False
         )
+        export_policies_table.configure(request)
 
         return {
             'import_policies_table': import_policies_table,
@@ -245,7 +346,40 @@ class RoutingPolicyBulkEditView(generic.BulkEditView):
 @register_model_view(RoutingPolicy)
 class RoutingPolicyView(generic.ObjectView):
     queryset = RoutingPolicy.objects.all()
-    template_name = 'netbox_bgp/routingpolicy.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.RoutingPolicyPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel(
+                    'related_session_table', title=_('Related BGP Sessions')
+                ),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                ContextTablePanel(
+                    'rules_table',
+                    title=_('Rules'),
+                    actions=[
+                        panel_actions.AddObject(
+                            'netbox_bgp.routingpolicyrule',
+                            url_params={'routing_policy': lambda ctx: ctx['object'].pk},
+                            label=_('Rule'),
+                        ),
+                    ],
+                ),
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
         sess = BGPSession.objects.filter(
@@ -256,8 +390,9 @@ class RoutingPolicyView(generic.ObjectView):
         )
         sess = sess.distinct()
         sess_table = tables.BGPSessionTable(sess)
-        rules = instance.rules.all()
-        rules_table = tables.RoutingPolicyRuleTable(rules)
+        sess_table.configure(request)
+        rules_table = tables.RoutingPolicyRuleTable(instance.rules.all())
+        rules_table.configure(request)
         return {
             'rules_table': rules_table,
             'related_session_table': sess_table
@@ -303,9 +438,33 @@ class RoutingPolicyRuleBulkDeleteView(generic.BulkDeleteView):
 @register_model_view(RoutingPolicyRule)
 class RoutingPolicyRuleView(generic.ObjectView):
     queryset = RoutingPolicyRule.objects.all()
-    template_name = 'netbox_bgp/routingpolicyrule.html'
+    template_name = 'generic/object.html'
+    layout = layout.SimpleLayout(
+        left_panels=[
+            panels.RoutingPolicyRulePanel(),
+            CustomFieldsPanel(),
+            TagsPanel(),
+            CommentsPanel(),
+            PluginContentPanel('left_page'),
+        ],
+        right_panels=[
+            # A TemplatePanel rather than a JSONPanel, which renders JSON only: the format
+            # switch below lets these be read as YAML too, and match_statements and
+            # set_statements are properties whose contents are easier to scan that way.
+            TemplatePanel(
+                'netbox_bgp/inc/routingpolicyrule_statements.html',
+                title=_('Statements'),
+            ),
+            PluginContentPanel('right_page'),
+        ],
+        bottom_panels=[
+            PluginContentPanel('full_width_page'),
+        ],
+    )
 
     def get_extra_context(self, request, instance):
+        # Remember the chosen format on the user's config, as the template did before, so
+        # the choice persists across rules.
         if request.GET.get('format') in ['json', 'yaml']:
             format = request.GET.get('format')
             if request.user.is_authenticated:
@@ -348,21 +507,49 @@ class BGPPeerGroupBulkDeleteView(generic.BulkDeleteView):
 @register_model_view(BGPPeerGroup)
 class BGPPeerGroupView(generic.ObjectView):
     queryset = BGPPeerGroup.objects.all()
-    template_name = 'netbox_bgp/bgppeergroup.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.BGPPeerGroupPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                JSONPanel('extra_attributes', title=_('Extra Attributes')),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel('import_policies_table', title=_('Import Policies')),
+                ContextTablePanel('export_policies_table', title=_('Export Policies')),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                ContextTablePanel(
+                    'related_session_table', title=_('Related BGP Sessions')
+                ),
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
         import_policies_table = tables.RoutingPolicyTable(
             instance.import_policies.all(),
             orderable=False
         )
+        import_policies_table.configure(request)
         export_policies_table = tables.RoutingPolicyTable(
             instance.export_policies.all(),
             orderable=False
         )
+        export_policies_table.configure(request)
 
         sess = BGPSession.objects.filter(peer_group=instance)
         sess = sess.distinct()
         sess_table = tables.BGPSessionTable(sess)
+        sess_table.configure(request)
         return {
             'import_policies_table': import_policies_table,
             'export_policies_table': export_policies_table,
@@ -417,16 +604,51 @@ class PrefixListBulkEditView(generic.BulkEditView):
 @register_model_view(PrefixList)
 class PrefixListView(generic.ObjectView):
     queryset = PrefixList.objects.all()
-    template_name = 'netbox_bgp/prefixlist.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.PrefixListPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel(
+                    'rprules_table', title=_('Related Routing Policy Rules')
+                ),
+                ContextTablePanel('sess_table', title=_('Related BGP Sessions')),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                ContextTablePanel(
+                    'rules_table',
+                    title=_('Rules'),
+                    actions=[
+                        panel_actions.AddObject(
+                            'netbox_bgp.prefixlistrule',
+                            url_params={'prefix_list': lambda ctx: ctx['object'].pk},
+                            label=_('Rule'),
+                        ),
+                    ],
+                ),
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
-        rprules = instance.plrules.all()
-        rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.prefrules.all()
-        rules_table = tables.PrefixListRuleTable(rules)
+        rprules_table = tables.RoutingPolicyRuleTable(instance.plrules.all())
+        rprules_table.configure(request)
+        rules_table = tables.PrefixListRuleTable(instance.prefrules.all())
+        rules_table.configure(request)
 
         sess = instance.session_prefix_in.all() | instance.session_prefix_out.all()
         sess_table = tables.BGPSessionTable(sess)
+        sess_table.configure(request)
         return {
             'rules_table': rules_table,
             'rprules_table': rprules_table,
@@ -472,7 +694,22 @@ class PrefixListRuleDeleteView(generic.ObjectDeleteView):
 @register_model_view(PrefixListRule)
 class PrefixListRuleView(generic.ObjectView):
     queryset = PrefixListRule.objects.all()
-    template_name = 'netbox_bgp/prefixlistrule.html'
+    template_name = 'generic/object.html'
+    layout = layout.SimpleLayout(
+        left_panels=[
+            panels.PrefixListRulePanel(),
+            CustomFieldsPanel(),
+            TagsPanel(),
+            CommentsPanel(),
+            PluginContentPanel('left_page'),
+        ],
+        right_panels=[
+            PluginContentPanel('right_page'),
+        ],
+        bottom_panels=[
+            PluginContentPanel('full_width_page'),
+        ],
+    )
 
 
 @register_model_view(PrefixListRule, "bulk_import", path="import", detail=False)
@@ -528,13 +765,46 @@ class ASPathListBulkEditView(generic.BulkEditView):
 @register_model_view(ASPathList)
 class ASPathListView(generic.ObjectView):
     queryset = ASPathList.objects.all()
-    template_name = 'netbox_bgp/aspathlist.html'
+    template_name = 'generic/object.html'
+    layout = layout.Layout(
+        layout.Row(
+            layout.Column(
+                panels.ASPathListPanel(),
+                CustomFieldsPanel(),
+                TagsPanel(),
+                CommentsPanel(),
+                PluginContentPanel('left_page'),
+            ),
+            layout.Column(
+                ContextTablePanel(
+                    'rprules_table', title=_('Related Routing Policy Rules')
+                ),
+                PluginContentPanel('right_page'),
+            ),
+        ),
+        layout.Row(
+            layout.Column(
+                ContextTablePanel(
+                    'rules_table',
+                    title=_('Rules'),
+                    actions=[
+                        panel_actions.AddObject(
+                            'netbox_bgp.aspathlistrule',
+                            url_params={'aspath_list': lambda ctx: ctx['object'].pk},
+                            label=_('Rule'),
+                        ),
+                    ],
+                ),
+                PluginContentPanel('full_width_page'),
+            ),
+        ),
+    )
 
     def get_extra_context(self, request, instance):
-        rprules = instance.aspathrules.all()
-        rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.aspathlistrules.all()
-        rules_table = tables.ASPathListRuleTable(rules)
+        rprules_table = tables.RoutingPolicyRuleTable(instance.aspathrules.all())
+        rprules_table.configure(request)
+        rules_table = tables.ASPathListRuleTable(instance.aspathlistrules.all())
+        rules_table.configure(request)
         return {
             'rules_table': rules_table,
             'rprules_table': rprules_table
@@ -589,4 +859,19 @@ class ASPathListRuleBulkImportView(generic.BulkImportView):
 @register_model_view(ASPathListRule)
 class ASPathListRuleView(generic.ObjectView):
     queryset = ASPathListRule.objects.all()
-    template_name = 'netbox_bgp/aspathlistrule.html'
+    template_name = 'generic/object.html'
+    layout = layout.SimpleLayout(
+        left_panels=[
+            panels.ASPathListRulePanel(),
+            CustomFieldsPanel(),
+            TagsPanel(),
+            CommentsPanel(),
+            PluginContentPanel('left_page'),
+        ],
+        right_panels=[
+            PluginContentPanel('right_page'),
+        ],
+        bottom_panels=[
+            PluginContentPanel('full_width_page'),
+        ],
+    )

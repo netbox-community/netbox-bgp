@@ -97,6 +97,12 @@ of asserting them. It must run serially — the update mode refuses to run under
 `--parallel`. Review the diff before committing: an unexpected jump usually means an
 N+1 was introduced rather than that the baseline was stale.
 
+Regenerate the baselines only against a NetBox instance running this plugin alone. Another
+plugin that hooks query execution shifts the count for every list view: `netbox_branching`,
+for instance, adds two queries per request, which fails all eleven list-view tests by exactly
+two. Those failures are an artefact of the environment, and recording them would bake another
+plugin's overhead into this repository's baselines.
+
 ## Migrations
 
 Never hand-write migrations. After any change to `models.py`:

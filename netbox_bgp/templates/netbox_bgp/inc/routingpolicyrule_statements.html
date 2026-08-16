@@ -1,0 +1,28 @@
+{% extends 'ui/panels/_base.html' %}
+{% load i18n %}
+
+{# The Statements panel on a routing policy rule. TemplatePanel supplies the panel's whole #}
+{# template rather than just its body, so this extends the panel base to keep the card and #}
+{# its heading. The format switch is rendered here rather than as a panel action: the choice #}
+{# is a query parameter on this page, whereas the action classes resolve a fixed view name. #}
+
+{% block panel_content %}
+    <div class="card-body">
+        <div class="d-flex justify-content-end mb-2">
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="?format=json"
+                   class="btn btn-outline-dark{% if format == 'json' %} active{% endif %}">JSON</a>
+                <a href="?format=yaml"
+                   class="btn btn-outline-dark{% if format == 'yaml' %} active{% endif %}">YAML</a>
+            </div>
+        </div>
+        <div class="mb-1">{% trans "Match" %}</div>
+        <div class="rendered-context-data">
+            <pre class="block">{% if format == 'yaml' %}{{ object.match_statements|yaml }}{% else %}{{ object.match_statements|json }}{% endif %}</pre>
+        </div>
+        <div class="mb-1 mt-3">{% trans "Set" %}</div>
+        <div class="rendered-context-data">
+            <pre class="block">{% if format == 'yaml' %}{{ object.set_statements|yaml }}{% else %}{{ object.set_statements|json }}{% endif %}</pre>
+        </div>
+    </div>
+{% endblock panel_content %}

@@ -58,6 +58,23 @@ exist, regardless of the `remote_address_strict` setting.
 
 ### Bug Fixes
 
+* **Form tests no longer discard other plugins' configuration.** The `remote_address_strict`
+  tests passed a bare `{"netbox_bgp": ...}` to `override_settings(PLUGINS_CONFIG=...)`, which
+  replaces the setting outright rather than merging into it. Every other installed plugin
+  thereby lost its configuration for the duration of the test, and one that reads its own
+  settings while a queryset is evaluated — `netbox_branching` does — raised `KeyError` on the
+  next database access. The five tests failed only when another plugin happened to be
+  installed alongside. They now merge into the existing setting.
+
+* **A community list rule's parent list is now shown.** The detail template read
+  `object.communitylist`, which is not an attribute of the model — the field is
+  `community_list` — so Django resolved it to nothing and the row rendered as an empty
+  link.
+
+* **A BGP session's Site now links to the site.** The row displayed the site's name but
+  pointed at `object.device.get_absolute_url`, so it linked to the device instead, and to
+  nothing at all for a session with no device.
+
 * **`RoutingPolicyRule.match_statements` no longer discards modelled matches.** Values
   supplied under `match_custom`'s `community`, `ip address`, `ipv6 address`, or `as-path`
   keys were merged with the rule's own Match Community / Match IP Address / Match IPv6
@@ -79,6 +96,35 @@ exist, regardless of the `remote_address_strict` setting.
   whole form is known to be valid.
 
 ### Other Changes
+
+* **Object detail pages now use NetBox's declarative UI components instead of templates.**
+  Every one of the eleven detail views declares a `layout` built from `netbox.ui` panels,
+  and the eleven per-model templates are gone; only `device_extend.html`, which serves the
+  device template extension, remains. The attribute tables are now
+  `ObjectAttributesPanel` subclasses in `netbox_bgp/ui/panels.py`, the related-object
+  tables are `ContextTablePanel`s, and `extra_attributes` renders through `JSONPanel`, which
+  brings a copy-to-clipboard button and proper JSON formatting in place of Python `pprint`
+  output. A routing policy rule's Match and Set statements keep their JSON/YAML switch, in a
+  `TemplatePanel` that extends NetBox's panel base template.
+
+    Two things change visibly. The "Rule" buttons on the community list, AS path list,
+  prefix list and routing policy pages move from the page header into the header of the
+  Rules panel they relate to, and they now carry a `return_url`, so adding a rule returns
+  to the parent object. A prefix list's Family now shows its label rather than the stored
+  value, and a prefix list rule always shows its Greater/Less than rows, with a placeholder
+  when unset, rather than hiding them.
+
+    Breadcrumbs, which each template used to hand-write, now come from the layout's root
+  breadcrumb. Plugin content is preserved: each layout declares `PluginContentPanel` for
+  the left, right and full-width positions, so other plugins can still extend these
+  objects.
+
+* **Added a `ruff.toml`.** Nothing in CI runs ruff, so this is not a new lint gate: it stops
+  ruff walking up the directory tree and adopting the configuration of whatever encloses the
+  checkout. Developing this plugin inside a netbox-docker tree, as the container setup does,
+  would otherwise apply netbox-docker's own style — single quotes and isort — to this
+  package. The line length matches NetBox core, and quotes are preserved, since this package
+  mixes both styles.
 
 * **NetBox 4.7 support.** `max_version` is now `4.7.99`. The development stack targets
   NetBox's `feature` branch (`NETBOX_VER?=feature`).

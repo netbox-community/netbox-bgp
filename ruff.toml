@@ -1,0 +1,15 @@
+# Ruff configuration for this plugin.
+#
+# This file exists mainly to stop ruff walking up the directory tree in search of a config.
+# The plugin is developed inside a netbox-docker checkout, and netbox-docker's own ruff.toml
+# enables isort and enforces single quotes — running ruff from in here would otherwise
+# reformat this package to another project's style.
+#
+# Nothing in CI runs ruff, so these settings only make local runs predictable. The line
+# length matches NetBox core; quotes are preserved because this package mixes both styles
+# and normalising them would bury real changes in churn. Note that `ruff format` will still
+# rewrap the source lines that exceed the limit.
+line-length = 120
+
+[format]
+quote-style = "preserve"
