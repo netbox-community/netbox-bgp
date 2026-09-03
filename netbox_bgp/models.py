@@ -443,7 +443,18 @@ class BGPSession(NetBoxModel):
     remote_address = models.ForeignKey(
         to='ipam.IPAddress',
         on_delete=models.PROTECT,
-        related_name='remote_address'
+        related_name='remote_address',
+        blank=True,
+        null=True
+    )
+    remote_prefix = models.ForeignKey(
+        to='ipam.Prefix',
+        on_delete=models.PROTECT,
+        related_name='remote_prefix',
+        blank=True,
+        null=True,
+        help_text='Peer subnet, for dynamic (listen range) peering. '
+                  'Mutually exclusive with Remote Address.'
     )
     local_as = models.ForeignKey(
         to='ipam.ASN',
@@ -512,6 +523,22 @@ class BGPSession(NetBoxModel):
     class Meta:
         verbose_name_plural = 'BGP Sessions'
         unique_together = [['device', 'local_address', 'local_as', 'remote_address', 'remote_as'], ['virtualmachine', 'local_address', 'local_as', 'remote_address', 'remote_as']]
+        # remote_prefix is deliberately kept out of unique_together above: it is
+        # nullable, and a NULL member makes Postgres treat every row as distinct,
+        # which would silently disable the address-based constraints. Prefix-based
+        # sessions get their own constraints, conditioned so no member is ever NULL.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['device', 'local_address', 'local_as', 'remote_prefix', 'remote_as'],
+                condition=models.Q(remote_prefix__isnull=False, device__isnull=False),
+                name='netbox_bgp_bgpsession_unique_device_remote_prefix',
+            ),
+            models.UniqueConstraint(
+                fields=['virtualmachine', 'local_address', 'local_as', 'remote_prefix', 'remote_as'],
+                condition=models.Q(remote_prefix__isnull=False, virtualmachine__isnull=False),
+                name='netbox_bgp_bgpsession_unique_vm_remote_prefix',
+            ),
+        ]
         ordering = ('name', 'pk')  # Name may be null
 
     def __str__(self):
@@ -531,11 +558,33 @@ class BGPSession(NetBoxModel):
     #    self.clean()
     #    super().save(*args, **kwargs)
 
+    def clean(self):
+        super().clean()
+        # the remote peer is either a single address or a subnet, never both
+        if self.remote_address and self.remote_prefix:
+            raise ValidationError({
+                'remote_address': 'Cannot set both Remote Address and Remote Prefix',
+                'remote_prefix': 'Cannot set both Remote Address and Remote Prefix',
+            })
+        # at least one must be set
+        if self.remote_address is None and self.remote_prefix is None:
+            raise ValidationError({
+                'remote_address': 'Either a Remote Address or a Remote Prefix is required',
+                'remote_prefix': 'Either a Remote Address or a Remote Prefix is required',
+            })
+
     def get_status_color(self):
         return SessionStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:bgpsession', args=[self.pk])
+
+    @property
+    def remote_peer(self):
+        """
+        Return the remote peer, which is either a single address or a subnet.
+        """
+        return self.remote_address or self.remote_prefix
 
     @property
     def label(self):
@@ -544,7 +593,7 @@ class BGPSession(NetBoxModel):
         """
         if self.name:
             return self.name
-        return f'{self.remote_address}:{self.remote_as}'
+        return f'{self.remote_peer}:{self.remote_as}'
 
 
 class RoutingPolicyRule(NetBoxModel):
@@ -624,37 +673,37 @@ class RoutingPolicyRule(NetBoxModel):
             result = self.match_custom
         return result
 
+    # Match keys the model represents with its own fields. Values supplied under these
+    # keys in match_custom are merged with the modelled ones; any other key is passed
+    # through untouched.
+    MERGED_MATCH_KEYS = ('community', 'ip address', 'ipv6 address', 'as-path')
+
     @property
     def match_statements(self):
-        result = {}
-        # add communities
-        result.update(
-            {'community': list(self.match_community.all().values_list('value', flat=True))}
-        )
-        if self.match_community_list.all().exists():
-            result.update(
-                {'community': list(self.match_community_list.all().values_list('name', flat=True))}
+        result = {
+            'community': list(self.match_community.all().values_list('value', flat=True)),
+            'ip address': list(self.match_ip_address.all().values_list('name', flat=True)),
+            'ipv6 address': list(self.match_ipv6_address.all().values_list('name', flat=True)),
+            'as-path': list(self.match_aspath_list.all().values_list('name', flat=True)),
+        }
+        # a community list, where one is set, stands in for directly matched communities
+        if self.match_community_list.exists():
+            result['community'] = list(
+                self.match_community_list.all().values_list('name', flat=True)
             )
-        result.update(
-            {'ip address': [str(prefix_list) for prefix_list in self.match_ip_address.all().values_list('name', flat=True)]}
-        )
-        result.update(
-            {'ipv6 address': [str(prefix_list) for prefix_list in self.match_ipv6_address.all().values_list('name', flat=True)]}
-        )
-        result.update(
-            {'as-path': list(self.match_aspath_list.all().values_list('name', flat=True))}
-        )
 
         custom_match = self.get_match_custom()
-        # update community from custom
-        result['community'].extend(custom_match.get('community', []))
-        result['ip address'].extend(custom_match.get('ip address', []))
-        result['ipv6 address'].extend(custom_match.get('ipv6 address', []))
-        result['as-path'].extend(custom_match.get('as-path', []))
+        for key in self.MERGED_MATCH_KEYS:
+            result[key].extend(custom_match.get(key, []))
+        # Pass through the custom keys the model has no field for. The merged keys are
+        # deliberately excluded: assigning them here would replace the values gathered
+        # above rather than adding to them.
+        result.update({
+            key: value for key, value in custom_match.items()
+            if key not in self.MERGED_MATCH_KEYS
+        })
         # remove empty matches
-        result = {k: v for k, v in result.items() if v}
-        result.update(custom_match)
-        return result
+        return {k: v for k, v in result.items() if v}
 
     @property
     def set_statements(self):

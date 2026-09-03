@@ -239,6 +239,80 @@ class BGPSessionTestCase(TestCase):
         with self.assertRaises(IntegrityError):
             dup.save()
 
+    def test_unique_together_remote_prefix(self):
+        """Prefix-based sessions get their own uniqueness guarantee: remote_prefix
+        is nullable so it cannot live in unique_together without disabling it."""
+        prefix = Prefix.objects.create(prefix='10.96.0.0/24')
+        common = {
+            'device': self.device,
+            'local_address': self.local_ip,
+            'remote_prefix': prefix,
+            'local_as': self.local_as,
+            'remote_as': self.remote_as,
+            'status': 'active',
+        }
+        BGPSession.objects.create(name='dynamic_1', **common)
+        with self.assertRaises(IntegrityError):
+            BGPSession.objects.create(name='dynamic_2', **common)
+
+    def test_remote_peer_is_address(self):
+        self.assertEqual(self.session.remote_peer, self.remote_ip)
+
+    def test_remote_prefix_session(self):
+        """Issue #282 — a session may peer with a prefix (dynamic peering)
+        instead of a single remote address."""
+        prefix = Prefix.objects.create(prefix='10.99.0.0/24')
+        session = BGPSession(
+            name='dynamic',
+            local_address=self.local_ip,
+            remote_prefix=prefix,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        session.full_clean()
+        session.save()
+        self.assertIsNone(session.remote_address)
+        self.assertEqual(session.remote_peer, prefix)
+
+    def test_label_falls_back_to_remote_prefix(self):
+        prefix = Prefix.objects.create(prefix='10.98.0.0/24')
+        nameless = BGPSession.objects.create(
+            local_address=self.local_ip,
+            remote_prefix=prefix,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        self.assertIn(str(prefix), nameless.label)
+
+    def test_clean_rejects_both_remote_address_and_prefix(self):
+        prefix = Prefix.objects.create(prefix='10.97.0.0/24')
+        session = BGPSession(
+            local_address=self.local_ip,
+            remote_address=self.remote_ip,
+            remote_prefix=prefix,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        with self.assertRaises(ValidationError) as cm:
+            session.clean()
+        self.assertIn('remote_address', cm.exception.message_dict)
+        self.assertIn('remote_prefix', cm.exception.message_dict)
+
+    def test_clean_rejects_neither_remote_address_nor_prefix(self):
+        session = BGPSession(
+            local_address=self.local_ip,
+            local_as=self.local_as,
+            remote_as=self.remote_as,
+            status='active',
+        )
+        with self.assertRaises(ValidationError) as cm:
+            session.clean()
+        self.assertIn('remote_address', cm.exception.message_dict)
+        self.assertIn('remote_prefix', cm.exception.message_dict)
+
 
 class ASPathListTestCase(TestCase):
     def setUp(self):
@@ -398,6 +472,53 @@ class RoutingPolicyRuleTestCase(TestCase):
         stmts = self.rule.match_statements
         self.assertIn('as-path', stmts)
         self.assertIn('apl_match', stmts['as-path'])
+
+    def test_match_custom_merges_with_modelled_match(self):
+        """match_custom adds to a modelled match rather than replacing it."""
+        community = Community.objects.create(value='65000:100')
+        self.rule.match_community.add(community)
+        self.rule.match_custom = {'community': ['65000:200']}
+        self.rule.save()
+        stmts = self.rule.match_statements
+        self.assertCountEqual(stmts['community'], ['65000:100', '65000:200'])
+
+    def test_match_custom_merges_every_modelled_key(self):
+        pl4 = PrefixList.objects.create(name='pl4', family=IPAddressFamilyChoices.FAMILY_4)
+        pl6 = PrefixList.objects.create(name='pl6', family=IPAddressFamilyChoices.FAMILY_6)
+        apl = ASPathList.objects.create(name='apl')
+        self.rule.match_ip_address.add(pl4)
+        self.rule.match_ipv6_address.add(pl6)
+        self.rule.match_aspath_list.add(apl)
+        self.rule.match_custom = {
+            'ip address': ['pl4-custom'],
+            'ipv6 address': ['pl6-custom'],
+            'as-path': ['apl-custom'],
+        }
+        self.rule.save()
+        stmts = self.rule.match_statements
+        self.assertCountEqual(stmts['ip address'], ['pl4', 'pl4-custom'])
+        self.assertCountEqual(stmts['ipv6 address'], ['pl6', 'pl6-custom'])
+        self.assertCountEqual(stmts['as-path'], ['apl', 'apl-custom'])
+
+    def test_match_custom_passes_through_unmodelled_keys(self):
+        self.rule.match_custom = {'extcommunity': ['rt:65000:1']}
+        self.rule.save()
+        self.assertEqual(
+            self.rule.match_statements, {'extcommunity': ['rt:65000:1']}
+        )
+
+    def test_match_custom_alone_populates_modelled_key(self):
+        """A custom value still appears when the modelled field is empty."""
+        self.rule.match_custom = {'community': ['65000:300']}
+        self.rule.save()
+        self.assertEqual(self.rule.match_statements, {'community': ['65000:300']})
+
+    def test_match_community_list_supersedes_communities(self):
+        community = Community.objects.create(value='65000:400')
+        cl = CommunityList.objects.create(name='cl_match')
+        self.rule.match_community.add(community)
+        self.rule.match_community_list.add(cl)
+        self.assertEqual(self.rule.match_statements['community'], ['cl_match'])
 
 
 class CommunityListRuleTestCase(TestCase):

@@ -1,11 +1,7 @@
 from django import forms
 from django.conf import settings
 from utilities.forms.rendering import FieldSet
-from django.core.exceptions import (
-    MultipleObjectsReturned,
-    ObjectDoesNotExist,
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
@@ -250,6 +246,14 @@ class BGPSessionForm(NetBoxModelForm):
     )
     remote_address = DynamicModelChoiceField(
         queryset=IPAddress.objects.all(),
+        required=False,
+        label=_("Remote Address"),
+    )
+    remote_prefix = DynamicModelChoiceField(
+        queryset=Prefix.objects.all(),
+        required=False,
+        label=_("Remote Prefix"),
+        help_text=_("Peer subnet, for dynamic (listen range) peering"),
     )
     peer_group = DynamicModelChoiceField(
         queryset=BGPPeerGroup.objects.all(),
@@ -304,7 +308,7 @@ class BGPSessionForm(NetBoxModelForm):
             "tags",
             name="Session",
         ),
-        FieldSet("remote_as","remote_as_macro", "remote_address", name="Remote"),
+        FieldSet("remote_as","remote_as_macro", "remote_address", "remote_prefix", name="Remote"),
         FieldSet("local_as", "local_address", name="Local"),
         FieldSet("import_policies", "export_policies", name="Policies"),
         FieldSet("max_prefixes","prefix_list_in", "prefix_list_out", name="Prefixes"),
@@ -323,6 +327,7 @@ class BGPSessionForm(NetBoxModelForm):
             "remote_as_macro",
             "local_address",
             "remote_address",
+            "remote_prefix",
             "description",
             "status",
             "peer_group",
@@ -349,7 +354,7 @@ def _remote_address_strict():
 
 
 class BGPSessionAddForm(BGPSessionForm):
-    remote_address = IPNetworkFormField()
+    remote_address = IPNetworkFormField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -358,24 +363,41 @@ class BGPSessionAddForm(BGPSessionForm):
             # existing IPs, matching BGPSessionForm's edit behaviour.
             self.fields["remote_address"] = DynamicModelChoiceField(
                 queryset=IPAddress.objects.all(),
+                required=False,
                 label=_("Remote Address"),
             )
 
     def clean_remote_address(self):
+        # Blank is permitted: the session may be keyed on remote_prefix instead.
+        # Model.clean() enforces that exactly one of the two is set.
+        if not self.cleaned_data.get("remote_address"):
+            return None
         if _remote_address_strict():
             return self.cleaned_data["remote_address"]
-        try:
-            ip = IPAddress.objects.get(address=str(self.cleaned_data["remote_address"]))
-        except MultipleObjectsReturned:
-            ip = IPAddress.objects.filter(
-                address=str(self.cleaned_data["remote_address"])
-            ).first()
-        except ObjectDoesNotExist:
-            ip = IPAddress.objects.create(
-                address=str(self.cleaned_data["remote_address"])
-            )
+        address = str(self.cleaned_data["remote_address"])
+        # filter().first() rather than get(): the same address may exist in more
+        # than one VRF, in which case the first match is used.
+        ip = IPAddress.objects.filter(address=address).first()
+        if ip is None:
+            # Deliberately left unsaved. Validation is not wrapped in a
+            # transaction, so creating the row here would leave an orphan
+            # IPAddress behind whenever a later check fails — e.g. Model.clean()
+            # rejecting a session that set both remote_address and
+            # remote_prefix. save() persists it instead, inside the view's
+            # transaction, once the whole form is known to be valid.
+            ip = IPAddress(address=address)
         self.cleaned_data["remote_address"] = ip
         return self.cleaned_data["remote_address"]
+
+    def save(self, *args, **kwargs):
+        # Persist the auto-created remote address, if any, before the session
+        # that points at it. Done regardless of commit: an unsaved FK target
+        # would make the caller's own instance.save() raise.
+        ip = self.instance.remote_address
+        if ip is not None and ip.pk is None:
+            ip.save()
+            self.instance.remote_address = ip
+        return super().save(*args, **kwargs)
 
 
 class BGPSessionImportForm(NetBoxModelImportForm):
@@ -415,7 +437,14 @@ class BGPSessionImportForm(NetBoxModelImportForm):
     remote_address = CSVModelChoiceField(
         queryset=IPAddress.objects.all(),
         to_field_name="address",
+        required=False,
         help_text=_("Remote IP Address"),
+    )
+    remote_prefix = CSVModelChoiceField(
+        queryset=Prefix.objects.all(),
+        to_field_name="prefix",
+        required=False,
+        help_text=_("Remote peer subnet, for dynamic peering"),
     )
     local_as = CSVModelChoiceField(
         queryset=ASN.objects.all(),
@@ -473,6 +502,7 @@ class BGPSessionImportForm(NetBoxModelImportForm):
             "export_policies",
             "local_address",
             "remote_address",
+            "remote_prefix",
             "local_as",
             "remote_as",
             "remote_as_macro",
@@ -494,6 +524,7 @@ class BGPSessionFilterForm(NetBoxModelFilterSetForm):
     )
     by_local_address = forms.CharField(required=False, label="Local Address")
     by_remote_address = forms.CharField(required=False, label="Remote Address")
+    by_remote_prefix = forms.CharField(required=False, label="Remote Prefix")
     device_id = DynamicModelMultipleChoiceField(
         queryset=Device.objects.all(), required=False, label=_("Device")
     )

@@ -62,7 +62,19 @@ __all__ = (
     "NetBoxBGPCommunityListFilter",
     "NetBoxBGPCommunityListRuleFilter",
     "NetBoxBGPASPathListFilter",
-    "NetBoxBGPASPathListRuleFilter"
+    "NetBoxBGPASPathListRuleFilter",
+    # Conventional <Model>Filter aliases (see bottom of module)
+    "ASPathListFilter",
+    "ASPathListRuleFilter",
+    "BGPPeerGroupFilter",
+    "BGPSessionFilter",
+    "CommunityFilter",
+    "CommunityListFilter",
+    "CommunityListRuleFilter",
+    "PrefixListFilter",
+    "PrefixListRuleFilter",
+    "RoutingPolicyFilter",
+    "RoutingPolicyRuleFilter",
 )
 
 @strawberry_django.filter_type(ASPathList, lookups=True)
@@ -131,6 +143,11 @@ class NetBoxBGPSessionFilter(TenancyFilterMixin, NetBoxModelFilter):
         Annotated["IPAddressFilter", strawberry.lazy("ipam.graphql.filters")] | None
     ) = strawberry_django.filter_field()
     remote_address_id: ID | None = strawberry_django.filter_field()
+
+    remote_prefix: (
+        Annotated["PrefixFilter", strawberry.lazy("ipam.graphql.filters")] | None
+    ) = strawberry_django.filter_field()
+    remote_prefix_id: ID | None = strawberry_django.filter_field()
 
     device: (
         Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None
@@ -248,5 +265,22 @@ class NetBoxBGPCommunityListRuleFilter(NetBoxModelFilter):
         | None
     ) = strawberry_django.filter_field()
     community_list_id: ID | None = strawberry_django.filter_field()
+
+
+# NetBox discovers a model's GraphQL filter class at the conventional path
+# <app_label>.graphql.filters.<Model>Filter (utilities.testing.api). These aliases
+# expose the prefixed classes above under those names; the GraphQL type names are
+# taken from the decorated class at definition time, so the schema is unchanged.
+ASPathListFilter = NetBoxBGPASPathListFilter
+ASPathListRuleFilter = NetBoxBGPASPathListRuleFilter
+BGPPeerGroupFilter = NetBoxBGPBGPPeerGroupFilter
+BGPSessionFilter = NetBoxBGPSessionFilter
+CommunityFilter = NetBoxBGPCommunityFilter
+CommunityListFilter = NetBoxBGPCommunityListFilter
+CommunityListRuleFilter = NetBoxBGPCommunityListRuleFilter
+PrefixListFilter = NetBoxBGPPrefixListFilter
+PrefixListRuleFilter = NetBoxBGPPrefixListRuleFilter
+RoutingPolicyFilter = NetBoxBGPRoutingPolicyFilter
+RoutingPolicyRuleFilter = NetBoxBGPRoutingPolicyRuleFilter
 
 

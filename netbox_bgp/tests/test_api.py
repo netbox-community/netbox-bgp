@@ -950,6 +950,65 @@ class BGPSessionPolicyInheritanceAPITestCase(APITestCase):
         self.assertNotIn(self.pg_policy_out.pk, export_ids)
 
 
+class BGPSessionRemotePrefixAPITestCase(APITestCase):
+    """Issue #282 — a session may nominate a prefix as its remote peer for
+    dynamic (listen range) peering, in place of a single remote address."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_282")
+        cls.local_as = ASN.objects.create(asn=65020, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65021, rir=rir)
+        cls.local_ip = IPAddress.objects.create(address="10.1.0.1/32")
+        cls.remote_ip = IPAddress.objects.create(address="10.1.0.2/32")
+        cls.prefix = Prefix.objects.create(prefix="10.1.100.0/24")
+
+    def _payload(self, **overrides):
+        payload = {
+            "name": "session_282",
+            "local_as": self.local_as.id,
+            "remote_as": self.remote_as.id,
+            "local_address": self.local_ip.id,
+            "status": SessionStatusChoices.STATUS_ACTIVE,
+        }
+        payload.update(overrides)
+        return payload
+
+    def test_create_session_with_remote_prefix(self):
+        self.add_permissions("netbox_bgp.add_bgpsession")
+        url = reverse("plugins-api:netbox_bgp-api:bgpsession-list")
+        response = self.client.post(
+            url, data=self._payload(remote_prefix=self.prefix.id),
+            format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        created = BGPSession.objects.get(pk=response.data["id"])
+        self.assertEqual(created.remote_prefix, self.prefix)
+        self.assertIsNone(created.remote_address)
+        self.assertIsNone(response.data["remote_address"])
+        self.assertEqual(response.data["remote_prefix"]["id"], self.prefix.pk)
+
+    def test_create_rejects_both_remote_address_and_prefix(self):
+        self.add_permissions("netbox_bgp.add_bgpsession")
+        url = reverse("plugins-api:netbox_bgp-api:bgpsession-list")
+        response = self.client.post(
+            url,
+            data=self._payload(
+                remote_address=self.remote_ip.id, remote_prefix=self.prefix.id
+            ),
+            format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+
+    def test_create_rejects_neither_remote_address_nor_prefix(self):
+        self.add_permissions("netbox_bgp.add_bgpsession")
+        url = reverse("plugins-api:netbox_bgp-api:bgpsession-list")
+        response = self.client.post(
+            url, data=self._payload(), format="json", **self.header
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+
+
 class TestAPISchema(APITestCase):
     def test_api_schema(self):
         url = reverse("plugins-api:netbox_bgp-api:api-root")

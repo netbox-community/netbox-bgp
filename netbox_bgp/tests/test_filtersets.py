@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from dcim.models import Device, DeviceRole, DeviceType, Manufacturer, Site
-from ipam.models import IPAddress, ASN, RIR
+from ipam.models import IPAddress, ASN, RIR, Prefix
 
 from netbox_bgp.filtersets import (
     ASPathListFilterSet,
@@ -245,8 +245,24 @@ class BGPSessionFilterSetTestCase(TestCase):
                 )
             )
 
+        # Issue #282 — a dynamic-peering session keyed on a prefix. Named outside
+        # the 'fsf_session_' prefix so the existing per-filter counts stay at 3.
+        cls.prefix = Prefix.objects.create(prefix='10.20.0.0/24')
+        cls.dynamic_session = BGPSession.objects.create(
+            name='fsf_dynamic',
+            device=cls.device,
+            local_address=IPAddress.objects.create(address='10.10.0.99/32'),
+            remote_prefix=cls.prefix,
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            status='active',
+        )
+
     def _qs(self):
         return BGPSession.objects.filter(name__startswith='fsf_session_')
+
+    def _qs_all(self):
+        return BGPSession.objects.filter(name__startswith='fsf_')
 
     def test_filter_by_status(self):
         fs = BGPSessionFilterSet({'status': ['active']}, queryset=self._qs())
@@ -291,3 +307,32 @@ class BGPSessionFilterSetTestCase(TestCase):
     def test_search_by_local_ip_empty(self):
         fs = BGPSessionFilterSet({'by_local_address': ''}, queryset=self._qs())
         self.assertEqual(fs.qs.count(), 3)
+
+    def test_filter_by_remote_prefix(self):
+        fs = BGPSessionFilterSet(
+            {'remote_prefix': ['10.20.0.0/24']}, queryset=self._qs_all()
+        )
+        self.assertEqual(fs.qs.count(), 1)
+        self.assertEqual(fs.qs.first(), self.dynamic_session)
+
+    def test_filter_by_remote_prefix_id(self):
+        fs = BGPSessionFilterSet(
+            {'remote_prefix_id': [self.prefix.pk]}, queryset=self._qs_all()
+        )
+        self.assertEqual(fs.qs.count(), 1)
+
+    def test_search_by_remote_prefix_cidr(self):
+        fs = BGPSessionFilterSet(
+            {'by_remote_prefix': '10.20.0.0/24'}, queryset=self._qs_all()
+        )
+        self.assertEqual(fs.qs.count(), 1)
+
+    def test_search_by_remote_prefix_invalid(self):
+        fs = BGPSessionFilterSet(
+            {'by_remote_prefix': 'not-a-prefix'}, queryset=self._qs_all()
+        )
+        self.assertEqual(fs.qs.count(), 0)
+
+    def test_search_by_remote_prefix_empty(self):
+        fs = BGPSessionFilterSet({'by_remote_prefix': '  '}, queryset=self._qs_all())
+        self.assertEqual(fs.qs.count(), 4)
