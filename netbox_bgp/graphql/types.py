@@ -161,8 +161,8 @@ class PrefixListRuleType(NetBoxObjectType):
     action: str
     prefix: Annotated["PrefixType", strawberry.lazy("ipam.graphql.types")] | None
     prefix_custom: str | None
-    ge: BigInt
-    le: BigInt
+    ge: BigInt | None
+    le: BigInt | None
     description: str
 
 
