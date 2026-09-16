@@ -273,8 +273,14 @@ class CommunityListRule(NetBoxModel):
     )
     community = models.ForeignKey(
         to=Community,
+        blank=True,
+        null=True,
         related_name='+',
         on_delete=models.CASCADE,
+    )
+    community_custom = models.CharField(
+        max_length=100,
+        blank=True,
     )
     description = models.CharField(
         max_length=200,
@@ -284,14 +290,31 @@ class CommunityListRule(NetBoxModel):
         blank=True
     )
 
+    @property
+    def value(self):
+        return self.community_custom or self.community
+
     def __str__(self):
-        return f'{self.community_list}: {self.action} {self.community}'
+        return f'{self.community_list}: {self.action} {self.value}'
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_bgp:communitylistrule', args=[self.pk])
 
     def get_action_color(self):
         return ActionChoices.colors.get(self.action)
+
+    def clean(self):
+        super().clean()
+        # make sure that only one field is setted
+        if self.community and self.community_custom:
+            raise ValidationError(
+                    {'community': 'Cannot set both fields'}
+                )
+        # at least one fields must be setted
+        if self.community is None and not self.community_custom:
+            raise ValidationError(
+                    {'community': 'Cannot set both fields to Null'}
+                )
 
     class Meta:
         ordering = ['community_list', 'community']

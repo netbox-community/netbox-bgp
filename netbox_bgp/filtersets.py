@@ -89,7 +89,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = CommunityListRule
-        fields = ('id', 'action', 'community_list', 'community_list_id',)
+        fields = ('id', 'action', 'community_list', 'community_list_id', 'community_custom',)
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -99,6 +99,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
                 Q(action__icontains=value)
                 | Q(community_list__icontains=value)
                 | Q(community_list_id__icontains=value)
+                | Q(community_custom__icontains=value)
         )
         return queryset.filter(qs_filter)
 
