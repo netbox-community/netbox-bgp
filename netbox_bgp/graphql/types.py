@@ -183,5 +183,8 @@ class CommunityListRuleType(NetBoxObjectType):
         "CommunityListType", strawberry.lazy("netbox_bgp.graphql.types")
     ]
     action: str
-    community: Annotated["CommunityType", strawberry.lazy("netbox_bgp.graphql.types")]
+    community: (
+        Annotated["CommunityType", strawberry.lazy("netbox_bgp.graphql.types")] | None
+    )
+    community_custom: str | None
     description: str

@@ -42,6 +42,16 @@ and the git history.
   fields, and the previously undocumented `extra_attributes`, `remote_as_macro`, and
   peer-group defaults behaviour.
 
+- **`community_custom` field on `CommunityListRule`**, for community-list matching that
+  isn't a literal `ASN:VALUE` community — most commonly a regular expression (e.g.
+  `^65001:.*$`), for vendors whose syntax supports regex/expanded matching (such as Cisco
+  IOS `ip community-list expanded`). Mirrors the existing `PrefixList.prefix`/
+  `prefix_custom` dual-field pattern: `community` is now optional, and exactly one of
+  `community`/`community_custom` must be set. The read-only `value` property returns
+  whichever is populated; the table column and detail view now render `value` instead of
+  `community` directly. Available in the form, REST API, and as an explicit filter and
+  `q` search field.
+
 ### Changed
 
 - **NetBox 4.7 support.** `max_version` is now `4.7.99`. The development stack targets
