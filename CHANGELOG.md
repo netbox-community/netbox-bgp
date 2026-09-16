@@ -105,10 +105,9 @@ and the git history.
   always send `remote_address` are unaffected — but responses may now contain
   `"remote_address": null` for prefix-based sessions.
 
-- **NetBox 4.7 is required in practice.** This release is developed and tested only
-  against 4.7, and uses 4.7-only APIs (the object-actions classes and the GraphQL filter
-  discovery described above). `min_version` is deliberately not pinned, so installation
-  on 4.6 is not blocked, but it is not supported and will not work.
+- **NetBox 4.7 is now required.** `min_version` is `4.7.0`, up from `4.6.0`. This release
+  uses 4.7-only APIs (the object-actions classes and the GraphQL filter discovery
+  described above) and is not compatible with 4.6.
 
 ### Upgrading to 0.20.0
 
