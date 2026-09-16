@@ -1,63 +1,65 @@
 # NetBox BGP Plugin
 
-This [Netbox](http://netboxlabs.com/oss/netbox/) plugin introduces support for BGP related objects documentation.
+This [NetBox](http://netboxlabs.com/oss/netbox/) plugin introduces support for BGP related objects documentation.
 
 Models include:
 
 * BGP Communities
+* BGP Community Lists (and Community List Rules)
 * BGP Sessions
 * BGP Peer Groups
-* Routing Policy
-* Prefix Lists
-* AS Path Lists
+* Routing Policies (and Routing Policy Rules)
+* Prefix Lists (and Prefix List Rules)
+* AS Path Lists (and AS Path List Rules)
 
-## Compatibility
+See the [compatibility matrix](COMPATIBILITY.md) for supported NetBox versions, and the
+[changelog](CHANGELOG.md) for release notes and upgrade instructions.
 
-See the [compatibility matrix](COMPATIBILITY.md) for supported NetBox versions.
+> [!TIP]
+> This plugin is compatible with [netbox-branching](https://github.com/netboxlabs/netbox-branching) out of the box. See [Branching](./docs/branching.md) for the one configuration pitfall to avoid.
 
 ## Installation
 
-The plugin is available as a Python package in pypi and can be installed with pip
+Brief installation instructions are provided below. For a complete installation guide, please refer to the included [documentation](./docs/index.md).
+
+1. Install the plugin from [PyPI](https://pypi.org/project/netbox-bgp/):
 
 ```
-pip install netbox-bgp
+$ pip install netbox-bgp
 ```
-Enable the plugin in /opt/netbox/netbox/netbox/configuration.py:
+
+2. Add `netbox_bgp` to `PLUGINS` in `configuration.py`:
+
+```python
+PLUGINS = [
+    # ...
+    'netbox_bgp',
+]
 ```
-PLUGINS = ['netbox_bgp']
+
+3. Add `netbox-bgp` to `local_requirements.txt` so it survives future upgrades.
+
+4. Run NetBox migrations:
+
 ```
-Restart NetBox and add `netbox-bgp` to your local_requirements.txt
+$ ./manage.py migrate
+```
 
-See [NetBox Documentation](https://docs.netbox.dev/en/stable/plugins/#installing-plugins) for details
+5. Restart NetBox.
 
-## Configuration
+## Documentation
 
-The following options are available:
-* `device_ext_page`: String (default right) Device related BGP sessions display mode. The following values are available:
-  - `left`: Display BGP sessions in the left column of the device detail page
-  - `right`: Display BGP sessions in the right column of the device detail page
-  - `full_width`: Display BGP sessions in full width at the bottom of the device detail page
-  - `tab`: Display BGP sessions in a dedicated tab on the device detail page
-  - Set empty value to disable device BGP sessions display
-* `top_level_menu`: Bool (default False) Enable top level section navigation menu for the plugin.
-* `remote_address_strict`: Bool (default False) When enabled, the "Add Session" form requires selecting an existing IPAddress object for Remote Address instead of accepting a free-text CIDR (which would otherwise auto-create a new IPAddress). Recommended for multi-VRF environments to avoid orphaned addresses and ambiguous matches.
+| Page | Contents |
+|---|---|
+| [Introduction](./docs/index.md) | Features, full installation guide, screenshots |
+| [Configuration](./docs/configuration.md) | Plugin settings under `PLUGINS_CONFIG` |
+| [Integrations](./docs/integrations.md) | The BGP Sessions tabs added to core NetBox objects |
+| [Branching](./docs/branching.md) | Using the plugin with netbox-branching |
+| [Data Model](./docs/models/bgpsession.md) | Field reference for each model |
+| [REST API](./docs/rest-api.md) | Endpoints, including the backwards-compatible aliases |
+| [GraphQL API](./docs/graphql-api.md) | Query fields and an example query |
 
-## Screenshots
+## Contributing
 
-BGP Session
-![BGP Session](docs/img/session.png)
-
-BGP Sessions
-![BGP Session Table](docs/img/sessions.png)
-
-Community
-![Community](docs/img/commun.png)
-
-Peer Group
-![Peer Group](docs/img/peer_group.png)
-
-Routing Policy
-![Routing Policy](docs/img/routepolicy.png)
-
-Prefix List
-![Prefix List](docs/img/preflist.png)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development environment, test workflow,
+and release conventions.

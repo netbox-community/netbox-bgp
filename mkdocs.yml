@@ -1,0 +1,60 @@
+site_name: NetBox BGP
+repo_name: netbox-community/netbox-bgp
+repo_url: https://github.com/netbox-community/netbox-bgp
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - navigation.footer
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to Dark Mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/lightbulb
+        name: Switch to Light Mode
+plugins:
+  - search:
+      lang: en
+markdown_extensions:
+    - admonition
+    - attr_list
+    - footnotes
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
+    - pymdownx.snippets:
+        base_path: ['.']
+    - pymdownx.superfences:
+        custom_fences:
+          - name: mermaid
+            class: mermaid
+            format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.tabbed:
+        alternate_style: true
+nav:
+    - Introduction: 'index.md'
+    - Configuration: 'configuration.md'
+    - Integrations: 'integrations.md'
+    - Branching: 'branching.md'
+    - Data Model:
+        - BGP Session: 'models/bgpsession.md'
+        - Peer Group: 'models/bgppeergroup.md'
+        - Community: 'models/community.md'
+        - Community List: 'models/communitylist.md'
+        - Community List Rule: 'models/communitylistrule.md'
+        - Routing Policy: 'models/routingpolicy.md'
+        - Routing Policy Rule: 'models/routingpolicyrule.md'
+        - Prefix List: 'models/prefixlist.md'
+        - Prefix List Rule: 'models/prefixlistrule.md'
+        - AS Path List: 'models/aspathlist.md'
+        - AS Path List Rule: 'models/aspathlistrule.md'
+    - REST API: 'rest-api.md'
+    - GraphQL API: 'graphql-api.md'
+    - Change Log: 'changelog.md'
