@@ -93,6 +93,11 @@ and the git history.
   even though no session was created. The address is now created in `save()`, once the
   whole form is known to be valid.
 
+- **GraphQL: `PrefixListRuleType.ge`/`le` no longer error on unset values.** Both are
+  `PositiveSmallIntegerField(null=True)` at the model level, but the GraphQL type
+  declared them non-nullable, so any rule without `ge`/`le` set raised a null-violation
+  that failed the whole query ([#313](https://github.com/netbox-community/netbox-bgp/pull/313)).
+
 ### Breaking changes
 
 - **GraphQL: `BGPSessionType.remote_address` is now nullable.** It changes from
