@@ -11,7 +11,7 @@ from .models import (
     BGPPeerGroup, PrefixList, PrefixListRule, CommunityList,
     CommunityListRule, ASPathList, ASPathListRule
 )
-from ipam.models import IPAddress, ASN
+from ipam.models import IPAddress, Prefix, ASN
 from dcim.models import Device, Site
 from virtualization.models import VirtualMachine
 
@@ -89,7 +89,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = CommunityListRule
-        fields = ('id', 'action', 'community_list', 'community_list_id',)
+        fields = ('id', 'action', 'community_list', 'community_list_id', 'community_custom',)
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -99,6 +99,7 @@ class CommunityListRuleFilterSet(NetBoxModelFilterSet):
                 Q(action__icontains=value)
                 | Q(community_list__icontains=value)
                 | Q(community_list_id__icontains=value)
+                | Q(community_custom__icontains=value)
         )
         return queryset.filter(qs_filter)
 
@@ -162,6 +163,18 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
         to_field_name='address',
         label='Remote Address',
     )
+    remote_prefix_id = django_filters.ModelMultipleChoiceFilter(
+        field_name='remote_prefix__id',
+        queryset=Prefix.objects.all(),
+        to_field_name='id',
+        label='Remote Prefix (ID)',
+    )
+    remote_prefix = django_filters.ModelMultipleChoiceFilter(
+        field_name='remote_prefix__prefix',
+        queryset=Prefix.objects.all(),
+        to_field_name='prefix',
+        label='Remote Prefix',
+    )
     device_id = django_filters.ModelMultipleChoiceFilter(
         field_name='device__id',
         queryset=Device.objects.all(),
@@ -201,6 +214,10 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
     by_remote_address = django_filters.CharFilter(
         method='search_by_remote_ip',
         label='Remote Address',
+    )
+    by_remote_prefix = django_filters.CharFilter(
+        method='search_by_remote_prefix',
+        label='Remote Prefix',
     )
     by_local_address = django_filters.CharFilter(
         method='search_by_local_ip',
@@ -248,6 +265,16 @@ class BGPSessionFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
             return queryset.filter(local_address__address=query)
         except (AddrFormatError, ValueError):
             return queryset.none()
+
+    def search_by_remote_prefix(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        try:
+            query = str(netaddr.IPNetwork(value).cidr)
+            return queryset.filter(remote_prefix__prefix=query)
+        except (AddrFormatError, ValueError):
+            return queryset.none()
+
 
 @register_filterset
 class RoutingPolicyFilterSet(NetBoxModelFilterSet):

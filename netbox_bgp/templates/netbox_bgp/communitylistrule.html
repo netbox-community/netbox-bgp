@@ -12,7 +12,7 @@
                     <tr>
                         <th scope="row">Community List</th>
                         <td>
-                            <a href="{{ object.communitylist.get_absolute_url }}">{{ object.communitylist }}</a>
+                            <a href="{{ object.community_list.get_absolute_url }}">{{ object.community_list }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -21,12 +21,12 @@
                     </tr>
                     <tr>
                         <th scope="row">Community</th>
-                        {% if object.community.get_absolute_url %}
+                        {% if object.value.get_absolute_url %}
                         <td>
-                            <a href="{{ object.community.get_absolute_url }}">{{ object.community }}</a>
+                            <a href="{{ object.value.get_absolute_url }}">{{ object.value }}</a>
                         </td>
                         {% else %}
-                        <td>{{ object.community|placeholder }}</td>
+                        <td>{{ object.value|placeholder }}</td>
                         {% endif %}
                     </tr>
                 </table>

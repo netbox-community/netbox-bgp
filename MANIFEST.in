@@ -1,1 +1,2 @@
 recursive-include netbox_bgp/templates *.html
+recursive-include netbox_bgp/tests *.json

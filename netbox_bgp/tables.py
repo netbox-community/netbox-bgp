@@ -92,7 +92,7 @@ class CommunityListRuleTable(NetBoxTable):
         linkify=True
     )
     action = ChoiceFieldColumn()
-    community = tables.Column(
+    value = tables.Column(
         verbose_name='Community',
         linkify=True,
     )
@@ -101,7 +101,7 @@ class CommunityListRuleTable(NetBoxTable):
         model = CommunityListRule
         fields = (
             'pk', 'community_list',
-            'action', 'community',
+            'action', 'value',
         )
 
 
@@ -115,6 +115,7 @@ class BGPSessionTable(NetBoxTable):
     local_address = tables.LinkColumn()
     local_as = tables.LinkColumn()
     remote_address = tables.LinkColumn()
+    remote_prefix = tables.LinkColumn()
     remote_as = tables.LinkColumn()
     site = tables.LinkColumn()
     peer_group = tables.LinkColumn()
@@ -132,7 +133,7 @@ class BGPSessionTable(NetBoxTable):
         model = BGPSession
         fields = (
             'pk', 'name', 'device', 'virtualmachine', 'local_address', 'local_as',
-            'remote_address', 'remote_as','remote_as_macro', 'description', 'peer_group',
+            'remote_address', 'remote_prefix', 'remote_as','remote_as_macro', 'description', 'peer_group',
             'site', 'status', 'tenant', 'tags', 'actions', 'max_prefixes'
         )
         default_columns = (

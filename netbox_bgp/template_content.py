@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest
-from ipam.models import ASN, IPAddress
+from ipam.models import ASN, IPAddress, Prefix
 from netbox.plugins import PluginTemplateExtension
 from netbox.views import generic
 from tenancy.models import Tenant
@@ -70,6 +70,30 @@ class IPAddressBGPSessionsView(generic.ObjectChildrenView):
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions where the IP address is either the local or remote address."""
         return IPAddressBGPSessionsView._get_ip_bgp_sessions(parent)
+
+
+@register_model_view(Prefix, name="bgp-sessions", path="bgp-sessions")
+class PrefixBGPSessionsView(generic.ObjectChildrenView):
+    """View to display BGP sessions associated with a prefix."""
+
+    queryset = Prefix.objects.all()
+    child_model = BGPSession
+    filterset = BGPSessionFilterSet
+    table = BGPSessionTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    tab = ViewTab(
+        label="BGP Sessions",
+        badge=lambda obj: BGPSession.objects.filter(remote_prefix=obj).count(),
+        permission="netbox_bgp.view_bgpsession",
+    )
+
+    def get_children(
+        self, request: HttpRequest, parent: Prefix
+    ) -> QuerySet[BGPSession]:
+        """Get BGP sessions where the prefix is the remote (dynamic) peer."""
+        return BGPSession.objects.filter(remote_prefix=parent)
 
 
 @register_model_view(Site, name="bgp-sessions", path="bgp-sessions")
