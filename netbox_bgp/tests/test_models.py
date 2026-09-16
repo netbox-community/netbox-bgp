@@ -537,3 +537,36 @@ class CommunityListRuleTestCase(TestCase):
 
     def test_get_action_color(self):
         self.assertIsNotNone(self.rule.get_action_color())
+
+    def test_value_returns_community_fk(self):
+        self.assertEqual(self.rule.value, self.community)
+
+    def test_value_returns_community_custom(self):
+        rule = CommunityListRule.objects.create(
+            community_list=self.cl, action='permit', community_custom='^65001:.*$',
+        )
+        self.assertEqual(rule.value, '^65001:.*$')
+
+    def test_clean_rejects_both_community_fields_set(self):
+        rule = CommunityListRule(
+            community_list=self.cl,
+            action='permit',
+            community=self.community,
+            community_custom='^65001:.*$',
+        )
+        with self.assertRaises(ValidationError):
+            rule.clean()
+
+    def test_clean_rejects_neither_community_field_set(self):
+        rule = CommunityListRule(community_list=self.cl, action='permit')
+        with self.assertRaises(ValidationError):
+            rule.clean()
+
+    def test_clean_accepts_community_fk_only(self):
+        self.rule.clean()  # must not raise
+
+    def test_clean_accepts_community_custom_only(self):
+        rule = CommunityListRule(
+            community_list=self.cl, action='permit', community_custom='^65001:.*$',
+        )
+        rule.clean()  # must not raise

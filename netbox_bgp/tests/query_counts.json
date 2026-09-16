@@ -12,7 +12,7 @@
   "communitylist:api_list_objects": 12,
   "communitylist:list_objects_with_permission": 17,
   "communitylistrule:api_list_objects": 14,
-  "communitylistrule:list_objects_with_permission": 18,
+  "communitylistrule:list_objects_with_permission": 20,
   "prefixlist:api_list_objects": 12,
   "prefixlist:list_objects_with_permission": 17,
   "prefixlistrule:api_list_objects": 14,

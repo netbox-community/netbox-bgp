@@ -283,6 +283,7 @@ class CommunityListRuleSerializer(NetBoxModelSerializer):
             "community_list",
             "action",
             "community",
+            "community_custom",
             "comments",
             "tags",
             "custom_fields",

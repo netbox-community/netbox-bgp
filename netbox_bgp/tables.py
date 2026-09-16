@@ -92,7 +92,7 @@ class CommunityListRuleTable(NetBoxTable):
         linkify=True
     )
     action = ChoiceFieldColumn()
-    community = tables.Column(
+    value = tables.Column(
         verbose_name='Community',
         linkify=True,
     )
@@ -101,7 +101,7 @@ class CommunityListRuleTable(NetBoxTable):
         model = CommunityListRule
         fields = (
             'pk', 'community_list',
-            'action', 'community',
+            'action', 'value',
         )
 
 

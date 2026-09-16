@@ -209,12 +209,24 @@ class CommunityListRuleForm(NetBoxModelForm):
         required=False,
         help_text="Community",
     )
+    community_custom = forms.CharField(
+        required=False,
+        label="Community (custom)",
+        help_text="Free-form value, e.g. a regular expression such as ^65001:.*$",
+    )
 
     comments = CommentField()
 
     class Meta:
         model = CommunityListRule
-        fields = ["community_list", "action", "community", "tags", "comments"]
+        fields = [
+            "community_list",
+            "action",
+            "community",
+            "community_custom",
+            "tags",
+            "comments",
+        ]
 
 
 class BGPSessionForm(NetBoxModelForm):
