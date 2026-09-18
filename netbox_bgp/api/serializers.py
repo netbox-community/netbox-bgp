@@ -251,7 +251,6 @@ class CommunitySerializer(NetBoxModelSerializer):
             "tenant",
             "description",
             "value",
-            "site",
             "role",
             "scope_type",
             "scope_id",

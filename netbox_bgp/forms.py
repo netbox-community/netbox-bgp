@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from utilities.forms.rendering import FieldSet
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import gettext as _
 
 from tenancy.models import Tenant
@@ -237,6 +237,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
     )
     scope_type = ContentTypeChoiceField(
         queryset=ContentType.objects.filter(model__in=COMMUNITY_SCOPE_TYPES),
+        widget=HTMXSelect(method='post', attrs={'hx-select': '#form_fields'}),
         required=False,
         label=_("Scope type")
     )
@@ -244,6 +245,7 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
         label=_("Scope"),
         queryset=Site.objects.none(),
         required=False,
+        disabled=True,
         selector=True
     )
 
@@ -253,6 +255,22 @@ class CommunityBulkEditForm(NetBoxModelBulkEditForm):
         "description",
         "scope",
     ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Populate the scope queryset based on the selected scope_type, mirroring
+        # CommunityForm so that validation can succeed in bulk edit.
+        if scope_type_id := get_field_value(self, "scope_type"):
+            try:
+                scope_type = ContentType.objects.get(pk=scope_type_id)
+                model = scope_type.model_class()
+                self.fields["scope"].queryset = model.objects.all()
+                self.fields["scope"].widget.attrs["selector"] = model._meta.label_lower
+                self.fields["scope"].disabled = False
+                self.fields["scope"].label = _(model._meta.verbose_name.title())
+            except ObjectDoesNotExist:
+                pass
 
 
 class CommunityImportForm(NetBoxModelImportForm):

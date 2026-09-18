@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
 
-from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices, COMMUNITY_SCOPE_TYPES
+from .choices import IPAddressFamilyChoices, SessionStatusChoices, ActionChoices, CommunityStatusChoices
 
 
 class ASPathList(NetBoxModel):
@@ -177,13 +177,6 @@ class BGPPeerGroup(NetBoxModel):
 class BGPBase(NetBoxModel):
     """
     """
-    site = models.ForeignKey(
-        to='dcim.Site',
-        on_delete=models.PROTECT,
-        related_name="%(class)s_related",
-        blank=True,
-        null=True
-    )
     tenant = models.ForeignKey(
         to='tenancy.Tenant',
         on_delete=models.PROTECT,
@@ -229,8 +222,6 @@ class BGPBase(NetBoxModel):
             models.Index(fields=("scope_type", "scope_id")),
         )
 
-    def __str__(self):
-        return f'{self.value}'
 
 class Community(BGPBase):
     """
@@ -240,7 +231,8 @@ class Community(BGPBase):
         validators=[RegexValidator(r'[\d\.\*]+:[\d\.\*]+')]
     )
 
-    class Meta:
+    class Meta(BGPBase.Meta):
+        abstract = False
         verbose_name_plural = 'Communities'
         ordering = ['value']
 

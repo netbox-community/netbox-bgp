@@ -616,6 +616,10 @@ class CommunityScopeTestCase(TestCase):
         self.assertEqual(str(community_with), '65000:100')
         self.assertEqual(str(community_without), '65000:101')
 
+    def test_community_scope_composite_index(self):
+        indexes = {tuple(i.fields) for i in Community._meta.indexes}
+        self.assertIn(("scope_type", "scope_id"), indexes)
+
     def test_community_scope_change(self):
         from dcim.models import Site
         from django.contrib.contenttypes.models import ContentType
