@@ -570,3 +570,61 @@ class CommunityListRuleTestCase(TestCase):
             community_list=self.cl, action='permit', community_custom='^65001:.*$',
         )
         rule.clean()  # must not raise
+
+
+class CommunityScopeTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from dcim.models import Site
+        from django.contrib.contenttypes.models import ContentType
+        cls.site = Site.objects.create(name='Test Site')
+        cls.community_with_scope = Community.objects.create(
+            value='65000:100',
+            scope_type=ContentType.objects.get_for_model(Site),
+            scope_id=cls.site.pk
+        )
+        cls.community_without_scope = Community.objects.create(value='65000:101')
+
+    def test_create_community_with_scope(self):
+        from dcim.models import Site
+        from django.contrib.contenttypes.models import ContentType
+        community = Community(
+            value='65000:102',
+            scope_type=ContentType.objects.get_for_model(Site),
+            scope_id=self.site.pk
+        )
+        community.full_clean()
+        community.save()
+        self.assertEqual(community.scope, self.site)
+
+    def test_community_scope_type_validation(self):
+        from dcim.models import Site
+        from django.contrib.contenttypes.models import ContentType
+        community = Community.objects.get(value='65000:100')
+        self.assertEqual(community.scope_type, ContentType.objects.get_for_model(Site))
+        self.assertEqual(community.scope, self.site)
+
+    def test_community_scope_null(self):
+        community = Community.objects.get(value='65000:101')
+        self.assertIsNone(community.scope)
+        self.assertIsNone(community.scope_type)
+        self.assertIsNone(community.scope_id)
+
+    def test_community_scope_str(self):
+        community_with = Community.objects.get(value='65000:100')
+        community_without = Community.objects.get(value='65000:101')
+        self.assertEqual(str(community_with), '65000:100')
+        self.assertEqual(str(community_without), '65000:101')
+
+    def test_community_scope_composite_index(self):
+        indexes = {tuple(i.fields) for i in Community._meta.indexes}
+        self.assertIn(("scope_type", "scope_id"), indexes)
+
+    def test_community_scope_change(self):
+        from dcim.models import Site
+        from django.contrib.contenttypes.models import ContentType
+        site2 = Site.objects.create(name='Test Site 2', slug='test-site-2')
+        self.community_with_scope.scope_type = ContentType.objects.get_for_model(Site)
+        self.community_with_scope.scope_id = site2.pk
+        self.community_with_scope.save()
+        self.assertEqual(self.community_with_scope.scope, site2)

@@ -5,7 +5,8 @@ from django.test import TestCase, override_settings
 from ipam.models import IPAddress, ASN, RIR, VRF, Prefix
 
 from netbox_bgp.choices import SessionStatusChoices
-from netbox_bgp.forms import BGPSessionAddForm, CommunityForm
+from netbox_bgp.forms import BGPSessionAddForm, CommunityBulkEditForm, CommunityForm
+from netbox_bgp.models import Community
 
 
 class TestCommunityFormCase(TestCase):
@@ -30,6 +31,48 @@ class TestCommunityFormCase(TestCase):
         self.assertEqual(
             form.errors.get('value'), None
         )
+
+
+class CommunityBulkEditScopeTestCase(TestCase):
+    """Scope handling in CommunityBulkEditForm — the scope field queryset must be
+    populated from the selected scope_type so bulk edit validation succeeds."""
+
+    @classmethod
+    def setUpTestData(cls):
+        from dcim.models import Site
+        from django.contrib.contenttypes.models import ContentType
+
+        cls.site = Site.objects.create(name='bulk-edit-site', slug='bulk-edit-site')
+        cls.site_ct = ContentType.objects.get_for_model(Site)
+        cls.community = Community.objects.create(value='65350:1')
+
+    def test_scope_validates_with_scope_type(self):
+        form = CommunityBulkEditForm(
+            data={
+                'pk': [self.community.pk],
+                '_apply': '1',
+                'scope_type': self.site_ct.pk,
+                'scope': self.site.pk,
+            }
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data.get('scope'), self.site)
+
+    def test_scope_without_scope_type_is_left_untouched(self):
+        form = CommunityBulkEditForm(
+            data={'pk': [self.community.pk], '_apply': '1'}
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertNotIn('scope', form.changed_data)
+
+    def test_scope_type_uses_bulk_edit_htmx_select(self):
+        # BulkEditView.get() redirects to the return URL, so the HTMX scope-type
+        # switch must POST and swap only #form_fields (mirrors ScopedBulkEditForm).
+        widget = CommunityBulkEditForm()['scope_type'].field.widget
+        attrs = widget.attrs
+        self.assertEqual(attrs.get('hx-post'), '.')
+        self.assertEqual(attrs.get('hx-select'), '#form_fields')
+        self.assertEqual(attrs.get('hx-target'), '#form_fields')
 
 
 class RemoteAddressStrictTestCase(TestCase):

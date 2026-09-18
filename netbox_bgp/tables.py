@@ -2,7 +2,7 @@ import django_tables2 as tables
 from django.utils.safestring import mark_safe
 from django_tables2.utils import A
 
-from netbox.tables import NetBoxTable
+from netbox.tables import NetBoxTable, columns
 from netbox.tables.columns import ChoiceFieldColumn, TagColumn
 
 from .models import (
@@ -67,15 +67,23 @@ class CommunityTable(NetBoxTable):
     tenant = tables.TemplateColumn(
         template_code=COL_TENANT
     )
+    scope_type = columns.ContentTypeColumn(
+        verbose_name="Scope Type"
+    )
+    scope = tables.Column(
+        verbose_name="Scope",
+        linkify=True,
+        orderable=False
+    )
     tags = TagColumn(
         url_name='plugins:netbox_bgp:community_list'
     )
 
     class Meta(NetBoxTable.Meta):
         model = Community
-        fields = ('pk', 'value', 'description', 'status', 'tenant', 'tags', 'actions')
+        fields = ('pk', 'value', 'description', 'status', 'tenant', 'scope_type', 'scope', 'tags', 'actions')
         default_columns = (
-            'pk', 'value', 'description', 'status', 'tenant'
+            'pk', 'value', 'description', 'status', 'tenant', 'scope_type', 'scope'
         )
 
 
