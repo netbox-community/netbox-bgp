@@ -6,6 +6,27 @@ This changelog starts at 0.20.0. For earlier releases, see the
 [compatibility matrix](https://github.com/netbox-community/netbox-bgp/blob/main/COMPATIBILITY.md)
 and the git history.
 
+## 0.20.1
+
+### Fixed
+
+- **BGP Session tabs on core objects now honor object permissions.** The `get_children()`
+  query behind every BGP Sessions tab (Device, IP Address, Prefix, Site, Tenant, Virtual
+  Machine, ASN, Interface) returned every matching session regardless of the viewing
+  user's `netbox_bgp.view_bgpsession` permission or any object-level restriction. A
+  `ViewTab`'s `permission` only hides the tab link; the tab's URL was still directly
+  reachable and returned unrestricted data. Each `get_children()` now calls
+  `.restrict(request.user, 'view')`. `VMBGPSessionView`, a second, undocumented BGP
+  Sessions tab on Virtual Machine, also gained a `netbox_bgp.view_bgpsession` tab
+  permission it previously lacked entirely.
+
+- **Related-object tables on BGP detail pages now honor object permissions.** The tables
+  built in `get_extra_context()` for BGP Session (import/export policies), Routing
+  Policy (related sessions, rules), BGP Peer Group (import/export policies, related
+  sessions), Prefix List (rules, related sessions), Community List (rules), and AS Path
+  List (rules) were built directly from the database without restricting to objects the
+  viewing user can see. Each queryset is now scoped with `.restrict(request.user, 'view')`.
+
 ## 0.20.0
 
 **Targets NetBox 4.7.** See [Upgrading](#upgrading-to-0200) below.
@@ -97,23 +118,6 @@ and the git history.
   `PositiveSmallIntegerField(null=True)` at the model level, but the GraphQL type
   declared them non-nullable, so any rule without `ge`/`le` set raised a null-violation
   that failed the whole query ([#313](https://github.com/netbox-community/netbox-bgp/pull/313)).
-
-- **BGP Session tabs on core objects now honor object permissions.** The `get_children()`
-  query behind every BGP Sessions tab (Device, IP Address, Prefix, Site, Tenant, Virtual
-  Machine, ASN, Interface) returned every matching session regardless of the viewing
-  user's `netbox_bgp.view_bgpsession` permission or any object-level restriction. A
-  `ViewTab`'s `permission` only hides the tab link; the tab's URL was still directly
-  reachable and returned unrestricted data. Each `get_children()` now calls
-  `.restrict(request.user, 'view')`. `VMBGPSessionView`, a second, undocumented BGP
-  Sessions tab on Virtual Machine, also gained a `netbox_bgp.view_bgpsession` tab
-  permission it previously lacked entirely.
-
-- **Related-object tables on BGP detail pages now honor object permissions.** The tables
-  built in `get_extra_context()` for BGP Session (import/export policies), Routing
-  Policy (related sessions, rules), BGP Peer Group (import/export policies, related
-  sessions), Prefix List (rules, related sessions), Community List (rules), and AS Path
-  List (rules) were built directly from the database without restricting to objects the
-  viewing user can see. Each queryset is now scoped with `.restrict(request.user, 'view')`.
 
 ### Breaking changes
 
