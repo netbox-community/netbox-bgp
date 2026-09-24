@@ -1,6 +1,8 @@
-from utilities.testing import ViewTestCases
-from dcim.models import Device, DeviceRole, DeviceType, Manufacturer, Site
+from utilities.testing import TestCase, ViewTestCases
+from dcim.models import Device, DeviceRole, DeviceType, Interface, Manufacturer, Site
 from ipam.models import Prefix, IPAddress, ASN, RIR
+from tenancy.models import Tenant
+from virtualization.models import VirtualMachine
 
 from netbox_bgp.models import (
     ASPathList,
@@ -624,3 +626,322 @@ class BGPSessionViewTestCase(
                 remote_as=remote_as,
                 status='active',
             )
+
+
+# ---------------------------------------------------------------------------
+# Regression tests: BGP object data must not leak past object permissions
+# ---------------------------------------------------------------------------
+# A ViewTab's `permission` only hides the tab link; the URL behind it is
+# still directly reachable. Likewise, get_extra_context() tables were built
+# straight from the database. Both must restrict to what the viewing user
+# is permitted to see, independently of whether they can view the parent
+# object the tab/page belongs to.
+
+class BGPSessionTabPermissionTestCase(TestCase):
+    """The BGP Sessions tab registered on core objects (template_content.py,
+    plus the legacy VMBGPSessionView in views.py) must not return session
+    data to a user who lacks netbox_bgp.view_bgpsession, even though they
+    can view the parent object the tab is attached to.
+
+    The Device tab (DeviceBGPSessionTabView) is registered only when the
+    `device_ext_page` plugin setting is 'tab', which isn't the default test
+    configuration, so it isn't exercised here.
+    """
+
+    user_permissions = ()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.site = Site.objects.create(name='tabperm_site')
+        cls.tenant = Tenant.objects.create(name='tabperm_tenant', slug='tabperm-tenant')
+        mfr = Manufacturer.objects.create(name='tabperm_mfr')
+        dt = DeviceType.objects.create(manufacturer=mfr, model='tabperm_dt')
+        role = DeviceRole.objects.create(name='tabperm_role')
+        cls.device = Device.objects.create(
+            name='tabperm_device', site=cls.site, role=role, device_type=dt,
+        )
+        cls.interface = Interface.objects.create(device=cls.device, name='tabperm_eth0')
+        cls.vm = VirtualMachine.objects.create(name='tabperm_vm', status='active')
+
+        rir = RIR.objects.create(name='tabperm_rir')
+        cls.local_as = ASN.objects.create(asn=65700, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65701, rir=rir)
+
+        cls.local_ip = IPAddress.objects.create(address='198.51.100.1/32')
+        cls.remote_ip = IPAddress.objects.create(
+            address='198.51.100.2/32', assigned_object=cls.interface,
+        )
+        cls.remote_prefix = Prefix.objects.create(prefix='203.0.113.0/24')
+
+        # Linked to device, site, tenant, an interface-assigned IP, and the
+        # ASNs: exercises the Site, Tenant, IPAddress, ASN and Interface tabs
+        # with a single object.
+        cls.session = BGPSession.objects.create(
+            name='tabperm_session',
+            site=cls.site,
+            tenant=cls.tenant,
+            device=cls.device,
+            local_address=cls.local_ip,
+            remote_address=cls.remote_ip,
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            status='active',
+        )
+        # A prefix-peered session, to exercise the Prefix tab.
+        cls.prefix_session = BGPSession.objects.create(
+            name='tabperm_prefix_session',
+            device=cls.device,
+            local_address=cls.local_ip,
+            remote_prefix=cls.remote_prefix,
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            status='active',
+        )
+        # A VM-scoped session, to exercise both Virtual Machine BGP Session tabs.
+        cls.vm_session = BGPSession.objects.create(
+            name='tabperm_vm_session',
+            virtualmachine=cls.vm,
+            local_address=cls.local_ip,
+            remote_address=cls.remote_ip,
+            local_as=cls.local_as,
+            remote_as=cls.remote_as,
+            status='active',
+        )
+
+    def _assert_tab_scoped(self, url, parent_permission, session_name):
+        """A user who can view the parent object, but lacks
+        netbox_bgp.view_bgpsession, must not see `session_name` at `url`.
+        Once granted view_bgpsession, they must see it."""
+        self.add_permissions(parent_permission)
+        response = self.client.get(url)
+        self.assertHttpStatus(response, 200)
+        self.assertNotContains(response, session_name)
+
+        self.add_permissions('netbox_bgp.view_bgpsession')
+        response = self.client.get(url)
+        self.assertHttpStatus(response, 200)
+        self.assertContains(response, session_name)
+
+    def test_ipaddress_tab(self):
+        self._assert_tab_scoped(
+            f'/ipam/ip-addresses/{self.remote_ip.pk}/bgp-sessions/',
+            'ipam.view_ipaddress',
+            'tabperm_session',
+        )
+
+    def test_prefix_tab(self):
+        self._assert_tab_scoped(
+            f'/ipam/prefixes/{self.remote_prefix.pk}/bgp-sessions/',
+            'ipam.view_prefix',
+            'tabperm_prefix_session',
+        )
+
+    def test_site_tab(self):
+        self._assert_tab_scoped(
+            f'/dcim/sites/{self.site.pk}/bgp-sessions/',
+            'dcim.view_site',
+            'tabperm_session',
+        )
+
+    def test_tenant_tab(self):
+        self._assert_tab_scoped(
+            f'/tenancy/tenants/{self.tenant.pk}/bgp-sessions/',
+            'tenancy.view_tenant',
+            'tabperm_session',
+        )
+
+    def test_asn_tab(self):
+        self._assert_tab_scoped(
+            f'/ipam/asns/{self.local_as.pk}/bgp-sessions/',
+            'ipam.view_asn',
+            'tabperm_session',
+        )
+
+    def test_interface_tab(self):
+        self._assert_tab_scoped(
+            f'/dcim/interfaces/{self.interface.pk}/bgp-sessions/',
+            'dcim.view_interface',
+            'tabperm_session',
+        )
+
+    def test_virtualmachine_tab(self):
+        self._assert_tab_scoped(
+            f'/virtualization/virtual-machines/{self.vm.pk}/bgp-sessions/',
+            'virtualization.view_virtualmachine',
+            'tabperm_vm_session',
+        )
+
+    def test_virtualmachine_legacy_tab(self):
+        """VMBGPSessionView (views.py): a second BGP Sessions tab registered
+        on Virtual Machine, at a different URL path."""
+        self._assert_tab_scoped(
+            f'/virtualization/virtual-machines/{self.vm.pk}/bgpsessions/',
+            'virtualization.view_virtualmachine',
+            'tabperm_vm_session',
+        )
+
+
+class BGPRelatedTablePermissionTestCase(TestCase):
+    """Related-object tables built in get_extra_context() on BGP detail
+    pages must not leak data the viewing user lacks permission to see, even
+    though they can view the page's own object."""
+
+    user_permissions = ()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.import_policy = RoutingPolicy.objects.create(name='relperm_import_pol')
+        cls.export_policy = RoutingPolicy.objects.create(name='relperm_export_pol')
+
+        cls.peer_group = BGPPeerGroup.objects.create(name='relperm_peer_group')
+        cls.peer_group.import_policies.set([cls.import_policy])
+        cls.peer_group.export_policies.set([cls.export_policy])
+
+        cls.comm_list = CommunityList.objects.create(name='relperm_comm_list')
+        cls.aspath_list = ASPathList.objects.create(name='relperm_aspath_list')
+        cls.prefix_list = PrefixList.objects.create(
+            name='relperm_prefix_list', family=IPAddressFamilyChoices.FAMILY_4,
+        )
+
+        cls.comm_list_rule = CommunityListRule.objects.create(
+            community_list=cls.comm_list, action='permit',
+            community_custom='relperm_comm_rule',
+        )
+        cls.aspath_list_rule = ASPathListRule.objects.create(
+            aspath_list=cls.aspath_list, index=10, action='permit',
+            pattern='relperm_aspath_rule',
+        )
+        cls.prefix_list_rule = PrefixListRule.objects.create(
+            prefix_list=cls.prefix_list, index=10, action='permit',
+            prefix_custom='198.51.100.0/24', description='relperm_prefix_rule',
+        )
+
+        # A single RoutingPolicyRule matching all three lists, to exercise
+        # the cmrules / aspathrules / plrules tables on CommunityList /
+        # ASPathList / PrefixList.
+        cls.rp_rule = RoutingPolicyRule.objects.create(
+            routing_policy=cls.import_policy, index=10, action='permit',
+            description='relperm_rp_rule',
+        )
+        cls.rp_rule.match_community_list.set([cls.comm_list])
+        cls.rp_rule.match_aspath_list.set([cls.aspath_list])
+        cls.rp_rule.match_ip_address.set([cls.prefix_list])
+
+        rir = RIR.objects.create(name='relperm_rir')
+        local_as = ASN.objects.create(asn=65710, rir=rir)
+        remote_as = ASN.objects.create(asn=65711, rir=rir)
+        local_ip = IPAddress.objects.create(address='198.51.100.10/32')
+        remote_ip = IPAddress.objects.create(address='198.51.100.11/32')
+
+        cls.session = BGPSession.objects.create(
+            name='relperm_session',
+            local_address=local_ip,
+            remote_address=remote_ip,
+            local_as=local_as,
+            remote_as=remote_as,
+            peer_group=cls.peer_group,
+            prefix_list_in=cls.prefix_list,
+            status='active',
+        )
+        cls.session.import_policies.set([cls.import_policy])
+        cls.session.export_policies.set([cls.export_policy])
+
+    def _assert_extra_context_scoped(self, url, parent_permission, extra_permissions, needle):
+        """A user who can view the page's own object, but lacks permission
+        on the related object type, must not see `needle` on the page. Once
+        granted, they must."""
+        self.add_permissions(parent_permission)
+        response = self.client.get(url)
+        self.assertHttpStatus(response, 200)
+        self.assertNotContains(response, needle)
+
+        self.add_permissions(*extra_permissions)
+        response = self.client.get(url)
+        self.assertHttpStatus(response, 200)
+        self.assertContains(response, needle)
+
+    def test_bgpsession_policy_tables(self):
+        url = self.session.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_bgpsession', ('netbox_bgp.view_routingpolicy',),
+            'relperm_import_pol',
+        )
+
+    def test_routingpolicy_related_sessions(self):
+        url = self.import_policy.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_routingpolicy', ('netbox_bgp.view_bgpsession',),
+            'relperm_session',
+        )
+
+    def test_routingpolicy_rules(self):
+        url = self.import_policy.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_routingpolicy', ('netbox_bgp.view_routingpolicyrule',),
+            'relperm_rp_rule',
+        )
+
+    def test_bgppeergroup_policy_tables(self):
+        url = self.peer_group.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_bgppeergroup', ('netbox_bgp.view_routingpolicy',),
+            'relperm_import_pol',
+        )
+
+    def test_bgppeergroup_related_sessions(self):
+        url = self.peer_group.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_bgppeergroup', ('netbox_bgp.view_bgpsession',),
+            'relperm_session',
+        )
+
+    def test_prefixlist_rules(self):
+        # PrefixListRuleTable has no description column; assert on the
+        # rendered prefix instead.
+        url = self.prefix_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_prefixlist', ('netbox_bgp.view_prefixlistrule',),
+            '198.51.100.0/24',
+        )
+
+    def test_prefixlist_matching_rules(self):
+        url = self.prefix_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_prefixlist', ('netbox_bgp.view_routingpolicyrule',),
+            'relperm_rp_rule',
+        )
+
+    def test_prefixlist_related_sessions(self):
+        url = self.prefix_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_prefixlist', ('netbox_bgp.view_bgpsession',),
+            'relperm_session',
+        )
+
+    def test_communitylist_rules(self):
+        url = self.comm_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_communitylist', ('netbox_bgp.view_communitylistrule',),
+            'relperm_comm_rule',
+        )
+
+    def test_communitylist_matching_rules(self):
+        url = self.comm_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_communitylist', ('netbox_bgp.view_routingpolicyrule',),
+            'relperm_rp_rule',
+        )
+
+    def test_aspathlist_rules(self):
+        url = self.aspath_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_aspathlist', ('netbox_bgp.view_aspathlistrule',),
+            'relperm_aspath_rule',
+        )
+
+    def test_aspathlist_matching_rules(self):
+        url = self.aspath_list.get_absolute_url()
+        self._assert_extra_context_scoped(
+            url, 'netbox_bgp.view_aspathlist', ('netbox_bgp.view_routingpolicyrule',),
+            'relperm_rp_rule',
+        )

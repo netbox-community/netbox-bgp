@@ -94,9 +94,9 @@ class CommListView(generic.ObjectView):
     template_name = 'netbox_bgp/communitylist.html'
 
     def get_extra_context(self, request, instance):
-        rprules = instance.cmrules.all()
+        rprules = instance.cmrules.all().restrict(request.user, 'view')
         rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.commlistrules.all()
+        rules = instance.commlistrules.all().restrict(request.user, 'view')
         rules_table = tables.CommunityListRuleTable(rules)
         return {
             'rules_table': rules_table,
@@ -196,11 +196,11 @@ class BGPSessionView(generic.ObjectView):
             export_policies_qs = instance.peer_group.export_policies.all()
 
         import_policies_table = tables.RoutingPolicyTable(
-            import_policies_qs,
+            import_policies_qs.restrict(request.user, 'view'),
             orderable=False
         )
         export_policies_table = tables.RoutingPolicyTable(
-            export_policies_qs,
+            export_policies_qs.restrict(request.user, 'view'),
             orderable=False
         )
 
@@ -254,9 +254,9 @@ class RoutingPolicyView(generic.ObjectView):
             | Q(peer_group__in=instance.group_import_policies.all())
             | Q(peer_group__in=instance.group_export_policies.all())
         )
-        sess = sess.distinct()
+        sess = sess.distinct().restrict(request.user, 'view')
         sess_table = tables.BGPSessionTable(sess)
-        rules = instance.rules.all()
+        rules = instance.rules.all().restrict(request.user, 'view')
         rules_table = tables.RoutingPolicyRuleTable(rules)
         return {
             'rules_table': rules_table,
@@ -352,16 +352,16 @@ class BGPPeerGroupView(generic.ObjectView):
 
     def get_extra_context(self, request, instance):
         import_policies_table = tables.RoutingPolicyTable(
-            instance.import_policies.all(),
+            instance.import_policies.all().restrict(request.user, 'view'),
             orderable=False
         )
         export_policies_table = tables.RoutingPolicyTable(
-            instance.export_policies.all(),
+            instance.export_policies.all().restrict(request.user, 'view'),
             orderable=False
         )
 
         sess = BGPSession.objects.filter(peer_group=instance)
-        sess = sess.distinct()
+        sess = sess.distinct().restrict(request.user, 'view')
         sess_table = tables.BGPSessionTable(sess)
         return {
             'import_policies_table': import_policies_table,
@@ -420,12 +420,13 @@ class PrefixListView(generic.ObjectView):
     template_name = 'netbox_bgp/prefixlist.html'
 
     def get_extra_context(self, request, instance):
-        rprules = instance.plrules.all()
+        rprules = instance.plrules.all().restrict(request.user, 'view')
         rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.prefrules.all()
+        rules = instance.prefrules.all().restrict(request.user, 'view')
         rules_table = tables.PrefixListRuleTable(rules)
 
         sess = instance.session_prefix_in.all() | instance.session_prefix_out.all()
+        sess = sess.restrict(request.user, 'view')
         sess_table = tables.BGPSessionTable(sess)
         return {
             'rules_table': rules_table,
@@ -492,11 +493,12 @@ class VMBGPSessionView(generic.ObjectChildrenView):
     tab = ViewTab(
         label='BGP Sessions',
         badge=lambda obj:  obj.bgpsession_set.count(),
-        hide_if_empty = True
+        hide_if_empty = True,
+        permission='netbox_bgp.view_bgpsession',
     )
 
     def get_children(self, request, parent):
-        return parent.bgpsession_set.all()
+        return parent.bgpsession_set.all().restrict(request.user, 'view')
 
 # AS Path List
 
@@ -531,9 +533,9 @@ class ASPathListView(generic.ObjectView):
     template_name = 'netbox_bgp/aspathlist.html'
 
     def get_extra_context(self, request, instance):
-        rprules = instance.aspathrules.all()
+        rprules = instance.aspathrules.all().restrict(request.user, 'view')
         rprules_table = tables.RoutingPolicyRuleTable(rprules)
-        rules = instance.aspathlistrules.all()
+        rules = instance.aspathlistrules.all().restrict(request.user, 'view')
         rules_table = tables.ASPathListRuleTable(rules)
         return {
             'rules_table': rules_table,
