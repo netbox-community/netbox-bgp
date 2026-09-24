@@ -38,7 +38,7 @@ if config.get("device_ext_page", "") == "tab":
 
         def get_children(self, request, parent):
             """Get BGP sessions for this device."""
-            return BGPSession.objects.filter(device=parent)
+            return BGPSession.objects.filter(device=parent).restrict(request.user, 'view')
 
 
 @register_model_view(IPAddress, name="bgp-sessions", path="bgp-sessions")
@@ -69,7 +69,7 @@ class IPAddressBGPSessionsView(generic.ObjectChildrenView):
         self, request: HttpRequest, parent: IPAddress
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions where the IP address is either the local or remote address."""
-        return IPAddressBGPSessionsView._get_ip_bgp_sessions(parent)
+        return IPAddressBGPSessionsView._get_ip_bgp_sessions(parent).restrict(request.user, 'view')
 
 
 @register_model_view(Prefix, name="bgp-sessions", path="bgp-sessions")
@@ -93,7 +93,7 @@ class PrefixBGPSessionsView(generic.ObjectChildrenView):
         self, request: HttpRequest, parent: Prefix
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions where the prefix is the remote (dynamic) peer."""
-        return BGPSession.objects.filter(remote_prefix=parent)
+        return BGPSession.objects.filter(remote_prefix=parent).restrict(request.user, 'view')
 
 
 @register_model_view(Site, name="bgp-sessions", path="bgp-sessions")
@@ -115,7 +115,7 @@ class SiteBGPSessionsView(generic.ObjectChildrenView):
 
     def get_children(self, request: HttpRequest, parent: Site) -> QuerySet[BGPSession]:
         """Get BGP sessions for the site."""
-        return BGPSession.objects.filter(site=parent)
+        return BGPSession.objects.filter(site=parent).restrict(request.user, 'view')
 
 
 @register_model_view(Tenant, name="bgp-sessions", path="bgp-sessions")
@@ -139,7 +139,7 @@ class TenantBGPSessionsView(generic.ObjectChildrenView):
         self, request: HttpRequest, parent: Tenant
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions for the tenant."""
-        return BGPSession.objects.filter(tenant=parent)
+        return BGPSession.objects.filter(tenant=parent).restrict(request.user, 'view')
 
 
 @register_model_view(VirtualMachine, name="bgp-sessions", path="bgp-sessions")
@@ -163,7 +163,7 @@ class VirtualMachineBGPSessionsView(generic.ObjectChildrenView):
         self, request: HttpRequest, parent: VirtualMachine
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions for the virtual machine."""
-        return BGPSession.objects.filter(virtualmachine=parent)
+        return BGPSession.objects.filter(virtualmachine=parent).restrict(request.user, 'view')
 
 
 @register_model_view(ASN, name="bgp-sessions", path="bgp-sessions")
@@ -190,7 +190,7 @@ class ASNBGPSessionsView(generic.ObjectChildrenView):
 
     def get_children(self, request: HttpRequest, parent: ASN) -> QuerySet[BGPSession]:
         """Get BGP sessions where the ASN is either the local or remote AS."""
-        return ASNBGPSessionsView._get_asn_bgp_sessions(parent)
+        return ASNBGPSessionsView._get_asn_bgp_sessions(parent).restrict(request.user, 'view')
 
 
 @register_model_view(Interface, name="bgp-sessions", path="bgp-sessions")
@@ -227,7 +227,9 @@ class InterfaceBGPSessionsView(generic.ObjectChildrenView):
         self, request: HttpRequest, parent: Interface
     ) -> QuerySet[BGPSession]:
         """Get BGP sessions for the interface."""
-        return InterfaceBGPSessionsView._get_interface_bgp_sessions(parent)
+        return InterfaceBGPSessionsView._get_interface_bgp_sessions(parent).restrict(
+            request.user, 'view'
+        )
 
 
 class DeviceBGPSession(PluginTemplateExtension):
