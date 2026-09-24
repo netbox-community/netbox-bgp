@@ -2,6 +2,8 @@ from django.urls import reverse
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from netbox.models import NetBoxModel
 from ipam.fields import IPNetworkField
@@ -175,13 +177,6 @@ class BGPPeerGroup(NetBoxModel):
 class BGPBase(NetBoxModel):
     """
     """
-    site = models.ForeignKey(
-        to='dcim.Site',
-        on_delete=models.PROTECT,
-        related_name="%(class)s_related",
-        blank=True,
-        null=True
-    )
     tenant = models.ForeignKey(
         to='tenancy.Tenant',
         on_delete=models.PROTECT,
@@ -206,9 +201,26 @@ class BGPBase(NetBoxModel):
     comments = models.TextField(
         blank=True
     )
+    scope_type = models.ForeignKey(
+        to="contenttypes.ContentType",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    scope_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True
+    )
+    scope = GenericForeignKey(
+        ct_field="scope_type",
+        fk_field="scope_id"
+    )
 
     class Meta:
         abstract = True
+        indexes = (
+            models.Index(fields=("scope_type", "scope_id")),
+        )
 
 
 class Community(BGPBase):
@@ -219,7 +231,8 @@ class Community(BGPBase):
         validators=[RegexValidator(r'[\d\.\*]+:[\d\.\*]+')]
     )
 
-    class Meta:
+    class Meta(BGPBase.Meta):
+        abstract = False
         verbose_name_plural = 'Communities'
         ordering = ['value']
 
