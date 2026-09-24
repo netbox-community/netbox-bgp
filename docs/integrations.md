@@ -21,6 +21,10 @@ already have open rather than filtering the session list by hand.
 Note that the IP Address and ASN tabs match on either end of the session. A session appears
 under both its local and its remote address, and under both its local and its remote AS.
 
+!!! note
+    Every tab requires `netbox_bgp.view_bgpsession`, independent of the permission that
+    grants access to the parent object. See [Permissions](./permissions.md).
+
 ## The Device Tab
 
 All of these tabs are enabled by default except the Device one, which is controlled by the

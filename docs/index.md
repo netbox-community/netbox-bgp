@@ -32,6 +32,9 @@ configuration or check against.
   Device, VM, Interface, IP Address, ASN, Prefix, Site, or Tenant you are already looking
   at. See [Integrations](./integrations.md).
 
+* Standard NetBox model permissions on every model, including object-level constraints.
+  See [Permissions](./permissions.md).
+
 * Full REST API and GraphQL coverage, NetBox global search, change logging, journaling,
   tags, and custom fields on every model.
 
