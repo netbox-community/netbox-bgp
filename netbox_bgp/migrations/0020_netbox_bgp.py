@@ -7,7 +7,7 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('extras', '0067_customfield_min_max_values'),
+        ('extras', '0060_squashed_0086'),
         ('netbox_bgp', '0019_netbox_bgp'),
     ]
 

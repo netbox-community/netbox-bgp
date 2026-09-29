@@ -11,10 +11,10 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('dcim', '0122_standardize_name_length'),
-        ('extras', '0053_rename_webhook_obj_type'),
-        ('ipam', '0043_add_tenancy_to_aggregates'),
-        ('tenancy', '0011_standardize_name_length'),
+        ('dcim', '0003_squashed_0130'),
+        ('extras', '0002_squashed_0059'),
+        ('ipam', '0002_squashed_0046'),
+        ('tenancy', '0001_squashed_0012'),
     ]
 
     operations = [

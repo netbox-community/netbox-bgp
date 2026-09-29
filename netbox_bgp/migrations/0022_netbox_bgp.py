@@ -9,8 +9,8 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ipam', '0057_created_datetimefield'),
-        ('extras', '0073_journalentry_tags_custom_fields'),
+        ('ipam', '0054_squashed_0067'),
+        ('extras', '0060_squashed_0086'),
         ('netbox_bgp', '0021_netbox32_support'),
     ]
 
