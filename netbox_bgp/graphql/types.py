@@ -53,11 +53,11 @@ class ASPathListRuleType(NetBoxObjectType):
 
 @strawberry_django.type(Community, fields="__all__", filters=NetBoxBGPCommunityFilter)
 class CommunityType(NetBoxObjectType):
-    site: Annotated["SiteType", strawberry.lazy("dcim.graphql.types")] | None
     tenant: Annotated["TenantType", strawberry.lazy("tenancy.graphql.types")] | None
     status: str
     role: Annotated["RoleType", strawberry.lazy("ipam.graphql.types")] | None
     description: str
+    scope_type: Annotated["ContentTypeType", strawberry.lazy("netbox.graphql.types")] | None
 
 
 @strawberry_django.type(BGPSession, fields="__all__", filters=NetBoxBGPSessionFilter)

@@ -39,7 +39,7 @@ class CommunityIndex(SearchIndex):
         ('description', 500),
         ('comments', 5000),
     )
-    display_attrs = ('status', 'site', 'tenant', 'description')
+    display_attrs = ('status', 'tenant', 'description')
 
 
 class CommunityListIndex(SearchIndex):

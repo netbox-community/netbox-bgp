@@ -1,10 +1,13 @@
 import django_filters
 import netaddr
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.utils.translation import gettext as _
 from netaddr.core import AddrFormatError
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import TenancyFilterSet
 from utilities.filtersets import register_filterset
+from utilities.filters import MultiValueContentTypeFilter
 
 from .models import (
     Community, BGPSession, RoutingPolicy, RoutingPolicyRule,
@@ -52,10 +55,29 @@ class ASPathListRuleFilterSet(NetBoxModelFilterSet):
 
 @register_filterset
 class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
+    scope_type = MultiValueContentTypeFilter()
+    region = django_filters.NumberFilter(
+        method="filter_scope"
+    )
+    site_group = django_filters.NumberFilter(
+        method="filter_scope"
+    )
+    site = django_filters.NumberFilter(
+        method="filter_scope"
+    )
+    location = django_filters.NumberFilter(
+        method="filter_scope"
+    )
+    rack_group = django_filters.NumberFilter(
+        method="filter_scope"
+    )
+    rack = django_filters.NumberFilter(
+        method="filter_scope"
+    )
 
     class Meta:
         model = Community
-        fields = ('id', 'value', 'description', 'status', 'tenant',)
+        fields = ('id', 'value', 'description', 'status', 'tenant', 'scope_id')
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -66,6 +88,14 @@ class CommunityFilterSet(NetBoxModelFilterSet, TenancyFilterSet):
                 | Q(description__icontains=value)
         )
         return queryset.filter(qs_filter)
+
+    def filter_scope(self, queryset, name, value):
+        model_name = name.replace('_', '')
+        return queryset.filter(
+            scope_type=ContentType.objects.get(model=model_name),
+            scope_id=value
+        )
+
 
 @register_filterset
 class CommunityListFilterSet(NetBoxModelFilterSet):

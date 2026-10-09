@@ -18,11 +18,11 @@
             </h5>
             <table class="table table-hover attr-table">
                 <tr>
-                    <td>Value</td>
+                    <th scope="row">Value</th>
                     <td>{{ object.value }}</td>
                 </tr>
                 <tr>
-                    <td>Tenant</td>
+                    <th scope="row">Tenant</th>
                     <td>
                         {% if object.tenant %}
                         <a href="{{ object.tenant.get_absolute_url }}">{{ object.tenant }}</a>
@@ -32,13 +32,28 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Status</td>
+                    <th scope="row">Scope</th>
+                    <td>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div id="attr_scope">
+                                {% if object.scope %}
+                                <a href="{{ object.scope.get_absolute_url }}">{{ object.scope }}</a>
+                                <div class="fs-5 text-muted">{{ object.scope_type.model|title }}</div>
+                                {% else %}
+                                <span class="text-muted">None</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Status</th>
                     <td>
                         {% badge object.get_status_display bg_color=object.get_status_color %}
                     </td>
                 </tr>
                 <tr>
-                    <td>Description</td>
+                    <th scope="row">Description</th>
                     <td>{{ object.description|placeholder }}</td>
                 </tr>
             </table>
