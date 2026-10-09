@@ -950,6 +950,50 @@ class BGPSessionPolicyInheritanceAPITestCase(APITestCase):
         self.assertNotIn(self.pg_policy_out.pk, export_ids)
 
 
+class BGPSessionNameLengthAPITestCase(APITestCase):
+    """Issue #324 — session names longer than 64 characters are accepted, up to
+    the model's limit of 256."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_324")
+        cls.local_as = ASN.objects.create(asn=65060, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65061, rir=rir)
+        cls.local_ip = IPAddress.objects.create(address="10.2.0.1/32")
+        cls.remote_ip = IPAddress.objects.create(address="10.2.0.2/32")
+
+    def _create(self, name):
+        self.add_permissions("netbox_bgp.add_bgpsession")
+        url = reverse("plugins-api:netbox_bgp-api:bgpsession-list")
+        return self.client.post(
+            url,
+            data={
+                "name": name,
+                "local_as": self.local_as.id,
+                "remote_as": self.remote_as.id,
+                "local_address": self.local_ip.id,
+                "remote_address": self.remote_ip.id,
+                "status": SessionStatusChoices.STATUS_ACTIVE,
+            },
+            format="json", **self.header
+        )
+
+    def test_create_session_with_name_over_64_characters(self):
+        name = "a" * 128
+        response = self._create(name)
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(BGPSession.objects.get(pk=response.data["id"]).name, name)
+
+    def test_create_session_with_name_at_256_characters(self):
+        response = self._create("a" * 256)
+        self.assertEqual(response.status_code, 201, response.content)
+
+    def test_create_session_rejects_name_over_256_characters(self):
+        response = self._create("a" * 257)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("name", response.data)
+
+
 class BGPSessionRemotePrefixAPITestCase(APITestCase):
     """Issue #282 — a session may nominate a prefix as its remote peer for
     dynamic (listen range) peering, in place of a single remote address."""

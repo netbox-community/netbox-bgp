@@ -185,3 +185,41 @@ class RemotePrefixTestCase(TestCase):
         form = BGPSessionAddForm(data=self._form_data())
         self.assertFalse(form.is_valid())
         self.assertIn("remote_address", form.errors)
+
+
+class BGPSessionNameLengthFormTestCase(TestCase):
+    """Issue #324 — the session name form field must allow the model's full
+    256 characters, not a shorter limit."""
+
+    @classmethod
+    def setUpTestData(cls):
+        rir = RIR.objects.create(name="rir_324")
+        cls.local_as = ASN.objects.create(asn=65050, rir=rir)
+        cls.remote_as = ASN.objects.create(asn=65051, rir=rir)
+        cls.local_ip = IPAddress.objects.create(address="192.0.2.50/32")
+        cls.remote_ip = IPAddress.objects.create(address="192.0.2.51/32")
+
+    def _form(self, name):
+        return BGPSessionAddForm(
+            data={
+                "name": name,
+                "local_as": self.local_as.pk,
+                "remote_as": self.remote_as.pk,
+                "local_address": self.local_ip.pk,
+                "remote_address": "192.0.2.51/32",
+                "status": SessionStatusChoices.STATUS_ACTIVE,
+            }
+        )
+
+    def test_name_over_64_characters_is_valid(self):
+        form = self._form("a" * 65)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_name_at_256_characters_is_valid(self):
+        form = self._form("a" * 256)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_name_over_256_characters_is_invalid(self):
+        form = self._form("a" * 257)
+        self.assertFalse(form.is_valid())
+        self.assertIn("name", form.errors)
