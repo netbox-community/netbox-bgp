@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dcim', '0122_standardize_name_length'),
+        ('dcim', '0003_squashed_0130'),
         ('netbox_bgp', '0003_netbox_bgp'),
     ]
 

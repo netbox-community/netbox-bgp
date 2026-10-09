@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dcim', '0153_created_datetimefield'),
+        ('dcim', '0131_squashed_0159'),
         ('netbox_bgp', '0020_netbox_bgp'),
     ]
 
