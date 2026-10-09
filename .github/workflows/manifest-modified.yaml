@@ -2,7 +2,7 @@ name: NetBox plugin manifest modified
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
     paths:
       - netbox-plugin.yaml
 

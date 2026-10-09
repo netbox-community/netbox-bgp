@@ -230,7 +230,7 @@ class CommunityListRuleForm(NetBoxModelForm):
 
 
 class BGPSessionForm(NetBoxModelForm):
-    name = forms.CharField(max_length=64, required=False)
+    name = forms.CharField(max_length=256, required=False)
     site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
     device = DynamicModelChoiceField(
         queryset=Device.objects.all(), required=False, query_params={"site_id": "$site"}

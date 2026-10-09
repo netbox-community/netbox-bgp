@@ -119,6 +119,28 @@ class CommunityTestCase(TestCase):
         community = Community(value=0)
         self.assertRaises(ValidationError, community.full_clean)
 
+    def test_community_value_patterns(self):
+        valid = [
+            '65001:100',
+            '65001:*',
+            '64522:123[0-9]',
+            '64522:[0-9][0-9][0-9][0-9]',
+            '64522:[0-9]{4}',
+            '64522:[^0-9]',
+            '64522:\\d+',
+            '[0-9]+:[0-9]+',
+            '1.2:3',
+        ]
+        for value in valid:
+            with self.subTest(value=value):
+                Community(value=value).full_clean()
+
+    def test_community_value_patterns_invalid(self):
+        for value in ['abc:def', '64522:', ':100', '64522:[]', '64522']:
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    Community(value=value).full_clean()
+
 
 class CommunityListTestCase(TestCase):
     def setUp(self):

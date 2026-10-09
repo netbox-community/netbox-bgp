@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `netbox-bgp` is a [NetBox](https://github.com/netbox-community/netbox) plugin that adds BGP-related objects (Sessions, Peer Groups, Communities, Community Lists, Routing Policies + Rules, Prefix Lists + Rules, AS Path Lists + Rules). The plugin is distributed on PyPI as `netbox-bgp` and installs as a Django app named `netbox_bgp`.
 
-The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and tabulated in `COMPATIBILITY.md`, linked from `README.md`). The current release (`0.19.0`, version in `netbox_bgp/version.py`) targets NetBox 4.6.x (`min_version = '4.6.0'`, `max_version = '4.6.99'`); development happens on the `develop` branch. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals — add a new row to `COMPATIBILITY.md` when you do.
+The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and tabulated in `COMPATIBILITY.md`, linked from `README.md`). The current release (`0.20.2`, version in `netbox_bgp/version.py`) targets NetBox 4.7.x (`min_version = '4.7.0'`, `max_version = '4.7.99'`); development happens on the `feature` branch. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals — add a new row to `COMPATIBILITY.md` when you do.
 
 ## Development workflow
 
@@ -52,7 +52,7 @@ All models inherit from `netbox.models.NetBoxModel` (giving them change-logging,
 - `navigation.py` — menu items; honours `top_level_menu` setting.
 - `search.py` — `SearchIndex` subclasses registering each model with NetBox global search (`BGPSessionIndex`, `BGPPeerGroupIndex`, `CommunityIndex`, `CommunityListIndex`, `RoutingPolicyIndex`, `PrefixListIndex`, `ASPathListIndex`). Indexed fields declared here must exist on the model; covered by `tests/test_search.py`.
 - `templates/netbox_bgp/` — per-object detail templates.
-- `migrations/` — 0001 through 0041 at time of writing. Always add new ones via `make migrations`, don't hand-write.
+- `migrations/` — 0001 through 0044 at time of writing. Always add new ones via `make migrations`, don't hand-write.
 
 ### Plugin settings
 

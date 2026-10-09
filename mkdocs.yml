@@ -42,6 +42,7 @@ nav:
     - Introduction: 'index.md'
     - Configuration: 'configuration.md'
     - Integrations: 'integrations.md'
+    - Permissions: 'permissions.md'
     - Branching: 'branching.md'
     - Data Model:
         - BGP Session: 'models/bgpsession.md'

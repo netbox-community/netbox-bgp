@@ -13,8 +13,9 @@ PostgreSQL install is needed.
 
 ## Branches
 
-Development happens on `develop`. Branch from `develop` and open pull requests against
-it. Release branches (`release-X.Y.Z`) are cut from `develop`.
+Development happens on `feature`. Branch from `feature` and open pull requests against
+it. When a release is due, `feature` is merged into `main`, and release branches
+(`release-X.Y.Z`) are cut from `main`.
 
 ## Development environment
 
