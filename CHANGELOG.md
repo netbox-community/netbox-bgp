@@ -6,6 +6,40 @@ This changelog starts at 0.20.0. For earlier releases, see the
 [compatibility matrix](https://github.com/netbox-community/netbox-bgp/blob/main/COMPATIBILITY.md)
 and the git history.
 
+## 0.20.2
+
+### Changed
+
+- **Community values accept bracket expressions and quantifiers**
+  ([#326](https://github.com/netbox-community/netbox-bgp/issues/326)). The validator on
+  `Community.value` previously allowed only digits, `.` and `*` on each side of the colon,
+  so patterns such as `64522:[0-9][0-9][0-9][0-9]` were rejected. Each side may now also
+  contain `\d`, bracket expressions (`[0-9]`, `[^0-9]`), and the quantifiers `+`, `?`,
+  `{n}` and `{n,m}`. The validator is still unanchored, so existing values stay valid.
+  Includes migration `0044_alter_community_value`. See
+  [Communities](https://github.com/netbox-community/netbox-bgp/blob/main/docs/models/community.md).
+
+### Fixed
+
+- **BGP Session names longer than 64 characters can be entered in the UI**
+  ([#324](https://github.com/netbox-community/netbox-bgp/issues/324)). The model, the REST
+  API and bulk import already allowed 256 characters, but the add and edit forms limited
+  the Name field to 64. The forms now allow the full 256 characters. No migration is
+  needed.
+
+- **`sqlmigrate` works with the plugin installed**
+  ([#323](https://github.com/netbox-community/netbox-bgp/pull/323)). Migrations `0001`,
+  `0003`, `0004` and `0020` to `0023` depended on NetBox migrations that NetBox has since
+  squashed. `sqlmigrate` does not resolve squashed replacements, so it failed with
+  `NodeNotFoundError`. The dependencies now point at the squashed migrations. `migrate`
+  and `makemigrations` are not affected. Thanks to @svalouch.
+
+### Documentation
+
+- Contributing guidance now names `feature` as the branch for pull requests. `feature` is
+  merged into `main` before a release, and release branches are cut from `main`.
+- The manifest workflow now runs on pushes to `main`.
+
 ## 0.20.1
 
 ### Fixed
