@@ -211,12 +211,18 @@ class BGPBase(NetBoxModel):
         abstract = True
 
 
+# One side of a community value: digits, '.', '*', '\\d', or a bracket
+# expression such as [0-9], each optionally followed by a quantifier (+ ? {n} {n,m}).
+_COMMUNITY_TOKEN = r'(?:[\d\.\*]|\\d|\[\^?[\d\-\.]+\])(?:[+?]|\{\d+(?:,\d*)?\})?'
+COMMUNITY_VALUE_REGEX = rf'(?:{_COMMUNITY_TOKEN})+:(?:{_COMMUNITY_TOKEN})+'
+
+
 class Community(BGPBase):
     """
     """
     value = models.CharField(
         max_length=64,
-        validators=[RegexValidator(r'[\d\.\*]+:[\d\.\*]+')]
+        validators=[RegexValidator(COMMUNITY_VALUE_REGEX)]
     )
 
     class Meta:

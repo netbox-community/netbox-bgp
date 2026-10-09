@@ -9,14 +9,23 @@ referenced by [Community List Rules](./communitylistrule.md) and directly by
 ### Value
 
 **Required.** The community value, up to 64 characters, in `<part>:<part>` form. Each part
-may contain digits, dots, and the `*` wildcard, so both plain values (`65001:100`) and
-patterns (`65001:*`) are accepted.
+may contain digits, dots, the `*` wildcard, `\d`, and bracket expressions such as `[0-9]` or
+`[^0-9]`. Any of these may be followed by a quantifier (`+`, `?`, `{n}` or `{n,m}`). Plain
+values and patterns are both accepted:
+
+| Example                       | Meaning                          |
+|-------------------------------|----------------------------------|
+| `65001:100`                   | Plain community                  |
+| `65001:*`                     | Wildcard                         |
+| `64522:123[0-9]`              | Digit range                      |
+| `64522:[0-9][0-9][0-9][0-9]`  | Any four-digit value             |
+| `64522:[0-9]{4}`              | Same, using a quantifier         |
 
 !!! note
     The validation is a loose, unanchored pattern match rather than a semantic check. It
-    requires only that a `<digits/dots/asterisks>:<digits/dots/asterisks>` sequence appear
+    requires only that a `<part>:<part>` sequence of the characters above appear
     *somewhere* in the value, so surrounding text is accepted, and it does not verify that
-    the parts fall within valid ranges.
+    the parts fall within valid ranges or that the pattern is a complete, valid regex.
 
 ### Status
 
