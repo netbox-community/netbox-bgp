@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `netbox-bgp` is a [NetBox](https://github.com/netbox-community/netbox) plugin that adds BGP-related objects (Sessions, Peer Groups, Communities, Community Lists, Routing Policies + Rules, Prefix Lists + Rules, AS Path Lists + Rules). The plugin is distributed on PyPI as `netbox-bgp` and installs as a Django app named `netbox_bgp`.
 
-The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and tabulated in `COMPATIBILITY.md`, linked from `README.md`). The current release (`0.19.0`, version in `netbox_bgp/version.py`) targets NetBox 4.6.x (`min_version = '4.6.0'`, `max_version = '4.6.99'`); development happens on the `develop` branch. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals — add a new row to `COMPATIBILITY.md` when you do.
+The NetBox ⇄ plugin version pairing is strict (declared in `netbox_bgp/__init__.py` via `min_version`/`max_version` and tabulated in `COMPATIBILITY.md`, linked from `README.md`). The current release (`0.19.0`, version in `netbox_bgp/version.py`) targets NetBox 4.6.x (`min_version = '4.6.0'`, `max_version = '4.6.99'`); development happens on the `feature` branch. Changing the plugin's NetBox version range almost always requires migrations and import changes against NetBox internals — add a new row to `COMPATIBILITY.md` when you do.
 
 ## Development workflow
 
