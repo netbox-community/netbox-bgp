@@ -54,6 +54,7 @@ $ ./manage.py migrate
 | [Introduction](./docs/index.md) | Features, full installation guide, screenshots |
 | [Configuration](./docs/configuration.md) | Plugin settings under `PLUGINS_CONFIG` |
 | [Integrations](./docs/integrations.md) | The BGP Sessions tabs added to core NetBox objects |
+| [Permissions](./docs/permissions.md) | Model permissions and object-level constraints |
 | [Branching](./docs/branching.md) | Using the plugin with netbox-branching |
 | [Data Model](./docs/models/bgpsession.md) | Field reference for each model |
 | [REST API](./docs/rest-api.md) | Endpoints, including the backwards-compatible aliases |
